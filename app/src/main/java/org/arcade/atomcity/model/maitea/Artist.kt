@@ -1,0 +1,9 @@
+package org.arcade.atomcity.model.maitea
+
+import com.squareup.moshi.Json
+
+data class Artist (
+  @Json(name = "en" ) var en : String? = null,
+  @Json(name = "jp" ) var jp : String? = null
+
+)
