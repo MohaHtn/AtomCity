@@ -13,11 +13,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.arcade.atomcity.presentation.viewmodel.MainActivityViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(mainActivityViewModel: MainActivityViewModel) {
+
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -48,11 +50,13 @@ fun HomeScreen() {
         }
     ) { paddingValues ->
 
+        mainActivityViewModel.fetchData()
+
         Card(
             modifier = Modifier.padding(paddingValues)
         ){
             Text(
-                text = "Bienvenue à Atom City !",
+                text = "Bienvenue Atom City !",
                 modifier = Modifier.padding(16.dp)
             )
         }

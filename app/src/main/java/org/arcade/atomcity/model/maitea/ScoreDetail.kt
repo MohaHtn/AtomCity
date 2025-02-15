@@ -9,6 +9,6 @@ data class ScoreDetail (
   @Json(name = "tap"   ) var tap   : Tap?   = Tap(),
   @Json(name = "hold"  ) var hold  : Hold?  = Hold(),
   @Json(name = "slide" ) var slide : Slide? = Slide(),
-  @Json(name = "break" ) var break : Break? = Break()
+  @Json(name = "break" ) var breakk : Break? = Break()
 
 )
