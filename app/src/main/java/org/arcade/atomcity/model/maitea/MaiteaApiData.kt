@@ -3,7 +3,7 @@ package org.arcade.atomcity.model.maitea
 import com.squareup.moshi.Json
 
 
-data class MaiteaApiResponse (
+data class MaiteaApiData (
   @Json(name = "id") var id: Int? = null,
   @Json(name = "achievement") var achievement: Int? = null,
   @Json(name = "achievement_formatted") var achievementFormatted: String? = null,

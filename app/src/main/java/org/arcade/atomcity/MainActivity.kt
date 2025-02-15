@@ -21,9 +21,6 @@ import org.koin.core.context.startKoin
 import retrofit2.HttpException
 
 class AtomCityApplication : Application() {
-
-
-
     override fun onCreate() {
         val apiKey = "377|9TdBVuvl96tWpBFezkbCUwZ57aM6gDGAeAjEpMaz"
         ApiKeyManager.saveApiKey(this, apiKey)
@@ -47,17 +44,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             AtomCityTheme {
                 HomeScreen(mainActivityViewModel)
-            }
-        }
-
-        lifecycleScope.launch {
-            try {
-                val response = apiService.getAllUserScores()
-                Log.d("MainActivity", "Response: $response")
-            } catch (e: HttpException) {
-                Log.e("MainActivity", "HTTP error: ${e.code()} ${e.message()}")
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Unexpected error: ${e.message}")
             }
         }
     }
