@@ -4,27 +4,36 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.arcade.atomcity.data.MaiTeaRepository
 import org.arcade.atomcity.domain.usecase.GetMaiTeaDataUseCase
 import org.arcade.atomcity.model.maitea.MaiTeaResponse
 
-class MainActivityViewModel(private val getMaiteaDataUseCase: GetMaiTeaDataUseCase) : ViewModel() {
+class MainActivityViewModel(private val repository: MaiTeaRepository) : ViewModel() {
 
-    var data: MaiTeaResponse? = null
-        private set
+    private val _data = MutableStateFlow<MaiTeaResponse?>(null)
+    val data: StateFlow<MaiTeaResponse?> = _data
 
     val dataSize: Int
-        get() = data?.data?.size ?: 0
+        get() = _data.value?.data?.size ?: 0
 
-    var isLoading = mutableStateOf(true)
-        private set
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     fun fetchData() {
-        viewModelScope.launch {
-            isLoading.value = true
-            data = getMaiteaDataUseCase.execute()
-            isLoading.value = false
-            Log.d("MainActivityViewModel", "Data: $data")
+        try  {
+            viewModelScope.launch {
+                _isLoading.value = true
+                repository.getMaiTeaData().collect { response ->
+                    _data.value = response
+                    _isLoading.value = false
+                    Log.d("MainActivityViewModel", "Data: ${_data.value}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivityViewModel", "Error: ${e.message}")
         }
     }
 }
