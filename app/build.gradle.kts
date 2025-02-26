@@ -43,6 +43,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.material3)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -63,6 +65,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.moshi.kotlin)
-    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.14")
+    implementation(libs.okhttp3.logging.interceptor)
     ksp(libs.moshi.kotlin.codegen)
 }
