@@ -48,7 +48,7 @@ fun BottomBarPill(
                     modifier = Modifier.height(40.dp)
                 ) {
                     Text(
-                        text = "Games"
+                        text = "Jeux"
                     )
                 }
                 Button(
@@ -57,7 +57,7 @@ fun BottomBarPill(
 
                 ) {
                     Text(
-                        text = "Settings"
+                        text = "Paramètres"
                     )
                 }
             }

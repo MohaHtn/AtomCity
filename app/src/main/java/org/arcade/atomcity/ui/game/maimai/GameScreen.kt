@@ -1,16 +1,13 @@
 package org.arcade.atomcity.ui.game.maimai
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import org.arcade.atomcity.presentation.viewmodel.MainActivityViewModel
 import org.arcade.atomcity.util.ApiKeyManager
-import android.app.Application
-import androidx.compose.ui.platform.LocalContext
-import org.arcade.atomcity.AtomCityApplication
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -25,5 +22,6 @@ fun GameScreen(
 
     when {
         gameId == "maimai" && apiKeyManager.hasApiKey("maimai") -> MaimaiScores(mainActivityViewModel)
+
     }
 }

@@ -24,7 +24,9 @@ import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.ui.core.SettingsScreen
 import org.arcade.atomcity.ui.core.WelcomeScreen
+import org.arcade.atomcity.ui.core.openApiGuide
 import org.arcade.atomcity.ui.game.maimai.GameScreen
+import org.arcade.atomcity.ui.game.maimai.MaimaiApiGuide
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -41,6 +43,7 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel) {
 
     var showMiniMenu: MutableState<Boolean> = remember { mutableStateOf(false) }
     var lastClickTime: MutableState<Long> = remember { mutableStateOf(0L) }
+    val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     NavHost(
         navController = navController,
@@ -48,6 +51,10 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel) {
     ) {
         composable(Screen.Home.route) {
             WelcomeScreen()
+
+            if (openApiGuide.value) {
+                MaimaiApiGuide(openApiGuide, onDismiss = {openApiGuide.value = false; Log.d("API", "Clicked closed")})
+            }
         }
 
         composable(
@@ -69,38 +76,41 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel) {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 96.dp)
-    ) {
-        // MiniMenu
-        OpenMiniMenu(
-            showMiniMenu = showMiniMenu.value,
-            onDismiss = {
-                if (System.currentTimeMillis() - lastClickTime.value > 300) {
-                    showMiniMenu.value = !showMiniMenu.value
-                    lastClickTime.value = System.currentTimeMillis()
-                }
-            },
-            onItemClick = { gameId: String ->
-                Log.d("AppNavigation", "onItemClick $gameId")
-                navController.navigate("game/$gameId")
-                showMiniMenu.value = false
-            },
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+// TODO: faire marcher cette merde
+//    if(currentRoute != Screen.Home.route) {
+//        Box(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(bottom = 96.dp)
+//        ) {
+//            OpenMiniMenu(
+//                showMiniMenu = showMiniMenu.value,
+//                onDismiss = {
+//                    if (System.currentTimeMillis() - lastClickTime.value > 300) {
+//                        showMiniMenu.value = !showMiniMenu.value
+//                        lastClickTime.value = System.currentTimeMillis()
+//                    }
+//                },
+//                onItemClick = { gameId: String ->
+//                    Log.d("AppNavigation", "onItemClick $gameId")
+//                    navController.navigate("game/$gameId")
+//                    showMiniMenu.value = false
+//                },
+//                modifier = Modifier.align(Alignment.BottomCenter)
+//            )
+//
+//            Box(modifier = Modifier.offset(y = 800.dp)) {
+//                BottomBarPill(
+//                    onHomeClick = {
+//                        if (System.currentTimeMillis() - lastClickTime.value > 300) {
+//                            showMiniMenu.value = !showMiniMenu.value
+//                            lastClickTime.value = System.currentTimeMillis()
+//                        }
+//                    }
+//                )
+//            }
+//        }
     }
 
-    // BottomBarPill always at bottom
-    Box(modifier = Modifier.offset(y = 800.dp)) {
-        BottomBarPill(
-            onHomeClick = {
-                if (System.currentTimeMillis() - lastClickTime.value > 300) {
-                    showMiniMenu.value = !showMiniMenu.value
-                    lastClickTime.value = System.currentTimeMillis()
-                }
-            }
-        )
-    }
-}
+
+
