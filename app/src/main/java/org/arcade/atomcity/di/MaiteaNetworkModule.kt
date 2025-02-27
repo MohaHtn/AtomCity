@@ -17,7 +17,8 @@ import java.util.concurrent.TimeUnit
 val maiteaNetworkModule = module {
     single<Retrofit> {
         val context = androidContext()
-        val apiKey = ApiKeyManager.getApiKey(context) ?: throw IllegalStateException("API key not found")
+        val apiKeyManager = ApiKeyManager(context.getSharedPreferences("api_prefs", Context.MODE_PRIVATE))
+        val apiKey = apiKeyManager.getApiKey("maimai") ?: throw IllegalStateException("API key not found")
 
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -27,12 +28,11 @@ val maiteaNetworkModule = module {
             .add(com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory())
             .build()
 
-
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .addInterceptor { chain: Interceptor.Chain ->
                 val request = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer 377|9TdBVuvl96tWpBFezkbCUwZ57aM6gDGAeAjEpMaz")
+                    .addHeader("Authorization", "Bearer $apiKey")
                     .addHeader("Content-Type", "application/json")
                     .addHeader("Accept", "application/json")
                     .build()

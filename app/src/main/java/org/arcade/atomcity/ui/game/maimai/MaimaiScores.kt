@@ -58,6 +58,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.arcade.atomcity.presentation.viewmodel.MainActivityViewModel
+import org.arcade.atomcity.ui.core.AchievementChip
+import org.arcade.atomcity.ui.core.BottomBarPill
+import org.arcade.atomcity.ui.core.OpenMiniMenu
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -73,7 +76,7 @@ fun MaimaiScores(mainActivityViewModel: MainActivityViewModel) {
 
     var showMiniMenu by remember { mutableStateOf(false) }
     var lastClickTime by remember { mutableLongStateOf(0L) }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     LaunchedEffect(Unit) {
         mainActivityViewModel.fetchData()
@@ -83,7 +86,7 @@ fun MaimaiScores(mainActivityViewModel: MainActivityViewModel) {
         modifier = Modifier.fillMaxSize(),
         topBar = {
             LargeTopAppBar(
-                title = { Text(text = "Atom City") },
+                title = { Text(text = "maimai") },
                 navigationIcon = {},
                 actions = {},
                 scrollBehavior = scrollBehavior
@@ -220,151 +223,3 @@ fun MaimaiScores(mainActivityViewModel: MainActivityViewModel) {
 
 
 
-@Composable
-fun AchievementChip(
-    text: String,
-    modifier: Modifier = Modifier,
-    backgroundColor: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
-    shape: Shape = MaterialTheme.shapes.small,
-    elevation: Dp = 4.dp
-) {
-    AssistChip(
-        onClick = { /* Do something */ },
-        modifier = modifier,
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = backgroundColor,
-            labelColor = contentColor
-        ),
-        shape = shape,
-        elevation = AssistChipDefaults.assistChipElevation(elevation),
-        label = {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.headlineSmall
-            )
-        }
-    )
-}
-
-@Composable
-fun BottomBarPill(
-    onHomeClick: () -> Unit
-){
-
-    Box(
-        modifier = Modifier
-            .height(40.dp)
-            .fillMaxWidth())
-    {
-        Box(
-            modifier = Modifier
-                .height(40.dp)
-                .align(Alignment.Center)
-                .width(256.dp)
-                .offset(y = (-64).dp)
-                .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Button(
-                    onClick =  onHomeClick,
-                    modifier = Modifier.height(40.dp)
-                ) {
-                    Text(
-                        text = "Games"
-                    )
-                }
-                Button(
-                    onClick = {  /* Do something */ },
-                    modifier = Modifier.height(40.dp)
-
-                ) {
-                    Text(
-                        text = "Settings"
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun OpenMiniMenu(
-    showMiniMenu: Boolean,
-    onDismiss: () -> Unit,
-    onItemClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        AnimatedVisibility(
-            visible = showMiniMenu,
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically()
-        ) {
-            Card(
-                modifier = Modifier.width(512.dp).clickable(onClick = onDismiss).padding(16.dp),
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    val items = listOf(
-                        "maimai" to "les gros cerles là",
-                        "beatmania IIDX" to "DJ ???? woa",
-                        "pop n' music" to "miamme les burgers en forme de boutons"
-                    )
-                    items.forEach { (headline, supporting) ->
-                        ListItem(
-                            headlineContent = { Text(headline) },
-                            supportingContent = { Text(supporting) },
-                            modifier = Modifier.clickable { onItemClick() }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true, device = "id:pixel_8")
-@Composable
-fun BottomBarPillPreview() {
-    Box(
-        modifier = Modifier
-            .padding(16.dp)
-            .offset(y = (64).dp)
-    ) {
-        BottomBarPill(
-            onHomeClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun OpenMiniMenuPreview() {
-    Box(
-        modifier = Modifier
-            .padding(16.dp)
-    ) {
-        OpenMiniMenu(
-            showMiniMenu = true,
-            onDismiss = {},
-            onItemClick = {},
-        )
-    }
-}
-
-@Preview(showBackground = false)
-@Composable
-fun AchievementChipPreview() {
-    Box(
-        modifier = Modifier
-            .padding(16.dp)
-    ) {
-        AchievementChip(
-            text = "98.12",
-        )
-    }
-}

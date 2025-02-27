@@ -2,6 +2,8 @@ package org.arcade.atomcity
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,8 +26,11 @@ import org.koin.core.context.startKoin
 
 class AtomCityApplication : Application() {
     override fun onCreate() {
+        val sharedPreferences: SharedPreferences = getSharedPreferences("api_prefs", Context.MODE_PRIVATE)
+        val apiKeyManager = ApiKeyManager(sharedPreferences)
+
         val apiKey = "377|9TdBVuvl96tWpBFezkbCUwZ57aM6gDGAeAjEpMaz"
-        ApiKeyManager.saveApiKey(this, apiKey)
+        apiKeyManager.saveApiKey("maimai", apiKey)
 
         super.onCreate()
         startKoin {
@@ -47,7 +52,7 @@ class MainActivity : ComponentActivity() {
             AtomCityTheme {
                 Scaffold { paddingValues ->
                     Box(modifier = Modifier.padding(paddingValues)) {
-                        AppNavigation(apiService, mainActivityViewModel)
+                        AppNavigation(mainActivityViewModel)
                     }
                 }
             }
