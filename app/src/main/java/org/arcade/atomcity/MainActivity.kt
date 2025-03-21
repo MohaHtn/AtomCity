@@ -2,8 +2,7 @@ package org.arcade.atomcity
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
+import android.view.Surface
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,8 +11,12 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import org.arcade.atomcity.di.maiteaNetworkModule
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import org.arcade.atomcity.di.maiteaNetworkModule
+import org.arcade.atomcity.di.apiKeyManagerModule
 import org.arcade.atomcity.di.viewModelModule
 import org.arcade.atomcity.network.MaiteaApiService
 import org.arcade.atomcity.presentation.viewmodel.MainActivityViewModel
@@ -26,16 +29,10 @@ import org.koin.core.context.startKoin
 
 class AtomCityApplication : Application() {
     override fun onCreate() {
-        val sharedPreferences: SharedPreferences = getSharedPreferences("api_prefs", Context.MODE_PRIVATE)
-        val apiKeyManager = ApiKeyManager(sharedPreferences)
-
-        val apiKey = "377|9TdBVuvl96tWpBFezkbCUwZ57aM6gDGAeAjEpMaz"
-        apiKeyManager.saveApiKey("maimai", apiKey)
-
         super.onCreate()
         startKoin {
             androidContext(this@AtomCityApplication)
-            modules(listOf(maiteaNetworkModule, viewModelModule))
+            modules(listOf(maiteaNetworkModule, viewModelModule, apiKeyManagerModule))
         }
     }
 }
@@ -43,17 +40,44 @@ class AtomCityApplication : Application() {
 class MainActivity : ComponentActivity() {
     private val apiService: MaiteaApiService by inject()
     private val mainActivityViewModel: MainActivityViewModel by inject()
+    private val apiKeyManager: ApiKeyManager by inject()
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Request 120Hz refresh rate if device supports it
+        if (Build.VERSION.SDK_INT >= 30) { // Build.VERSION_CODES.R is API 30
+            window.attributes.preferredDisplayModeId = try {
+                val setFrameRateMethod = window.javaClass.getMethod("setFrameRate",
+                    Float::class.java, Int::class.java)
+                setFrameRateMethod.invoke(window, 120.0f, 1) // 1 = FRAME_RATE_COMPATIBILITY_FIXED_SOURCE
+                1
+            } catch (e: Exception) {
+                0
+            }
+        }
+
+        val apiKey = "377|9TdBVuvl96tWpBFezkbCUwZ57aM6gDGAeAjEpMaz"
+        apiKeyManager.saveApiKey("maimai", apiKey)
+
         setContent {
-            AtomCityTheme {
-                Scaffold { paddingValues ->
-                    Box(modifier = Modifier.padding(paddingValues)) {
-                        AppNavigation(mainActivityViewModel)
-                    }
+            MainActivityContent(mainActivityViewModel, apiKeyManager)
+        }
+    }
+}
+
+@Composable
+fun MainActivityContent(mainActivityViewModel: MainActivityViewModel, apiKeyManager: ApiKeyManager) {
+    AtomCityTheme {
+        Scaffold { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    AppNavigation(mainActivityViewModel, apiKeyManager)
+                } else {
+                    // Fallback for devices below API 26
+                    Text("This feature requires Android 8.0 or higher")
                 }
             }
         }

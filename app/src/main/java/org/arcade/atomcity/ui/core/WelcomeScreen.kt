@@ -37,8 +37,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
-import org.arcade.atomcity.ui.game.maimai.MaimaiApiGuide
-import androidx.compose.material.icons.filled.Close as Cancel
 
 const val welcomeTitle = "Bienvenue !"
 const val welcomeTextAppIntro = "Cette application vous permet de consulter vos score et ceux de vos amis sur vos jeux de rythmes préférés à Atom City ! (et eventuellement plus encore mais on verra hein)"

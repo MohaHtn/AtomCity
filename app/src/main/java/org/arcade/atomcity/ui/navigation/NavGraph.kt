@@ -1,32 +1,23 @@
 package org.arcade.atomcity.ui.navigation
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import org.arcade.atomcity.presentation.viewmodel.MainActivityViewModel
-import org.arcade.atomcity.ui.core.BottomBarPill
-import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.ui.core.SettingsScreen
 import org.arcade.atomcity.ui.core.WelcomeScreen
 import org.arcade.atomcity.ui.core.openApiGuide
 import org.arcade.atomcity.ui.game.maimai.GameScreen
-import org.arcade.atomcity.ui.game.maimai.MaimaiApiGuide
+import org.arcade.atomcity.ui.game.maimai.guide.MaimaiApiGuide
+import org.arcade.atomcity.util.ApiKeyManager
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -38,7 +29,7 @@ sealed class Screen(val route: String) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AppNavigation(mainActivityViewModel: MainActivityViewModel) {
+fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: ApiKeyManager) {
     val navController = rememberNavController()
 
     var showMiniMenu: MutableState<Boolean> = remember { mutableStateOf(false) }
@@ -53,7 +44,13 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel) {
             WelcomeScreen()
 
             if (openApiGuide.value) {
-                MaimaiApiGuide(openApiGuide, onDismiss = {openApiGuide.value = false; Log.d("API", "Clicked closed")})
+                MaimaiApiGuide(
+                    visible = openApiGuide,
+                    onDismiss = {
+                        openApiGuide.value = false
+                    },
+                    apiKeyManager = apiKeyManager
+                )
             }
         }
 
