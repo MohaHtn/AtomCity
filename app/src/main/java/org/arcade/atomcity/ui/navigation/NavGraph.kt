@@ -45,11 +45,8 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: A
 
             if (openApiGuide.value) {
                 MaimaiApiGuide(
-                    visible = openApiGuide,
-                    onDismiss = {
-                        openApiGuide.value = false
-                    },
-                    apiKeyManager = apiKeyManager
+                    apiKeyManager = apiKeyManager,
+                    isVisible = openApiGuide
                 )
             }
         }
@@ -73,7 +70,7 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: A
         }
     }
 
-// TODO: faire marcher cette merde
+// TODO: fairemarcher  cette merde
 //    if(currentRoute != Screen.Home.route) {
 //        Box(
 //            modifier = Modifier
