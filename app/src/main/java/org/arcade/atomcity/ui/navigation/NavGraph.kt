@@ -41,7 +41,7 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: A
         startDestination = Screen.Home.route
     ) {
         composable(Screen.Home.route) {
-            WelcomeScreen()
+            WelcomeScreen(navController = navController)
 
             if (openApiGuide.value) {
                 MaimaiApiGuide(

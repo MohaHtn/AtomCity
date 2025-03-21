@@ -38,9 +38,9 @@ val maiteaNetworkModule = module {
                     .build()
                 chain.proceed(request)
             }
-            .connectTimeout(30, TimeUnit.SECONDS) // Délai d'attente de connexion
-            .readTimeout(30, TimeUnit.SECONDS)    // Délai d'attente de lecture
-            .writeTimeout(30, TimeUnit.SECONDS)   // Délai d'attente d'écriture
+            .connectTimeout(300, TimeUnit.SECONDS) // Délai d'attente de connexion
+            .readTimeout(300, TimeUnit.SECONDS)    // Délai d'attente de lecture
+            .writeTimeout(300, TimeUnit.SECONDS)   // Délai d'attente d'écriture
             .build()
 
         Retrofit.Builder()

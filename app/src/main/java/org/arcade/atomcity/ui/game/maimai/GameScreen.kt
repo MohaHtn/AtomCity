@@ -22,6 +22,5 @@ fun GameScreen(
 
     when {
         gameId == "maimai" && apiKeyManager.hasApiKey("maimai") -> MaimaiScores(mainActivityViewModel)
-
     }
 }

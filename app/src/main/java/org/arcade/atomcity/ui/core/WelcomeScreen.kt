@@ -37,6 +37,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import org.arcade.atomcity.ui.navigation.Screen
 
 const val welcomeTitle = "Bienvenue !"
 const val welcomeTextAppIntro = "Cette application vous permet de consulter vos score et ceux de vos amis sur vos jeux de rythmes préférés à Atom City ! (et eventuellement plus encore mais on verra hein)"
@@ -51,7 +54,7 @@ var openApiGuide = mutableStateOf(false)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WelcomeScreen() {
+fun WelcomeScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
@@ -83,7 +86,7 @@ fun WelcomeScreen() {
                 if (isPage1) {
                     WelcomeCard()
                 } else {
-                    SetupCard()
+                    SetupCard(navController)
                 }
             }
         }
@@ -131,7 +134,17 @@ fun WelcomeCard() {
 }
 
 @Composable
-fun SetupCard() {
+fun SetupCard(navController: NavController) {
+    val sharedPreferences: SharedPreferences = LocalContext.current.getSharedPreferences("api_prefs", Context.MODE_PRIVATE)
+    val apiKeyManager = ApiKeyManager(sharedPreferences)
+
+
+    //TODO : refaire cette merde pour pas c/c le code nul là
+    fun hasApiKey(game: String): Boolean {
+        return apiKeyManager.hasApiKey(game)
+    }
+
+
     Column (
         horizontalAlignment = Alignment.CenterHorizontally
     ){
@@ -162,6 +175,18 @@ fun SetupCard() {
             text = "Retour",
             style = MaterialTheme.typography.labelMedium
         )}
+
+        // TODO : maimai est forcé ici pour le moment
+        if(hasApiKey("maimai")) {
+            Button(
+                onClick = { navController.navigate(Screen.Game.createRoute("maimai")) },
+                ) { Text(
+                text = "Suivant",
+                style = MaterialTheme.typography.labelMedium
+            )}
+        }
+
+
     }
 
 }
@@ -223,7 +248,7 @@ private fun ApiItem(
             style = MaterialTheme.typography.bodyLarge
         )
         Row(
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -286,9 +311,5 @@ fun toPage2(){
 
 fun toPage1(){
     page1.value = true
-}
-
-fun toApiGuide(){
-    openApiGuide.value = true
 }
 
