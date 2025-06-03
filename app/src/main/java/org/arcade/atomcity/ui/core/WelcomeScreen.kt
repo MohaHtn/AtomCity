@@ -1,15 +1,14 @@
 package org.arcade.atomcity.ui.core
 
-
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,8 +36,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.AlertDialog
+import androidx.compose.runtime.remember
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import org.arcade.atomcity.ui.navigation.Screen
 
 const val welcomeTitle = "Bienvenue !"
@@ -46,7 +46,6 @@ const val welcomeTextAppIntro = "Cette application vous permet de consulter vos 
 const val welcomeTextAtomIntro = "Si vous ne savez pas, Atom City est une salle d'arcade située à Lille, qui propose de nombreux jeux d'arcades directement importés du japon, et non seulement des jeux de rythmes !"
 const val setupTextIntro = "Pour commencer, il vous faudra créer et indiquer votre clé API pour chaque serveur de jeu que vous souhaitez consulter."
 const val setupTextAPI = "Pour l'instant, voici les jeux disponibles et ceux que vous avez déjà configuré :"
-
 
 var page1 = mutableStateOf(true)
 var openApiGuide = mutableStateOf(false)
@@ -75,12 +74,12 @@ fun WelcomeScreen(navController: NavController) {
             AnimatedContent(
                 targetState = page1.value,
                 transitionSpec = {
-                        fadeIn(
-                            animationSpec = tween(durationMillis = 200)
-                        ) togetherWith fadeOut(
-                            animationSpec = tween(durationMillis = 200)
-                        )
-                    }
+                    fadeIn(
+                        animationSpec = tween(durationMillis = 200)
+                    ) togetherWith fadeOut(
+                        animationSpec = tween(durationMillis = 200)
+                    )
+                }
 
             ) { isPage1 ->
                 if (isPage1) {
@@ -135,19 +134,16 @@ fun WelcomeCard() {
 
 @Composable
 fun SetupCard(navController: NavController) {
-    val sharedPreferences: SharedPreferences = LocalContext.current.getSharedPreferences("api_prefs", Context.MODE_PRIVATE)
-    val apiKeyManager = ApiKeyManager(sharedPreferences)
+    val context = LocalContext.current
+    val apiKeyManager = ApiKeyManager(context)
 
-
-    //TODO : refaire cette merde pour pas c/c le code nul là
     fun hasApiKey(game: String): Boolean {
         return apiKeyManager.hasApiKey(game)
     }
 
-
-    Column (
+    Column(
         horizontalAlignment = Alignment.CenterHorizontally
-    ){
+    ) {
         Card(
             modifier = Modifier.padding(16.dp),
             elevation = CardDefaults.cardElevation(4.dp)
@@ -166,38 +162,41 @@ fun SetupCard(navController: NavController) {
             HorizontalDivider()
 
             ApiCheckList()
-
         }
 
-        Button(
-            onClick = { toPage1() },
-        ) { Text(
-            text = "Retour",
-            style = MaterialTheme.typography.labelMedium
-        )}
-
-        // TODO : maimai est forcé ici pour le moment
-        if(hasApiKey("maimai")) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(24.dp)
+        ) {
             Button(
-                onClick = { navController.navigate(Screen.Game.createRoute("maimai")) },
-                ) { Text(
-                text = "Suivant",
-                style = MaterialTheme.typography.labelMedium
-            )}
+                onClick = { toPage1() },
+            ) {
+                Text(
+                    text = "Retour",
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+
+            if (hasApiKey("maimai")) {
+                Button(
+                    onClick = { navController.navigate(Screen.Game.createRoute("maimai")) },
+                ) {
+                    Text(
+                        text = "Suivant",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+            }
         }
-
-
     }
-
 }
 
 @Composable
 private fun ApiCheckList() {
+    val context = LocalContext.current
+    val apiKeyManager = ApiKeyManager(context)
 
-    val sharedPreferences: SharedPreferences = LocalContext.current.getSharedPreferences("api_prefs", Context.MODE_PRIVATE)
-    val apiKeyManager = ApiKeyManager(sharedPreferences)
-
-    fun hasApiKey(game: String): Boolean {
+    fun getApiKey(game: String): Boolean {
         return apiKeyManager.hasApiKey(game)
     }
 
@@ -207,29 +206,28 @@ private fun ApiCheckList() {
     ) {
         ApiItem(
             name = "maimai",
-            hasKey = hasApiKey("maimai")
+            hasKey = getApiKey("maimai")
         )
         ApiItem(
             name = "SOUND VOLTEX",
-            hasKey = hasApiKey("sdvx")
+            hasKey = getApiKey("sdvx")
         )
         ApiItem(
             name = "In The Groove 2",
-            hasKey = hasApiKey("itg")
+            hasKey = getApiKey("itg")
         )
         ApiItem(
             name = "beatmania IIDX",
-            hasKey = hasApiKey("iidx")
+            hasKey = getApiKey("iidx")
         )
         ApiItem(
             name = "pop'n music",
-            hasKey = hasApiKey("popn")
+            hasKey = getApiKey("popn")
         )
         ApiItem(
             name = "Taiko no Tatsujin",
-            hasKey = hasApiKey("taiko")
+            hasKey = getApiKey("taiko")
         )
-
     }
 }
 
@@ -238,8 +236,18 @@ private fun ApiItem(
     name: String,
     hasKey: Boolean
 ) {
+    val context = LocalContext.current
+    val apiKeyManager = ApiKeyManager(context)
+    val apiKey = apiKeyManager.getApiKey(name.lowercase().replace(" ", ""))
+    val dialogVisible = remember { mutableStateOf(false) }
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(
+            enabled = hasKey,
+            onClick = {
+                dialogVisible.value = true
+            }
+        ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -257,7 +265,7 @@ private fun ApiItem(
                 } else {
                     Icons.Rounded.Close
                 },
-                contentDescription = if (hasKey) "API configurée" else "API non configurée",
+                contentDescription = if (hasKey) "API configured" else "API not configured",
                 tint = if (hasKey) {
                     MaterialTheme.colorScheme.primary
                 } else {
@@ -267,11 +275,11 @@ private fun ApiItem(
             if (!hasKey) {
                 Button(
                     modifier = Modifier.padding(start = 56.dp),
-                    onClick = { /* TODO */ }
+                    onClick = { openApiGuide.value = true; }
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
-                    ){
+                    ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
                             contentDescription = "Annuler"
@@ -282,34 +290,47 @@ private fun ApiItem(
                         )
                     }
                 }
-            }
-            else
+            } else {
                 Button(
-                modifier = Modifier.padding(start = 56.dp),
-                    onClick = { openApiGuide.value = true ; Log.d("API", "Clicked ${openApiGuide.value}")}
+                    modifier = Modifier.padding(start = 56.dp),
+                    onClick = { openApiGuide.value = true; Log.d("API", "Clicked ${openApiGuide.value}") }
                 ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(
-                        imageVector = Icons.Filled.Create,
-                        contentDescription = "Modifier"
-                    )
-                    Text(
-                        text = "Modifier",
-                        style = MaterialTheme.typography.labelMedium
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Create,
+                            contentDescription = "Modifier"
+                        )
+                        Text(
+                            text = "Modifier",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
                 }
             }
         }
     }
+
+    if (dialogVisible.value) {
+        AlertDialog(
+            onDismissRequest = { dialogVisible.value = false },
+            title = { Text("Clé API pour $name") },
+            text = { Text("Votre clé API: $apiKey") },
+            confirmButton = {
+                Button(onClick = { dialogVisible.value = false }) {
+                    Text("Fermer")
+                }
+            }
+        )
+        apiKeyManager.logAllApiKeys()
+    }
 }
 
-fun toPage2(){
+fun toPage2() {
     page1.value = false
 }
 
-fun toPage1(){
+fun toPage1() {
     page1.value = true
 }
-

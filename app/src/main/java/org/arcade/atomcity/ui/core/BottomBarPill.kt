@@ -22,9 +22,11 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun BottomBarPill(
-    onHomeClick: () -> Unit
-){
-
+    currentPage: Int,
+    onPageChange: (Int) -> Unit,
+    onHomeClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .height(40.dp)
@@ -35,7 +37,6 @@ fun BottomBarPill(
                 .height(40.dp)
                 .align(Alignment.Center)
                 .width(256.dp)
-                .offset(y = (-64).dp)
                 .clip(RoundedCornerShape(50))
                 .background(MaterialTheme.colorScheme.surface)
         ) {
@@ -44,7 +45,19 @@ fun BottomBarPill(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(
-                    onClick =  onHomeClick,
+                    onClick = {
+                        if (currentPage > 1) {
+                            onPageChange(currentPage - 1)
+                        }
+                    },
+                    modifier = Modifier.height(40.dp)
+                ) {
+                    Text(
+                        text = "Page Précédente",
+                    )
+                }
+                Button(
+                    onClick = onHomeClick,
                     modifier = Modifier.height(40.dp)
                 ) {
                     Text(
@@ -52,29 +65,23 @@ fun BottomBarPill(
                     )
                 }
                 Button(
-                    onClick = {  /* Do something */ },
+                    onClick = onSettingsClick,
                     modifier = Modifier.height(40.dp)
-
                 ) {
                     Text(
                         text = "Paramètres"
                     )
                 }
+
+                Button(
+                    onClick = { onPageChange(currentPage + 1) },
+                    modifier = Modifier.height(40.dp)
+                ) {
+                    Text(
+                        text = "Page Suivante",
+                    )
+                }
             }
         }
-    }
-}
-
-@Preview(showBackground = true, device = "id:pixel_8")
-@Composable
-fun BottomBarPillPreview() {
-    Box(
-        modifier = Modifier
-            .padding(16.dp)
-            .offset(y = (64).dp)
-    ) {
-        BottomBarPill(
-            onHomeClick = {}
-        )
     }
 }

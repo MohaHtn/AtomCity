@@ -1,6 +1,7 @@
 package org.arcade.atomcity.di
 
 import android.content.Context
+import kotlinx.coroutines.runBlocking
 import okhttp3.Dns
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -17,8 +18,8 @@ import java.util.concurrent.TimeUnit
 val maiteaNetworkModule = module {
     single<Retrofit> {
         val context = androidContext()
-        val apiKeyManager = ApiKeyManager(context.getSharedPreferences("api_prefs", Context.MODE_PRIVATE))
-        val apiKey = apiKeyManager.getApiKey("maimai") ?: throw IllegalStateException("API key not found")
+        val apiKeyManager = ApiKeyManager(context)
+        val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }
 
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY

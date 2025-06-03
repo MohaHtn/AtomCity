@@ -1,5 +1,5 @@
 [versions]
-agp = "8.8.2"
+agp = "8.10.1"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -20,6 +20,7 @@ navigationCompose = "2.8.8"
 retrofit = "2.11.0"
 gson = "2.12.1"
 converterMoshi = "2.11.0"
+datastorePreferences = "1.2.0-alpha01"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +52,7 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "converterMoshi" }
 ui = { module = "androidx.compose.ui:ui" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

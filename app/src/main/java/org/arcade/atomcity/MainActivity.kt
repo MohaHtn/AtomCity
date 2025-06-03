@@ -59,11 +59,11 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val apiKey = "377|9TdBVuvl96tWpBFezkbCUwZ57aM6gDGAeAjEpMaz"
+//        val apiKey = "377|9TdBVuvl96tWpBFezkbCUwZ57aM6gDGAeAjEpMaz"
 /*
         val apiKey = "410|V4BVasyDok2kLIBKYVScrMn7Q761jWAPRnOOxcUz"
 */
-        apiKeyManager.saveApiKey("maimai", apiKey)
+//        apiKeyManager.saveApiKey("maimai", apiKey)
 
         setContent {
             MainActivityContent(mainActivityViewModel, apiKeyManager)

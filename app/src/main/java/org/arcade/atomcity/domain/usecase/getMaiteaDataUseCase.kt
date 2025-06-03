@@ -7,9 +7,9 @@ package org.arcade.atomcity.domain.usecase
 
     class GetMaiTeaDataUseCase(private val maiteaApiService: MaiteaApiService) {
 
-        suspend fun execute(): MaiTeaResponse? {
+        suspend fun execute(page: Int): MaiTeaResponse? {
             return withContext(Dispatchers.IO) {
-                val response = maiteaApiService.getAllUserScores()
+                val response = maiteaApiService.getAllUserScores(page)
                 response
             }
         }

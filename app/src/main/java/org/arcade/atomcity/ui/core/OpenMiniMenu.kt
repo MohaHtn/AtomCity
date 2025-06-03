@@ -46,7 +46,8 @@ fun OpenMiniMenu(
                         ListItem(
                             headlineContent = { Text(headline) },
                             supportingContent = { Text(supporting) },
-                            modifier = Modifier.clickable { onItemClick(headline) }                        )
+                            modifier = Modifier.clickable { onItemClick(headline) }
+                        )
                     }
                 }
             }

@@ -17,8 +17,7 @@ fun GameScreen(
     onBackClick: () -> Unit,
 ) {
     val context = LocalContext.current
-    val sharedPreferences: SharedPreferences = context.getSharedPreferences("api_prefs", Context.MODE_PRIVATE)
-    val apiKeyManager = ApiKeyManager(sharedPreferences)
+    val apiKeyManager = ApiKeyManager(context)
 
     when {
         gameId == "maimai" && apiKeyManager.hasApiKey("maimai") -> MaimaiScores(mainActivityViewModel)

@@ -7,7 +7,7 @@ import org.arcade.atomcity.model.maitea.MaiTeaResponse
 
 class MaiTeaRepository(private val getMaiTeaDataUseCase: GetMaiTeaDataUseCase) {
 
-    fun getMaiTeaData(): Flow<MaiTeaResponse?> = flow {
-        emit(getMaiTeaDataUseCase.execute())
+    fun getMaiTeaPaginatedData(page: Int): Flow<MaiTeaResponse?> = flow {
+        emit(getMaiTeaDataUseCase.execute(page))
     }
 }

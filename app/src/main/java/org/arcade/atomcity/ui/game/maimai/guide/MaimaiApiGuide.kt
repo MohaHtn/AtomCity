@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.game.maimai.guide
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -16,9 +17,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 import org.arcade.atomcity.R
 import org.arcade.atomcity.ui.core.openApiGuide
 import org.arcade.atomcity.util.ApiKeyManager
@@ -84,6 +92,8 @@ fun MaimaiApiGuide(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean
 
  @Composable
  fun MaimaiApiGuideContent(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean>) {
+     val showSnackbar = remember { mutableStateOf(false) }
+
      Text(
          text = MAIMAI_API_GUIDE_TITLE,
          style = MaterialTheme.typography.headlineMedium.copy(textAlign = TextAlign.Center),
@@ -157,14 +167,20 @@ fun MaimaiApiGuide(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean
          contentScale = ContentScale.Fit
      )
 
-     EnterApiTextBox(apiKeyManager = apiKeyManager, isVisible = isVisible)
+     EnterApiTextBox(apiKeyManager = apiKeyManager, isVisible = isVisible, showSnackbar = showSnackbar)
+
+    if (showSnackbar.value) {
+        SnackbarMesage("Clé API enregistrée avec succès")
+    }
+
  }
 
 @Composable
-fun EnterApiTextBox(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean>) {
+fun EnterApiTextBox(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean>, showSnackbar: MutableState<Boolean>) {
     var text: MutableState<String> = remember { mutableStateOf("") }
-
     val navController = rememberNavController()
+    val scope = rememberCoroutineScope()
+
 
     Column {
         OutlinedTextField(
@@ -176,27 +192,77 @@ fun EnterApiTextBox(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolea
         )
 
         Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            if (!showSnackbar.value) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = { isVisible.value = false },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(MAIMAI_API_GUIDE_BACK)
+                    }
 
-            Button(
-                onClick = { isVisible.value = false },
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Text(MAIMAI_API_GUIDE_BACK)
-            }
+                    val scope = rememberCoroutineScope()  // Moved outside the onClick lambda
 
-            Button(
-                onClick = { apiKeyManager.saveApiKey("maimai", text.value) },
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Text(MAIMAI_API_GUIDE_VALIDATE)
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                apiKeyManager.saveApiKey("maimai", text.value)
+                                Log.d("MaimaiApiGuide", "API key saved: ${text.value}")
+                                showSnackbar.value = true
+                                isVisible.value = false
+                            }
+                        },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(MAIMAI_API_GUIDE_VALIDATE)
+                    }
+                }
+            } else {
             }
         }
     }
 }
+@Composable
+fun SnackbarMesage(message: String) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
+    LaunchedEffect(message) {
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = "OK",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.padding(16.dp)
+    ) { snackbarData ->
+        Snackbar(
+            action = {
+                TextButton(onClick = { snackbarData.dismiss() }) {
+                    Text(snackbarData.visuals.actionLabel ?: "OK")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ) {
+            Text(snackbarData.visuals.message)
+        }
+    }
+}
 
 @Composable
 fun LinkText(
