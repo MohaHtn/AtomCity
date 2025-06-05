@@ -44,7 +44,6 @@ import org.arcade.atomcity.ui.core.OpenMiniMenu
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,36 +69,24 @@ fun MaimaiScores(mainActivityViewModel: MainActivityViewModel) {
                 navigationIcon = {},
                 actions = {},
                 scrollBehavior = scrollBehavior
-
             )
         },
         bottomBar = {
             BottomBarPill(
-                currentPage = mainActivityViewModel.currentPage,
-                onPageChange = { page ->
-                    if (System.currentTimeMillis() - lastClickTime > 300) {
-                        mainActivityViewModel.fetchMaimaiPaginatedData(page)
-                        lastClickTime = System.currentTimeMillis()
-                    }
-                },
-                onSettingsClick = {
-                    if (System.currentTimeMillis() - lastClickTime > 300) {
-                        Log.d("HomeScreen", "Settings clicked")
-                        // Handle settings click
-                        lastClickTime = System.currentTimeMillis()
-                    }
+                currentPage = mainActivityViewModel._currentPage.collectAsState().value,
+                onPageChange = { newPage ->
+                    mainActivityViewModel.onPageChange(newPage)
+                    mainActivityViewModel.fetchMaimaiPaginatedData(newPage)
                 },
                 onHomeClick = {
-                    if (System.currentTimeMillis() - lastClickTime > 300) {
-                        showMiniMenu = !showMiniMenu
-                        lastClickTime = System.currentTimeMillis()
-                    }
+                    Log.d("MaimaiScores", "Home clicked")
+                },
+                onSettingsClick = {
+                    Log.d("MaimaiScores", "Settings clicked")
                 }
-
             )
         },
 ) { paddingValues ->
-
         Box(modifier = Modifier.fillMaxSize()) {
             if (isLoading) {
                 Box(
@@ -118,7 +105,7 @@ fun MaimaiScores(mainActivityViewModel: MainActivityViewModel) {
                     .padding(paddingValues)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) {
-                    items(count = mainActivityViewModel.dataSize) { score ->
+                    items(count = mainActivityViewModel.playsDataSize) { score ->
                         Card(
                             modifier = Modifier.padding(8.dp)
                         ) {
@@ -180,13 +167,11 @@ fun MaimaiScores(mainActivityViewModel: MainActivityViewModel) {
                                             )
                                         }
                                     }
-
                                 }
                             }
                         }
                     }
                 }
-
             }
         }
 
