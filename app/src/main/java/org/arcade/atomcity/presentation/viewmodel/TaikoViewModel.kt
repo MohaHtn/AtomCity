@@ -4,6 +4,7 @@ import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import org.arcade.atomcity.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
 import org.arcade.atomcity.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
@@ -19,8 +20,13 @@ class TaikoViewModel(private val usecase: GetTaikoServerDataUseCase) : ViewModel
     private val _musicDetailsData = MutableStateFlow<TaikoServerMusicDetailsResponse?>(null)
     val musicDetailsData = _musicDetailsData
 
+    // StateFlow to hold the user settings data
+    private val _userSettingsData = MutableStateFlow<TaikoServerUserSettingsResponse?>(null)
+    val userSettingsData = _userSettingsData
+
     val isLoading = MutableStateFlow(false)
     val isLoadingMusicDetails = MutableStateFlow(false)
+    val isLoadingUserSettings = MutableStateFlow(false)
     val isLoadingScores = MutableStateFlow(false)
 
     internal val _currentPage = MutableStateFlow(1)
@@ -29,35 +35,75 @@ class TaikoViewModel(private val usecase: GetTaikoServerDataUseCase) : ViewModel
         _currentPage.value = newPage
     }
 
-    fun fetchPlayHistoryPlayData(page: Int) {
+    suspend fun fetchPlayHistoryPlayData(page: Int) {
         isLoadingScores.value = true
-        viewModelScope.launch {
-            try {
-                usecase.execute(page.toString()).collect { response ->
-                    _scoresData.value = response
-                }
-            } catch (e: Exception) {
-                Log.e("TaikoScoresViewModel", "Error: ${e.message}")
-                isLoadingScores.value = false
-            } finally {
-                isLoadingScores.value = false
+        try {
+            usecase.getPlayHistoryFlow(page.toString()).collect { response ->
+                _scoresData.value = response
             }
+        } catch (e: Exception) {
+            Log.e("TaikoScoresViewModel", "Error: ${e.message}")
+            isLoadingScores.value = false
+        } finally {
+            isLoadingScores.value = false
         }
     }
 
-    fun fetchMusicDetails() {
+    suspend fun fetchMusicDetails() {
         isLoadingMusicDetails.value = true
-        viewModelScope.launch {
-            try {
-                usecase.executeMusicDetails().collect { response ->
-                    _musicDetailsData.value = response
-                }
-            } catch (e: Exception) {
-                Log.e("TaikoScoresViewModel", "Error: ${e.message}")
-                isLoadingMusicDetails.value = false
-            } finally {
-                isLoadingMusicDetails.value = false
+        try {
+            usecase.getMusicDetailsFlow().collect { response ->
+                _musicDetailsData.value = response
             }
+        } catch (e: Exception) {
+            Log.e("TaikoScoresViewModel", "Error: ${e.message}")
+            isLoadingMusicDetails.value = false
+        } finally {
+            isLoadingMusicDetails.value = false
+        }
+    }
+
+    suspend fun getUserSettings() {
+        isLoadingUserSettings.value = true
+        try {
+            usecase.getUserSettingsFlow().collect { response ->
+                _userSettingsData.value = response
+            }
+        } catch (e: Exception) {
+            Log.e("TaikoViewModel", "Error fetching user settings: ${e.message}")
+            isLoadingUserSettings.value = false
+        } finally {
+            isLoadingUserSettings.value = false
+        }
+    }
+
+    fun mergeMusicDetailsWithScores() {
+        val scores = scoresData.value
+        val musicDetails = musicDetailsData.value
+
+        val mergedData = scores!!.copy(
+            taikoServerSongHistoryData = scores.taikoServerSongHistoryData.map { score ->
+                val musicDetail = musicDetails?.entries?.find { it.key == score.songId.toString() }?.value
+                if (musicDetail != null) {
+                    score.copy(
+                        musicName = musicDetail.songName,
+                        musicArtist = musicDetail.artistName
+                    )
+                } else {
+                    score
+                }
+            }
+        )
+        _scoresData.value = mergedData
+    }
+
+
+    fun getScores() {
+        viewModelScope.launch {
+            fetchMusicDetails()
+            fetchPlayHistoryPlayData(1)
+            getUserSettings()
+            mergeMusicDetailsWithScores()
         }
     }
 }

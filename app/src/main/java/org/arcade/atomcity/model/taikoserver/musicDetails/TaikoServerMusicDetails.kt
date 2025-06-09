@@ -1,7 +1,9 @@
 package org.arcade.atomcity.model.taikoserver.musicDetails
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class TaikoServerMusicDetails(
     @Json(name = "songId")       val songId       : Int?     = null,
     @Json(name = "index")        val index        : Int?     = null,

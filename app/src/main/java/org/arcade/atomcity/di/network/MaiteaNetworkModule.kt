@@ -29,7 +29,9 @@ val maiteaNetworkModule = module {
             .build()
 
         val okHttpClient = OkHttpClient.Builder()
+/*
             .addInterceptor(loggingInterceptor)
+*/
             .addInterceptor { chain: Interceptor.Chain ->
                 val request = chain.request().newBuilder()
                     .addHeader("Authorization", "Bearer $apiKey")

@@ -2,6 +2,7 @@ package org.arcade.atomcity.ui.game.taiko
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -52,8 +53,7 @@ fun TaikoScores(
 
 
     LaunchedEffect(Unit) {
-        taikoViewModel.fetchMusicDetails()
-        taikoViewModel.fetchPlayHistoryPlayData(1)
+        taikoViewModel.getScores()
     }
 
     Scaffold(
@@ -63,7 +63,7 @@ fun TaikoScores(
                 title = {
                     Row {
                         Text(
-                            text = "Taiko No Tatsujin |",
+                            text = "Taiko No Tatsujin | ",
                             style = MaterialTheme.typography.headlineSmall,
                             color = if (collapsedFraction > 0.5f)
                                 Color.Black
@@ -75,6 +75,18 @@ fun TaikoScores(
                                 androidx.compose.ui.text.font.FontWeight.Normal,
                             modifier = Modifier.padding(start = 8.dp)
                         )
+                        Text(
+                            text = taikoViewModel.userSettingsData.collectAsState().value?.myDonName ?: "Chargement...",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = if (collapsedFraction > 0.5f)
+                                Color.Black
+                            else
+                                Color.Black,
+                            fontWeight = if (collapsedFraction > 0.5f)
+                                androidx.compose.ui.text.font.FontWeight.Bold
+                            else
+                                androidx.compose.ui.text.font.FontWeight.Normal,
+                        )
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -85,9 +97,6 @@ fun TaikoScores(
                 currentPage = taikoViewModel._currentPage.collectAsState().value,
                 onPageChange = { newPage ->
                     taikoViewModel.onPageChange(newPage)
-                    /*
-                                        maiteaViewModel.fetchMaimaiPaginatedData(newPage)
-                    */
                 },
                 onHomeClick = {
                     showMiniMenu = !showMiniMenu
@@ -127,12 +136,32 @@ fun TaikoScores(
                                 Row(
                                     modifier = Modifier.padding(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = score.toString(),
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
+                                ){
+                                    Column(
+                                        modifier = Modifier.padding(16.dp),
+                                    ) {
+                                        Text(
+                                            text = score.musicName.toString(),
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                        Text(
+                                            text = score.musicArtist.toString(),
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                        Text(
+                                            text = score.score.toString(),
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+
+                                    }
+                                    Column {
+                                        Text(
+                                            text = score.difficulty.toString(),
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
                                 }
+
                             }
                         }
                     }

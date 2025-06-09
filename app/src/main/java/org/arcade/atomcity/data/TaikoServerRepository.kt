@@ -4,7 +4,6 @@ import org.arcade.atomcity.data.cache.DataCache
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
 import org.arcade.atomcity.model.taikoserver.musicDetails.TaikoServerMusicDetails
 import org.arcade.atomcity.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
-import org.arcade.atomcity.model.taikoserver.songHistory.TaikoServerSongHistory
 
 class TaikoServerRepository(private val getTaikoServerDataUseCase: GetTaikoServerDataUseCase) {
 
@@ -27,7 +26,7 @@ class TaikoServerRepository(private val getTaikoServerDataUseCase: GetTaikoServe
 
         // If not, make API call
         var response: TaikoServerPlayHistoryResponse? = null
-        getTaikoServerDataUseCase.execute(1.toString()).collect { data ->
+        getTaikoServerDataUseCase.getPlayHistoryFlow(1.toString()).collect { data ->
             data?.let {
                 // Store data in cache
                 pageCache.put(it)
