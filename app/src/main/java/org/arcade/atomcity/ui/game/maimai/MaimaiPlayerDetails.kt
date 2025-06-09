@@ -4,9 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,20 +22,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import org.arcade.atomcity.presentation.viewmodel.MainActivityViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiPlayerDetails(
-    mainActivityViewModel: MainActivityViewModel,
+    maiteaViewModel: MaiteaViewModel,
     collaspedFraction : Float,
     onBackClick: () -> Unit,
     topAppBarWidth: Dp,
     topAppBarHeight: Dp,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
-    val playerData = mainActivityViewModel.playerData.collectAsState().value?.data[0]
+    val playerData = maiteaViewModel.playerData.collectAsState().value?.data[0]
 
     fun computeRating(rating: Int?): String {
         if (rating != null) {
@@ -73,7 +70,7 @@ fun MaimaiPlayerDetails(
     }
 
     LaunchedEffect(Unit) {
-        mainActivityViewModel.fetchMaimaiPlayerDetails()
+        maiteaViewModel.fetchMaimaiPlayerDetails()
     }
 
     Box(

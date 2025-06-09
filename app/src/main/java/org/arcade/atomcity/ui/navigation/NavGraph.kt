@@ -11,13 +11,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import org.arcade.atomcity.presentation.viewmodel.MainActivityViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.SettingsScreen
 import org.arcade.atomcity.ui.core.WelcomeScreen
 import org.arcade.atomcity.ui.core.openApiGuide
 import org.arcade.atomcity.ui.game.maimai.GameScreen
 import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
-import org.arcade.atomcity.ui.game.maimai.guide.MaimaiApiGuide
+import org.arcade.atomcity.ui.guide.MaimaiApiGuide
 import org.arcade.atomcity.utils.ApiKeyManager
 
 sealed class Screen(val route: String) {
@@ -29,7 +30,11 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: ApiKeyManager) {
+fun AppNavigation(
+    taikoViewModel: TaikoViewModel,
+    maiteaViewModel: MaiteaViewModel,
+    apiKeyManager: ApiKeyManager
+) {
     val navController = rememberNavController()
 
     var showMiniMenu: MutableState<Boolean> = remember { mutableStateOf(false) }
@@ -43,6 +48,7 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: A
         composable(Screen.Home.route) {
             WelcomeScreen(navController = navController)
 
+            // TODO: Ce sera un switch plus tard
             if (openApiGuide.value) {
                 MaimaiApiGuide(
                     apiKeyManager = apiKeyManager,
@@ -59,7 +65,8 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: A
             GameScreen(
                 gameId = gameId.toString(),
                 onBackClick = { navController.popBackStack() },
-                mainActivityViewModel = mainActivityViewModel,
+                maiteaViewModel = maiteaViewModel,
+//                taikoScoresViewModel = taikoScoresViewModel,
                 navController = navController
             )
         }
@@ -69,7 +76,7 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: A
             arguments = listOf(navArgument("scoreId") { type = NavType.IntType })
         ) { backStackEntry ->
             val scoreId = backStackEntry.arguments?.getInt("scoreId") ?: 0
-            val dataState = mainActivityViewModel.data.collectAsState()
+            val dataState = maiteaViewModel.data.collectAsState()
             val scoreEntry = dataState.value?.data?.find { it.id == scoreId }
             MaimaiScoresDetails(
                 scoreEntry = scoreEntry
@@ -82,42 +89,6 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: A
             )
         }
     }
-
-// TODO: fairemarcher  cette merde
-//    if(currentRoute != Screen.Home.route) {
-//        Box(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(bottom = 96.dp)
-//        ) {
-//            OpenMiniMenu(
-//                showMiniMenu = showMiniMenu.value,
-//                onDismiss = {
-//                    if (System.currentTimeMillis() - lastClickTime.value > 300) {
-//                        showMiniMenu.value = !showMiniMenu.value
-//                        lastClickTime.value = System.currentTimeMillis()
-//                    }
-//                },
-//                onItemClick = { gameId: String ->
-//                    Log.d("AppNavigation", "onItemClick $gameId")
-//                    navController.navigate("game/$gameId")
-//                    showMiniMenu.value = false
-//                },
-//                modifier = Modifier.align(Alignment.BottomCenter)
-//            )
-//
-//            Box(modifier = Modifier.offset(y = 800.dp)) {
-//                BottomBarPill(
-//                    onHomeClick = {
-//                        if (System.currentTimeMillis() - lastClickTime.value > 300) {
-//                            showMiniMenu.value = !showMiniMenu.value
-//                            lastClickTime.value = System.currentTimeMillis()
-//                        }
-//                    }
-//                )
-//            }
-//        }
-    }
-
+}
 
 

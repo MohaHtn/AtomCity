@@ -5,7 +5,7 @@ import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetail
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface MaiteaApiService {
+interface MaiteaService {
     @GET("plays")
     suspend fun getAllUserScores(
         @Query("page") page: Int

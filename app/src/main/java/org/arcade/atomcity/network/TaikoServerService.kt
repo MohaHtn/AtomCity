@@ -1,13 +1,18 @@
 package org.arcade.atomcity.network;
 
-import retrofit2.Call;
+import org.arcade.atomcity.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse;
+import org.arcade.atomcity.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse;
+
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 
-public interface TaikoServerService {
-    @GET("PlayHistory/{{userNumber}}")
-    Call<ResponseType> getUserProfile(@Path("userNumber") String userNumber);
+interface TaikoServerService {
+    @GET("PlayHistory/{userNumber}")
+    suspend fun getPlayHistory(
+        @Path("userNumber") userNumber: String
+    ): TaikoServerPlayHistoryResponse
 
     @GET("GameData/MusicDetails")
-    Call<ResponseType> getMusicDetails();
+    suspend fun getMusicDetails()
+    : TaikoServerMusicDetailsResponse
 }

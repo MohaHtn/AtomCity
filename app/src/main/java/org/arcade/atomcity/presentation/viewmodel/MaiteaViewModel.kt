@@ -6,11 +6,12 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import org.arcade.atomcity.data.MaiTeaRepository
+import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
 
-class MainActivityViewModel(private val repository: MaiTeaRepository) : ViewModel() {
+// TODO: Use UseCase instead of Repository directly in ViewModel.
+class MaiteaViewModel(private val repository: MaiteaRepository) : ViewModel() {
 
     // StateFlow to hold the plays data
     private val _playsData = MutableStateFlow<MaiteaPlaysResponse?>(null)

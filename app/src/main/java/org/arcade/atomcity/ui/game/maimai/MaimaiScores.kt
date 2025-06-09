@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import org.arcade.atomcity.presentation.viewmodel.MainActivityViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.ui.core.AchievementChip
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.OpenMiniMenu
@@ -52,12 +52,12 @@ import org.arcade.atomcity.utils.formatPlayDate
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiScores(
-    mainActivityViewModel: MainActivityViewModel,
+    maiteaViewModel: MaiteaViewModel,
     navController: NavHostController
 ) {
 
-    val isLoading by mainActivityViewModel.isLoading.collectAsState()
-    val data by mainActivityViewModel.data.collectAsState()
+    val isLoading by maiteaViewModel.isLoading.collectAsState()
+    val data by maiteaViewModel.data.collectAsState()
 
     var topAppBarWidth by remember { mutableStateOf(0.dp) }
     var topAppBarHeight by remember { mutableStateOf(0.dp) }
@@ -68,7 +68,8 @@ fun MaimaiScores(
     val collapsedFraction = scrollBehavior.state.collapsedFraction
 
     LaunchedEffect(Unit) {
-        mainActivityViewModel.fetchMaimaiPaginatedData(page = 1)
+        Log.d("MaimaiScores", "Fetching maimai paginated data")
+        maiteaViewModel.fetchMaimaiPaginatedData(page = 1)
     }
 
     Scaffold(
@@ -77,7 +78,7 @@ fun MaimaiScores(
             Box {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(mainActivityViewModel.playerData.collectAsState().value?.data[0]?.options?.frame?.png)
+                        .data(maiteaViewModel.playerData.collectAsState().value?.data[0]?.options?.frame?.png)
                         .crossfade(true)
                         .build(),
                     contentDescription = "Maimai Background Collapsed",
@@ -106,7 +107,7 @@ fun MaimaiScores(
                                 modifier = Modifier.padding(start = 8.dp)
                             )
                             MaimaiPlayerDetails(
-                                mainActivityViewModel,
+                                maiteaViewModel,
                                 collapsedFraction,
                                 onBackClick = { Log.d("MaimaiScores", "Back clicked") },
                                 topAppBarWidth = topAppBarWidth,
@@ -131,10 +132,10 @@ fun MaimaiScores(
         },
         bottomBar = {
             BottomBarPill(
-                currentPage = mainActivityViewModel._currentPage.collectAsState().value,
+                currentPage = maiteaViewModel._currentPage.collectAsState().value,
                 onPageChange = { newPage ->
-                    mainActivityViewModel.onPageChange(newPage)
-                    mainActivityViewModel.fetchMaimaiPaginatedData(newPage)
+                    maiteaViewModel.onPageChange(newPage)
+                    maiteaViewModel.fetchMaimaiPaginatedData(newPage)
                 },
                 onHomeClick = {
                     showMiniMenu = !showMiniMenu
@@ -163,7 +164,7 @@ fun MaimaiScores(
                     .padding(paddingValues)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) {
-                    items(count = mainActivityViewModel.playsDataSize) { score ->
+                    items(count = maiteaViewModel.playsDataSize) { score ->
                         Card(
                             modifier = Modifier.padding(8.dp),
                             onClick = {

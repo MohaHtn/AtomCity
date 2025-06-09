@@ -1,4 +1,4 @@
-package org.arcade.atomcity.ui.game.maimai.guide
+package org.arcade.atomcity.ui.guide
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -186,8 +186,8 @@ fun EnterApiTextBox(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolea
         OutlinedTextField(
             value = text.value,
             onValueChange = { newText: String -> text.value = newText },
-            label = { androidx.compose.material3.Text(MAIMAI_API_GUIDE_LABEL) },
-            placeholder = { androidx.compose.material3.Text(MAIMAI_API_GUIDE_PLACEHOLDER) },
+            label = { Text(MAIMAI_API_GUIDE_LABEL) },
+            placeholder = { Text(MAIMAI_API_GUIDE_PLACEHOLDER) },
             modifier = Modifier.fillMaxWidth().padding(16.dp)
         )
 
