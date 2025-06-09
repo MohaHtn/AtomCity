@@ -48,7 +48,7 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.R
 import org.arcade.atomcity.ui.core.openApiGuide
-import org.arcade.atomcity.util.ApiKeyManager
+import org.arcade.atomcity.utils.ApiKeyManager
 
 const val MAIMAI_API_GUIDE_TITLE = "Ajouter une clé API maitea pour maimai"
 const val MAIMAI_API_GUIDE_TEXT = "Pour obtenir votre clé API, rendez-vous sur maitea.app et connectez-vous. Si vous n'avez pas de compte, n'hésitez pas à vous en créer un ! Une fois connecté, allez sur 'Profile' dans le menu déroulant."

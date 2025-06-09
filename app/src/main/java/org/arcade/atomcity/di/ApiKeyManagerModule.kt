@@ -2,7 +2,7 @@ package org.arcade.atomcity.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import org.arcade.atomcity.util.ApiKeyManager
+import org.arcade.atomcity.utils.ApiKeyManager
 import org.koin.dsl.module
 
 val apiKeyManagerModule = module {

@@ -68,4 +68,7 @@ dependencies {
     implementation(libs.moshi.kotlin)
     implementation(libs.okhttp3.logging.interceptor)
     ksp(libs.moshi.kotlin.codegen)
+    implementation(libs.coil)
+    implementation(libs.coil.compose)
+
 }

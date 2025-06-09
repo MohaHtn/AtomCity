@@ -25,6 +25,12 @@ fun OpenMiniMenu(
     showMiniMenu: Boolean,
     onDismiss: () -> Unit,
     onItemClick: (String) -> Unit,
+    items: List<Pair<String, String>> = listOf(
+        "maimai" to "les gros cerles là",
+        "beatmania IIDX" to "DJ ???? woa",
+        "pop n' music" to "miamme les burgers en forme de boutons",
+        "taiko no tatsujin" to "hit me in the fucking face da-don",
+    ),
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
@@ -37,11 +43,6 @@ fun OpenMiniMenu(
                 modifier = Modifier.width(512.dp).clickable(onClick = onDismiss).padding(16.dp),
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    val items = listOf(
-                        "maimai" to "les gros cerles là",
-                        "beatmania IIDX" to "DJ ???? woa",
-                        "pop n' music" to "miamme les burgers en forme de boutons"
-                    )
                     items.forEach { (headline, supporting) ->
                         ListItem(
                             headlineContent = { Text(headline) },

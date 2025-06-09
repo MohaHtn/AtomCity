@@ -38,7 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.arcade.atomcity.ui.navigation.Screen
-import org.arcade.atomcity.util.ApiKeyManager
+import org.arcade.atomcity.utils.ApiKeyManager
 
 const val welcomeTitle = "Bienvenue !"
 const val welcomeTextAppIntro = "Cette application vous permet de consulter vos score et ceux de vos amis sur vos jeux de rythmes préférés à Atom City ! (et eventuellement plus encore mais on verra hein)"

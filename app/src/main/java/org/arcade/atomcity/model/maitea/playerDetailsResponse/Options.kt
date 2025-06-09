@@ -4,7 +4,7 @@ package org.arcade.atomcity.model.maitea.playerDetailsResponse
 
   data class Options (
     @Json(name = "icon"      ) var icon      : Icon?      = Icon(),
-    @Json(name = "icon_deka" ) var iconDeka  : String?    = null,
+    @Json(name = "icon_deka" ) var iconDeka  : IconDeka?    = null,
     @Json(name = "nameplate" ) var nameplate : Nameplate? = Nameplate(),
     @Json(name = "frame"     ) var frame     : Frame?     = Frame()
   )

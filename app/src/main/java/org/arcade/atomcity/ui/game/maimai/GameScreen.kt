@@ -1,25 +1,25 @@
 package org.arcade.atomcity.ui.game.maimai
 
-import android.content.Context
-import android.content.SharedPreferences
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
 import org.arcade.atomcity.presentation.viewmodel.MainActivityViewModel
-import org.arcade.atomcity.util.ApiKeyManager
+import org.arcade.atomcity.utils.ApiKeyManager
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun GameScreen(
     gameId: String,
     mainActivityViewModel: MainActivityViewModel,
+    navController: NavHostController,
     onBackClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val apiKeyManager = ApiKeyManager(context)
 
     when {
-        gameId == "maimai" && apiKeyManager.hasApiKey("maimai") -> MaimaiScores(mainActivityViewModel)
+        gameId?.equals("maimai") == true && apiKeyManager.hasApiKey("maimai") -> MaimaiScores(mainActivityViewModel, navController)
     }
+
+    // Example usage of onBackClick
+    // Add a button or gesture to trigger onBackClick
 }

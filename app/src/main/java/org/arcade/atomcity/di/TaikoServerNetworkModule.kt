@@ -1,22 +1,22 @@
 package org.arcade.atomcity.di
 
 import kotlinx.coroutines.runBlocking
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import org.arcade.atomcity.network.MaiteaApiService
+import org.arcade.atomcity.utils.ApiKeyManager
+import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import org.arcade.atomcity.network.MaiteaApiService
-import okhttp3.OkHttpClient
-import okhttp3.Interceptor
-import org.arcade.atomcity.utils.ApiKeyManager
-import org.koin.android.ext.koin.androidContext
-import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
 val maiteaNetworkModule = module {
     single<Retrofit> {
         val context = androidContext()
         val apiKeyManager = ApiKeyManager(context)
-        val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }
+        val apiKey = runBlocking { apiKeyManager.getApiKey("taiko") }
 
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -28,21 +28,13 @@ val maiteaNetworkModule = module {
 
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-            .addInterceptor { chain: Interceptor.Chain ->
-                val request = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer $apiKey")
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Accept", "application/json")
-                    .build()
-                chain.proceed(request)
-            }
             .connectTimeout(300, TimeUnit.SECONDS) // Délai d'attente de connexion
             .readTimeout(300, TimeUnit.SECONDS)    // Délai d'attente de lecture
             .writeTimeout(300, TimeUnit.SECONDS)   // Délai d'attente d'écriture
             .build()
 
         Retrofit.Builder()
-            .baseUrl("https://maitea.app/api/v1/")
+            .baseUrl("https://taiko.farewell.dev/api")
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()

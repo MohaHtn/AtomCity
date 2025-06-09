@@ -1,9 +1,9 @@
 package org.arcade.atomcity.ui.navigation
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.navigation.NavType
@@ -16,8 +16,9 @@ import org.arcade.atomcity.ui.core.SettingsScreen
 import org.arcade.atomcity.ui.core.WelcomeScreen
 import org.arcade.atomcity.ui.core.openApiGuide
 import org.arcade.atomcity.ui.game.maimai.GameScreen
+import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.game.maimai.guide.MaimaiApiGuide
-import org.arcade.atomcity.util.ApiKeyManager
+import org.arcade.atomcity.utils.ApiKeyManager
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -27,13 +28,12 @@ sealed class Screen(val route: String) {
     object Settings : Screen("settings")
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: ApiKeyManager) {
     val navController = rememberNavController()
 
     var showMiniMenu: MutableState<Boolean> = remember { mutableStateOf(false) }
-    var lastClickTime: MutableState<Long> = remember { mutableStateOf(0L) }
+    var lastClickTime: MutableState<Long> = remember { mutableLongStateOf(0L) }
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     NavHost(
@@ -59,7 +59,20 @@ fun AppNavigation(mainActivityViewModel: MainActivityViewModel, apiKeyManager: A
             GameScreen(
                 gameId = gameId.toString(),
                 onBackClick = { navController.popBackStack() },
-                mainActivityViewModel = mainActivityViewModel
+                mainActivityViewModel = mainActivityViewModel,
+                navController = navController
+            )
+        }
+
+        composable(
+            route = "maimaiScoresDetails/{scoreId}",
+            arguments = listOf(navArgument("scoreId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val scoreId = backStackEntry.arguments?.getInt("scoreId") ?: 0
+            val dataState = mainActivityViewModel.data.collectAsState()
+            val scoreEntry = dataState.value?.data?.find { it.id == scoreId }
+            MaimaiScoresDetails(
+                scoreEntry = scoreEntry
             )
         }
 
