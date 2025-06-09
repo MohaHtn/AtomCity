@@ -11,10 +11,11 @@ import okhttp3.Interceptor
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.koin.android.ext.koin.androidContext
 import okhttp3.logging.HttpLoggingInterceptor
+import org.koin.core.qualifier.named
 import java.util.concurrent.TimeUnit
 
 val maiteaNetworkModule = module {
-    single<Retrofit> {
+    single<Retrofit>(named("maitea")) {
         val context = androidContext()
         val apiKeyManager = ApiKeyManager(context)
         val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }
@@ -50,6 +51,6 @@ val maiteaNetworkModule = module {
     }
 
     single<MaiteaService> {
-        get<Retrofit>().create(MaiteaService::class.java)
+        get<Retrofit>(named("maitea")).create(MaiteaService::class.java)
     }
 }

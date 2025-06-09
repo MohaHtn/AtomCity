@@ -66,7 +66,7 @@ fun AppNavigation(
                 gameId = gameId.toString(),
                 onBackClick = { navController.popBackStack() },
                 maiteaViewModel = maiteaViewModel,
-//                taikoScoresViewModel = taikoScoresViewModel,
+                taikoViewModel = taikoViewModel,
                 navController = navController
             )
         }

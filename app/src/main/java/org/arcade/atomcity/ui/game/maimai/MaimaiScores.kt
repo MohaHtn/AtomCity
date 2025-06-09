@@ -78,7 +78,7 @@ fun MaimaiScores(
             Box {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(maiteaViewModel.playerData.collectAsState().value?.data[0]?.options?.frame?.png)
+                        .data(maiteaViewModel.playerData.collectAsState().value?.data?.get(0)?.options?.frame?.png)
                         .crossfade(true)
                         .build(),
                     contentDescription = "Maimai Background Collapsed",

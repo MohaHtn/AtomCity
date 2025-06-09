@@ -5,13 +5,14 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.arcade.atomcity.network.TaikoServerService
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 val taikoNetworkModule = module {
-    single<Retrofit> {
+    single<Retrofit>(named("taiko")) {
         val context = androidContext()
 //        val apiKeyManager = ApiKeyManager(context)
 //        val apiKey = runBlocking { apiKeyManager.getApiKey("taiko") }
@@ -39,7 +40,7 @@ val taikoNetworkModule = module {
     }
 
     single<TaikoServerService> {
-        get<Retrofit>().create(TaikoServerService::class.java)
+        get<Retrofit>(named("taiko")).create(TaikoServerService::class.java)
     }
 
 }
