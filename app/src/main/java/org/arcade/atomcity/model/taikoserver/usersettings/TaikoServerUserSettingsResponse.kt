@@ -1,7 +1,11 @@
 package org.arcade.atomcity.model.taikoserver.usersettings
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import java.time.LocalDateTime
 
+
+@JsonClass(generateAdapter = true)
 data class TaikoServerUserSettingsResponse (
 
   @Json(name = "baid"                         ) var baid                         : Int?           = null,
@@ -25,12 +29,12 @@ data class TaikoServerUserSettingsResponse (
   @Json(name = "body"                         ) var body                         : Int?           = null,
   @Json(name = "face"                         ) var face                         : Int?           = null,
   @Json(name = "puchi"                        ) var puchi                        : Int?           = null,
-  @Json(name = "unlockedKigurumi"             ) var unlockedKigurumi             : ArrayList<Int> = arrayListOf(),
-  @Json(name = "unlockedHead"                 ) var unlockedHead                 : ArrayList<Int> = arrayListOf(),
-  @Json(name = "unlockedBody"                 ) var unlockedBody                 : ArrayList<Int> = arrayListOf(),
-  @Json(name = "unlockedFace"                 ) var unlockedFace                 : ArrayList<Int> = arrayListOf(),
-  @Json(name = "unlockedPuchi"                ) var unlockedPuchi                : ArrayList<Int> = arrayListOf(),
-  @Json(name = "unlockedTitle"                ) var unlockedTitle                : ArrayList<Int> = arrayListOf(),
+  @Json(name = "unlockedKigurumi"             ) var unlockedKigurumi             : List<Int> = arrayListOf(),
+  @Json(name = "unlockedHead"                 ) var unlockedHead                 : List<Int> = arrayListOf(),
+  @Json(name = "unlockedBody"                 ) var unlockedBody                 : List<Int> = arrayListOf(),
+  @Json(name = "unlockedFace"                 ) var unlockedFace                 : List<Int> = arrayListOf(),
+  @Json(name = "unlockedPuchi"                ) var unlockedPuchi                : List<Int> = arrayListOf(),
+  @Json(name = "unlockedTitle"                ) var unlockedTitle                : List<Int> = arrayListOf(),
   @Json(name = "faceColor"                    ) var faceColor                    : Int?           = null,
   @Json(name = "bodyColor"                    ) var bodyColor                    : Int?           = null,
   @Json(name = "limbColor"                    ) var limbColor                    : Int?           = null,

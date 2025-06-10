@@ -205,8 +205,7 @@ fun MaimaiScores(
                                             )
 
                                             AchievementChip(
-                                                text = data?.data?.get(score)?.achievementFormatted
-                                                    ?: "",
+                                                text = data?.data?.get(score)?.achievementFormatted?: "",
                                                 modifier = Modifier.align(Alignment.CenterEnd)
                                             )
                                         }

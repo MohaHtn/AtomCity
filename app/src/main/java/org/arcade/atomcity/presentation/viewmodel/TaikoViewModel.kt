@@ -92,7 +92,7 @@ class TaikoViewModel(private val usecase: GetTaikoServerDataUseCase) : ViewModel
                 } else {
                     score
                 }
-            }
+            }.reversed()
         )
         _scoresData.value = mergedData
     }

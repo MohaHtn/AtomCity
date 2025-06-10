@@ -6,10 +6,10 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinGradlePlugin = "2.0.21"
-lifecycleRuntimeKtx = "2.9.0"
+lifecycleRuntimeKtx = "2.9.1"
 activityCompose = "1.10.1"
 composeBom = "2025.01.01"
-koinCore = "4.1.0-Beta5"
+koinCore = "4.1.0-RC1"
 koinTest = "4.1.0-Beta5"
 koinAndroid = "4.1.0-Beta5"
 loggingInterceptor = "5.0.0-alpha.16"
@@ -21,6 +21,7 @@ retrofit = "3.0.0"
 gson = "2.13.1"
 converterMoshi = "3.0.0"
 datastorePreferences = "1.2.0-alpha02"
+moshi = "1.15.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,9 +56,9 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "converterMoshi" }
 ui = { module = "androidx.compose.ui:ui" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
+moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
