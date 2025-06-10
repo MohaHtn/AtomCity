@@ -124,7 +124,7 @@ fun TaikoScores(
                     showMiniMenu = !showMiniMenu
                 },
                 onSettingsClick = {
-                    Log.d("TaikoScores", "Settings clicked")
+                    navController.navigate("settings")
                 }
             )
         },

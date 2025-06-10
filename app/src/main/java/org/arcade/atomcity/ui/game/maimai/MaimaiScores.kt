@@ -1,6 +1,10 @@
 package org.arcade.atomcity.ui.game.maimai
 
 import android.util.Log
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,8 +50,10 @@ import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.ui.core.AchievementChip
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.OpenMiniMenu
-import org.arcade.atomcity.ui.core.SettingsScreen
 import org.arcade.atomcity.utils.formatPlayDate
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,6 +73,35 @@ fun MaimaiScores(
     var lastClickTime by remember { mutableLongStateOf(0L) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val collapsedFraction = scrollBehavior.state.collapsedFraction
+
+    var expanded by remember { mutableStateOf(false) }
+
+    // Animation pour le padding arrière
+    val elevation by animateDpAsState(
+        targetValue = if (expanded) 50.dp else 10.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "elevation"
+    )
+
+
+    // Animation pour le fond coloré
+    val backgroundColor by animateColorAsState(
+        targetValue = if (expanded)
+            MaterialTheme.colorScheme.secondaryContainer
+        else
+            Color.Transparent,
+        animationSpec = tween(
+            durationMillis = 300,
+            easing = FastOutSlowInEasing
+        ),
+        label = "backgroundColor"
+    )
+
+
+
 
     LaunchedEffect(Unit) {
         Log.d("MaimaiScores", "Fetching maimai paginated data")
@@ -170,9 +205,27 @@ fun MaimaiScores(
                         Card(
                             modifier = Modifier.padding(8.dp),
                             onClick = {
-                            navController.navigate("maimaiScoresDetails/${data?.data?.get(score)?.id}")
+                                expanded = !expanded
+
+                                /*
+                                                                navController.navigate("maimaiScoresDetails/${data?.data?.get(score)?.id}")
+                                */
                             }
                         ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp).padding(elevation).background(backgroundColor)
+                            ) {
+                                Text(text = "lrfksdlmrf")
+
+                                if (expanded) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(text = "rezrezr")
+                                    Text(text = "ezrezrzerzer")
+                                }
+                            }
+
+
+
                             Row(
                                 modifier = Modifier.padding(16.dp)
                             ) {
