@@ -52,8 +52,12 @@ import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.utils.formatPlayDate
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.draw.scale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,33 +78,27 @@ fun MaimaiScores(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val collapsedFraction = scrollBehavior.state.collapsedFraction
 
-    var expanded by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(false) }
 
-    // Animation pour le padding arrière
-    val elevation by animateDpAsState(
-        targetValue = if (expanded) 50.dp else 10.dp,
+    // Animation de l'échelle
+    val scale by animateFloatAsState(
+        targetValue = if (isExpanded) 1.50f else 1f,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
+            dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = Spring.StiffnessMedium
+        ),
+        label = "scale"
+    )
+
+    // Animation de l'élévation
+    val elevation by animateDpAsState(
+        targetValue = if (isExpanded) 12.dp else 2.dp,
+        animationSpec = tween(
+            durationMillis = 200,
+            easing = FastOutSlowInEasing
         ),
         label = "elevation"
     )
-
-
-    // Animation pour le fond coloré
-    val backgroundColor by animateColorAsState(
-        targetValue = if (expanded)
-            MaterialTheme.colorScheme.secondaryContainer
-        else
-            Color.Transparent,
-        animationSpec = tween(
-            durationMillis = 300,
-            easing = FastOutSlowInEasing
-        ),
-        label = "backgroundColor"
-    )
-
-
 
 
     LaunchedEffect(Unit) {
@@ -183,7 +181,7 @@ fun MaimaiScores(
             )
         },
 ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
             if (isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize()
@@ -205,26 +203,35 @@ fun MaimaiScores(
                         Card(
                             modifier = Modifier.padding(8.dp),
                             onClick = {
-                                expanded = !expanded
+                                isExpanded = !isExpanded
 
                                 /*
                                                                 navController.navigate("maimaiScoresDetails/${data?.data?.get(score)?.id}")
                                 */
                             }
                         ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp).padding(elevation).background(backgroundColor)
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .scale(scale)  // Application du scale
+                                    .clickable { isExpanded = !isExpanded },
+                                elevation = CardDefaults.cardElevation(defaultElevation = elevation)
                             ) {
-                                Text(text = "lrfksdlmrf")
-
-                                if (expanded) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp)
+                                ) {
+                                    Text(
+                                        text = "Titre de la carte",
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text(text = "rezrezr")
-                                    Text(text = "ezrezrzerzer")
+                                    Text(
+                                        text = "Contenu de la carte avec des informations détaillées qui apparaissent lorsque la carte est cliquée.",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
                                 }
                             }
-
-
 
                             Row(
                                 modifier = Modifier.padding(16.dp)
@@ -271,6 +278,9 @@ fun MaimaiScores(
                     }
                 }
             }
+
+
+    }
         }
 
         Box(
@@ -295,9 +305,3 @@ fun MaimaiScores(
             )
         }
     }
-}
-
-
-
-
-
