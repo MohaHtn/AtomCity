@@ -46,8 +46,14 @@ fun AppNavigation(
         startDestination = Screen.Home.route
     ) {
         composable(Screen.Home.route) {
-            WelcomeScreen(navController = navController)
 
+            if (apiKeyManager.getApiChecklistState().value.isEmpty()) {
+                WelcomeScreen(navController = navController, apiKeyManager.getApiChecklistState() )
+            }
+
+            else {
+                navController.navigate(Screen.Game.createRoute(apiKeyManager.getApiChecklistState().value.first()))
+            }
             // TODO: Ce sera un switch plus tard
             if (openApiGuide.value) {
                 MaimaiApiGuide(
@@ -83,7 +89,7 @@ fun AppNavigation(
             )
         }
 
-        composable(Screen.Settings.route) {
+        composable(route = "settings") {
             SettingsScreen(
                 onBackClick = { navController.popBackStack() }
             )

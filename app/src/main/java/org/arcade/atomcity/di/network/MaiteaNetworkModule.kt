@@ -18,7 +18,6 @@ val maiteaNetworkModule = module {
     single<Retrofit>(named("maitea")) {
         val context = androidContext()
         val apiKeyManager = ApiKeyManager(context)
-        val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }
 
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -32,7 +31,8 @@ val maiteaNetworkModule = module {
 /*
             .addInterceptor(loggingInterceptor)
 */
-            .addInterceptor { chain: Interceptor.Chain ->
+                .addInterceptor { chain: Interceptor.Chain ->
+                val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }
                 val request = chain.request().newBuilder()
                     .addHeader("Authorization", "Bearer $apiKey")
                     .addHeader("Content-Type", "application/json")

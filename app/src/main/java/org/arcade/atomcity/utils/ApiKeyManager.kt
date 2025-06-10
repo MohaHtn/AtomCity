@@ -2,6 +2,8 @@ package org.arcade.atomcity.utils
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -27,6 +29,42 @@ class ApiKeyManager(private val context: Context) {
     }
 
     /**
+     * Fournit un Flow de la liste des jeux ayant une clé API (état persistant).
+     */
+    fun getApiChecklistStateFlow(): Flow<List<String>> {
+        return context.apiKeysDataStore.data.map { preferences ->
+            preferences.asMap().mapNotNull { (key, value) ->
+                if (value is String) key.name else null
+            }
+        }
+    }
+
+    /**
+     * Fournit un MutableState<List<String>> initialisé à partir du DataStore (pour usage Compose).
+     * Attention : il ne sera pas mis à jour automatiquement si le DataStore change.
+     * Privilégier getApiChecklistStateFlow() pour la réactivité.
+     */
+    fun getApiChecklistState(): MutableState<List<String>> {
+        val state = mutableStateOf<List<String>>(emptyList())
+        runBlocking {
+            val keys = getAvailableApiKeys()
+            state.value = keys
+        }
+        return state
+    }
+
+    /**
+     * Checks if an API key is registered for a specific game.
+     *
+     * @param gameName The name of the game to check.
+     * @return true if an API key is registered, false otherwise.
+     */
+    fun containsApiKey(gameName: String): Boolean {
+        // Utilise le DataStore pour vérifier la présence de la clé, persistant
+        return getAvailableApiKeys().contains(gameName)
+    }
+
+    /**
      * Saves an API key for a specific game.
      *
      * @param gameName The name of the game for which the API key is being registered.
@@ -37,6 +75,7 @@ class ApiKeyManager(private val context: Context) {
         context.apiKeysDataStore.edit { preferences ->
             preferences[key] = apiKey
         }
+        // Suppression de la gestion mémoire locale
     }
 
     /**
@@ -91,6 +130,7 @@ class ApiKeyManager(private val context: Context) {
         context.apiKeysDataStore.edit { preferences ->
             preferences.remove(key)
         }
+        // Suppression de la gestion mémoire locale
     }
 
     /**
@@ -132,4 +172,31 @@ class ApiKeyManager(private val context: Context) {
             }
         }
     }
+
+    /**
+     * Gets a list of all available API keys.
+     *
+     * @return A list of game names for which API keys are registered.
+     */
+    fun getAvailableApiKeys(): List<String> {
+        val keys = mutableListOf<String>()
+        runBlocking {
+            try {
+                val preferences = context.apiKeysDataStore.data.firstOrNull() ?: return@runBlocking
+
+                preferences.asMap().forEach { (key, value) ->
+                    if (value is String) {
+                        keys.add(key.name)
+                    }
+                }
+
+                Log.d("DataStore", "Liste des clés API disponibles : $keys")
+
+            } catch (e: Exception) {
+                Log.e("DataStore", "Erreur lors de la lecture des clés API", e)
+            }
+        }
+        return keys
+    }
+
 }

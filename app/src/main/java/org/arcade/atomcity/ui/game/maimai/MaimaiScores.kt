@@ -46,6 +46,7 @@ import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.ui.core.AchievementChip
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.OpenMiniMenu
+import org.arcade.atomcity.ui.core.SettingsScreen
 import org.arcade.atomcity.utils.formatPlayDate
 
 
@@ -141,8 +142,9 @@ fun MaimaiScores(
                     showMiniMenu = !showMiniMenu
                 },
                 onSettingsClick = {
-                    Log.d("MaimaiScores", "Settings clicked")
-                }
+                    navController.navigate("settings")
+                    showMiniMenu = false
+                },
             )
         },
 ) { paddingValues ->

@@ -26,7 +26,9 @@ val taikoNetworkModule = module {
             .build()
 
         val okHttpClient = OkHttpClient.Builder()
+/*
             .addInterceptor(loggingInterceptor)
+*/
             .connectTimeout(300, TimeUnit.SECONDS) // Délai d'attente de connexion
             .readTimeout(300, TimeUnit.SECONDS)    // Délai d'attente de lecture
             .writeTimeout(300, TimeUnit.SECONDS)   // Délai d'attente d'écriture

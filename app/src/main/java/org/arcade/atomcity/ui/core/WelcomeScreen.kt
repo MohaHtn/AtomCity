@@ -30,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -53,7 +54,7 @@ var openApiGuide = mutableStateOf(false)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WelcomeScreen(navController: NavController) {
+fun WelcomeScreen(navController: NavController, apiChecklistState: MutableState<List<String>>) {
 
     Scaffold(
         topBar = {
@@ -85,7 +86,7 @@ fun WelcomeScreen(navController: NavController) {
                 if (isPage1) {
                     WelcomeCard()
                 } else {
-                    SetupCard(navController)
+                    SetupCard(navController, apiChecklistState)
                 }
             }
         }
@@ -133,7 +134,7 @@ fun WelcomeCard() {
 }
 
 @Composable
-fun SetupCard(navController: NavController) {
+fun SetupCard(navController: NavController, apiChecklistState: MutableState<List<String>>) {
     val context = LocalContext.current
     val apiKeyManager = ApiKeyManager(context)
 
@@ -161,7 +162,7 @@ fun SetupCard(navController: NavController) {
 
             HorizontalDivider()
 
-            ApiCheckList()
+            ApiCheckList(apiChecklistState = apiChecklistState)
         }
 
         Row(
@@ -177,10 +178,9 @@ fun SetupCard(navController: NavController) {
                 )
             }
 
-            if (hasApiKey("maimai")) {
+            if (apiChecklistState.value.isNotEmpty()) {
                 Button(
-                    onClick = { navController.navigate(Screen.Game.createRoute("maimai")) },
-                ) {
+                    onClick = { navController.navigate(Screen.Game.createRoute(apiKeyManager.getApiChecklistState().value.first()))},                ) {
                     Text(
                         text = "Suivant",
                         style = MaterialTheme.typography.labelMedium
