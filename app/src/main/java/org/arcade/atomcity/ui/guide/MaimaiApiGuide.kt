@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.R
+import org.arcade.atomcity.ui.core.LinkText
 import org.arcade.atomcity.ui.core.openApiGuide
 import org.arcade.atomcity.utils.ApiKeyManager
 
@@ -210,13 +211,12 @@ fun EnterApiTextBox(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolea
                         Text(MAIMAI_API_GUIDE_BACK)
                     }
 
-                    val scope = rememberCoroutineScope()  // Moved outside the onClick lambda
+                    val scope = rememberCoroutineScope()
 
                     Button(
                         onClick = {
                             scope.launch {
                                 apiKeyManager.saveApiKey("maimai", text.value)
-                                Log.d("MaimaiApiGuide", "API key saved: ${text.value}")
                                 showSnackbar.value = true
                                 isVisible.value = false
                             }
@@ -264,63 +264,4 @@ fun SnackbarMesage(message: String) {
     }
 }
 
-@Composable
-fun LinkText(
-    fullText: String,
-    linkText: String,
-    url: String,
-    style: TextStyle = MaterialTheme.typography.bodyMedium.copy(
-        color = MaterialTheme.colorScheme.onSurface
-    )
-) {
-    val uriHandler = LocalUriHandler.current
-    val textMeasurer = rememberTextMeasurer()
-    val annotatedString = buildAnnotatedString {
-        append(fullText)
 
-        val startIndex = fullText.indexOf(linkText)
-        val endIndex = startIndex + linkText.length
-
-        if (startIndex >= 0) {
-            addStyle(
-                style = SpanStyle(
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline
-                ),
-                start = startIndex,
-                end = endIndex
-            )
-
-            addStringAnnotation(
-                tag = "URL",
-                annotation = url,
-                start = startIndex,
-                end = endIndex
-            )
-        }
-    }
-
-    BasicText(
-        text = annotatedString,
-        style = style,
-        modifier = Modifier.padding(16.dp).pointerInput(Unit) {
-            detectTapGestures { offset ->
-                val position = annotatedString
-                    .getStringAnnotations("URL", 0, annotatedString.length)
-                    .firstOrNull()
-                    ?.let { annotation ->
-                        val textLayoutResult = textMeasurer.measure(
-                            text = annotatedString,
-                            style = style
-                        )
-                        val bounds = textLayoutResult.getBoundingBox(annotation.start)
-                        bounds.contains(offset)
-                    } ?: false
-
-                if (position) {
-                    uriHandler.openUri(url)
-                }
-            }
-        }
-    )
-}

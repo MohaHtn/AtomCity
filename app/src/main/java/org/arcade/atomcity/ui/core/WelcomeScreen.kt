@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import org.arcade.atomcity.ui.guide.apistatus.ApiCheckList
 import org.arcade.atomcity.ui.navigation.Screen
 import org.arcade.atomcity.utils.ApiKeyManager
 
@@ -190,141 +191,9 @@ fun SetupCard(navController: NavController) {
     }
 }
 
-@Composable
-private fun ApiCheckList() {
-    val context = LocalContext.current
-    val apiKeyManager = ApiKeyManager(context)
 
-    fun getApiKey(game: String): Boolean {
-        return apiKeyManager.hasApiKey(game)
-    }
 
-    Column(
-        modifier = Modifier.padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        ApiItem(
-            name = "maimai",
-            hasKey = getApiKey("maimai")
-        )
-        ApiItem(
-            name = "SOUND VOLTEX",
-            hasKey = getApiKey("sdvx")
-        )
-        ApiItem(
-            name = "In The Groove 2",
-            hasKey = getApiKey("itg")
-        )
-        ApiItem(
-            name = "beatmania IIDX",
-            hasKey = getApiKey("iidx")
-        )
-        ApiItem(
-            name = "pop'n music",
-            hasKey = getApiKey("popn")
-        )
-        ApiItem(
-            name = "Taiko no Tatsujin",
-            hasKey = getApiKey("taiko")
-        )
-    }
-}
 
-@Composable
-private fun ApiItem(
-    name: String,
-    hasKey: Boolean
-) {
-    val context = LocalContext.current
-    val apiKeyManager = ApiKeyManager(context)
-    val apiKey = apiKeyManager.getApiKey(name.lowercase().replace(" ", ""))
-    val dialogVisible = remember { mutableStateOf(false) }
-
-    Row(
-        modifier = Modifier.fillMaxWidth().clickable(
-            enabled = hasKey,
-            onClick = {
-                dialogVisible.value = true
-            }
-        ),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = name,
-            style = MaterialTheme.typography.bodyLarge
-        )
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = if (hasKey) {
-                    Icons.Rounded.CheckCircle
-                } else {
-                    Icons.Rounded.Close
-                },
-                contentDescription = if (hasKey) "API configured" else "API not configured",
-                tint = if (hasKey) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.error
-                }
-            )
-            if (!hasKey) {
-                Button(
-                    modifier = Modifier.padding(start = 56.dp),
-                    onClick = { openApiGuide.value = true; }
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = "Annuler"
-                        )
-                        Text(
-                            text = "Ajouter",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                }
-            } else {
-                Button(
-                    modifier = Modifier.padding(start = 56.dp),
-                    onClick = { openApiGuide.value = true; Log.d("API", "Clicked ${openApiGuide.value}") }
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Create,
-                            contentDescription = "Modifier"
-                        )
-                        Text(
-                            text = "Modifier",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    if (dialogVisible.value) {
-        AlertDialog(
-            onDismissRequest = { dialogVisible.value = false },
-            title = { Text("Clé API pour $name") },
-            text = { Text("Votre clé API: $apiKey") },
-            confirmButton = {
-                Button(onClick = { dialogVisible.value = false }) {
-                    Text("Fermer")
-                }
-            }
-        )
-        apiKeyManager.logAllApiKeys()
-    }
-}
 
 fun toPage2() {
     page1.value = false
