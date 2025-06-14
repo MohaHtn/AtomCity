@@ -7,6 +7,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableLongStateOf
@@ -56,20 +57,16 @@ fun AppNavigation(
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(700)) }
     ) {
         composable(Screen.Home.route) {
+            val apiChecklistState = apiKeyManager.getApiChecklistState()
 
-            if (apiKeyManager.getApiChecklistState().value.isEmpty()) {
-                WelcomeScreen(navController = navController, apiKeyManager.getApiChecklistState() )
-            }
-
-            else {
-                navController.navigate(Screen.Game.createRoute(apiKeyManager.getApiChecklistState().value.first()))
-            }
-            // TODO: Ce sera un switch plus tard
-            if (openApiGuide.value) {
-                MaimaiApiGuide(
-                    apiKeyManager = apiKeyManager,
-                    isVisible = openApiGuide
-                )
+            LaunchedEffect(apiChecklistState.value) {
+                if (apiChecklistState.value.isEmpty()) {
+                    navController.navigate("welcome") {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                } else {
+                    navController.navigate(Screen.Game.createRoute(apiChecklistState.value.first()))
+                }
             }
         }
 
@@ -85,6 +82,21 @@ fun AppNavigation(
                 taikoViewModel = taikoViewModel,
                 navController = navController
             )
+        }
+
+        composable("welcome") {
+            WelcomeScreen(
+                navController = navController,
+                apiChecklistState = apiKeyManager.getApiChecklistState()
+            )
+
+            // TODO: Ce sera un switch plus tard
+            if (openApiGuide.value) {
+                MaimaiApiGuide(
+                    apiKeyManager = apiKeyManager,
+                    isVisible = openApiGuide
+                )
+            }
         }
 
         composable(

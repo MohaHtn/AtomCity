@@ -80,29 +80,7 @@ fun MaimaiScores(
 
     var isExpanded by remember { mutableStateOf(false) }
 
-    // Animation de l'échelle
-    val scale by animateFloatAsState(
-        targetValue = if (isExpanded) 1.50f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "scale"
-    )
-
-    // Animation de l'élévation
-    val elevation by animateDpAsState(
-        targetValue = if (isExpanded) 12.dp else 2.dp,
-        animationSpec = tween(
-            durationMillis = 200,
-            easing = FastOutSlowInEasing
-        ),
-        label = "elevation"
-    )
-
-
     LaunchedEffect(Unit) {
-        Log.d("MaimaiScores", "Fetching maimai paginated data")
         maiteaViewModel.fetchMaimaiPaginatedData(page = 1)
     }
 
@@ -210,29 +188,6 @@ fun MaimaiScores(
                                 */
                             }
                         ) {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                                    .scale(scale)  // Application du scale
-                                    .clickable { isExpanded = !isExpanded },
-                                elevation = CardDefaults.cardElevation(defaultElevation = elevation)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = "Titre de la carte",
-                                        style = MaterialTheme.typography.titleLarge
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "Contenu de la carte avec des informations détaillées qui apparaissent lorsque la carte est cliquée.",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
-                            }
-
                             Row(
                                 modifier = Modifier.padding(16.dp)
                             ) {

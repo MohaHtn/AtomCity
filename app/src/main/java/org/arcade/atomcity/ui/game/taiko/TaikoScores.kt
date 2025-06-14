@@ -29,6 +29,7 @@ import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,6 +39,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import org.arcade.atomcity.ui.core.BottomBarPill
+import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.utils.formatPlayDate
 
 
@@ -54,6 +56,7 @@ fun TaikoScores(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val collapsedFraction = scrollBehavior.state.collapsedFraction
+    var lastClickTime by remember { mutableLongStateOf(0L) }
 
     val scoresData by taikoViewModel.scoresData.collectAsState()
 
@@ -206,6 +209,27 @@ fun TaikoScores(
                     }
                 }
             }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 96.dp)
+        ) {
+            OpenMiniMenu(
+                showMiniMenu = showMiniMenu,
+                onDismiss = {
+                    if (System.currentTimeMillis() - lastClickTime > 300) {
+                        showMiniMenu = !showMiniMenu
+                        lastClickTime = System.currentTimeMillis()
+                    }
+                },
+                onItemClick = { gameId: String ->
+                    Log.d("MaimaiScores", "onItemClick $gameId")
+                    navController.navigate("game/$gameId")
+                    showMiniMenu = false
+                },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
         }
     }
 
@@ -214,8 +238,8 @@ fun displayDifficultyName(difficulty: Int?) : String{
         1 -> "Kantan (Facile)"
         2 -> "Futsuu (Normal)"
         3 -> "Muzukashii (Difficile)"
-        4 -> "Oni (Très difficile)"
-        5 -> "Ura Oni (Extrême)"
+        4 -> "Oni (Démoniaque)"
+        5 -> "Ura Oni (Ultra Démoniaque)"
         else -> "Inconnu"
     }
 }
@@ -223,10 +247,10 @@ fun displayDifficultyName(difficulty: Int?) : String{
 @Composable
 fun setDifficultyColorBackground(difficulty: Int?): CardColors {
     return when (difficulty) {
-        1 -> CardDefaults.cardColors(containerColor = Color(0xFF5C4B47))
-        2 -> CardDefaults.cardColors(containerColor = Color(0xFF717D5A))
-        3 -> CardDefaults.cardColors(containerColor = Color(0xFF293423))
-        4 -> CardDefaults.cardColors(containerColor = Color(0xFF764A57))
+        1 -> CardDefaults.cardColors(containerColor = Color(0xFFCF2C00))
+        2 -> CardDefaults.cardColors(containerColor = Color(0xFF657E25))
+        3 -> CardDefaults.cardColors(containerColor = Color(0xFF223004))
+        4 -> CardDefaults.cardColors(containerColor = Color(0xFFCE2D76))
         else -> CardDefaults.cardColors(containerColor = Color.Gray)
     }
 }

@@ -28,9 +28,7 @@ val maiteaNetworkModule = module {
             .build()
 
         val okHttpClient = OkHttpClient.Builder()
-/*
             .addInterceptor(loggingInterceptor)
-*/
                 .addInterceptor { chain: Interceptor.Chain ->
                 val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }
                 val request = chain.request().newBuilder()
