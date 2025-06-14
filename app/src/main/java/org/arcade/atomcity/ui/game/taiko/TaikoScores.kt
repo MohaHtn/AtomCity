@@ -1,6 +1,8 @@
 package org.arcade.atomcity.ui.game.taiko
 
 import android.util.Log
+import androidx.compose.foundation.Image
+import org.arcade.atomcity.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import org.arcade.atomcity.ui.core.BottomBarPill
@@ -154,56 +158,69 @@ fun TaikoScores(
                         items(dataList.taikoServerSongHistoryData.size) { index ->
                             val score = dataList.taikoServerSongHistoryData[index]
                             Card(
-                                modifier = Modifier.padding(8.dp).fillMaxSize(),
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxSize(),
                                 colors = setDifficultyColorBackground(score.difficulty)
                             ) {
-
-                                Column(
-                                        modifier = Modifier.padding(16.dp),
-                                    ) {
-                                    Row (
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                    ) {
-                                        Text(
-                                            text = score.musicName.toString(),
-                                            style = MaterialTheme.typography.titleMedium,
-                                            modifier = Modifier.padding(end = 5.dp),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            color= Color.White
-                                        )
-                                        Text(
-                                            text = displayDifficultyName(score.difficulty),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color= Color.White
-
-                                        )
-                                    }
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ){
-                                        Text(
-                                            text = score.musicArtist.toString(),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color= Color.White
-
-                                        )
-                                        Text(
-                                            text = score.score.toString(),
-                                            style = MaterialTheme.typography.titleMedium,
-                                            color= Color.White
-
-                                        )
-                                    }
-                                    Text(
-                                        text = formatPlayDate(score.playTime.toString()),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color= Color.White
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = getDifficultyDrawableId(score.difficulty)),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .matchParentSize(),
+                                        contentScale = ContentScale.Crop,
+                                        alpha = 0.2f
                                     )
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(16.dp)
+                                            .fillMaxSize()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                        ) {
+                                            Text(
+                                                text = score.musicName.toString(),
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                modifier = Modifier.padding(end = 5.dp),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                color = Color.White
+                                            )
+                                            Text(
+                                                text = displayDifficultyName(score.difficulty),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color.White
+                                            )
+                                        }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = score.musicArtist.toString(),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color.White
+                                            )
+                                            Text(
+                                                text = score.score.toString(),
+                                                style = MaterialTheme.typography.displaySmall,
+                                                color = Color.White
+                                            )
+                                        }
+                                        Text(
+                                            text = formatPlayDate(score.playTime.toString()),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color.White
+                                        )
                                     }
                                 }
+                            }
                             }
                         }
                     }
@@ -241,6 +258,17 @@ fun displayDifficultyName(difficulty: Int?) : String{
         4 -> "Oni (Démoniaque)"
         5 -> "Ura Oni (Ultra Démoniaque)"
         else -> "Inconnu"
+    }
+}
+
+fun getDifficultyDrawableId(difficulty: Int?): Int {
+    return when (difficulty) {
+        1 -> R.drawable.taiko_difficulty_easy
+        2 -> R.drawable.taiko_difficulty_normal
+        3 -> R.drawable.taiko_difficulty_hard
+        4 -> R.drawable.taiko_difficulty_evil
+        5 -> R.drawable.taiko_difficulty_uraoni
+        else -> R.drawable.taiko_difficulty_easy
     }
 }
 

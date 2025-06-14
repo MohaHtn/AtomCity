@@ -1,4 +1,6 @@
 [versions]
+accompanistCoil = "0.16.0"
+accompanistSvg = "<version>"
 agp = "8.10.1"
 kotlin = "2.0.0"
 coreKtx = "1.16.0"
@@ -24,6 +26,8 @@ datastorePreferences = "1.2.0-alpha02"
 moshi = "1.15.2"
 
 [libraries]
+accompanist-coil = { module = "com.google.accompanist:accompanist-coil", version.ref = "accompanistCoil" }
+accompanist-svg = { module = "com.google.accompanist:accompanist-svg", version.ref = "accompanistSvg" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 coil = { module = "io.coil-kt:coil", version = "2.7.0" }
