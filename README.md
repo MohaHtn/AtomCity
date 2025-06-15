@@ -6,6 +6,7 @@ bornes de jeux de rythme présentes à l'Atom.
 
 C'est une application Android native, en utlisant [Kotlin](https://kotlinlang.org/) 
 et [Jetpack Compose](https://developer.android.com/compose).
+Le choix d'utliser Jetpack Multiplatform (pour iOS) sera posé dans le futur. 
 
 C'est un projet qui n'est en réalité juste un prétexte pour comprendre Kotlin et Jetpack Compose,
 mais j'essaie d'appliquer le plus possible de bonnes pratiques de développement, telles que 
