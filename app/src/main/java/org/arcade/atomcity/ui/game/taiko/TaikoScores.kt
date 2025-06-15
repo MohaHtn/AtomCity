@@ -36,7 +36,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -45,6 +48,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.utils.formatPlayDate
+import androidx.compose.ui.graphics.painter.BitmapPainter
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,15 +59,13 @@ fun TaikoScores(
     navController: NavHostController
 ) {
     val isLoading by taikoViewModel.isLoading.collectAsState()
-
-
     var showMiniMenu by remember { mutableStateOf(false) }
-    val scrollBehavior =
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val collapsedFraction = scrollBehavior.state.collapsedFraction
     var lastClickTime by remember { mutableLongStateOf(0L) }
-
     val scoresData by taikoViewModel.scoresData.collectAsState()
+    val avatar by taikoViewModel.mergedAvatar.collectAsState()
+
 
 
     LaunchedEffect(Unit) {
@@ -89,6 +92,17 @@ fun TaikoScores(
                             modifier = Modifier.padding(start = 8.dp)
                         )
                         Column {
+                            if (avatar != null) {
+                                Image(
+                                    painter = BitmapPainter(avatar!!.asImageBitmap()),
+                                    contentDescription = "Avatar",
+                                    modifier = Modifier.size(100.dp).padding(start = 0.dp, end = 0.dp)
+                                    .graphicsLayer { translationY = -30f }
+                                )
+                            }
+                        }
+
+                        Column {
                             Text(
                                 text = taikoViewModel.userSettingsData.collectAsState().value?.myDonName ?: "Chargement...",
                                 style = MaterialTheme.typography.headlineSmall,
@@ -103,7 +117,7 @@ fun TaikoScores(
                             )
 
                             Text(
-                                text = taikoViewModel.userSettingsData.collectAsState().value?.title.toString() ?: "",
+                                text = taikoViewModel.userSettingsData.collectAsState().value?.title.toString(),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = if (collapsedFraction > 0.5f)
                                     Color.Black
@@ -114,8 +128,9 @@ fun TaikoScores(
                                 else
                                     FontWeight.Normal,
                             )
-                        }
 
+
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -170,7 +185,7 @@ fun TaikoScores(
                                     Image(
                                         painter = painterResource(id = getDifficultyDrawableId(score.difficulty)),
                                         contentDescription = null,
-                                        modifier = Modifier
+                                        modifier = Modifier.align(Alignment.BottomEnd)
                                             .matchParentSize(),
                                         contentScale = ContentScale.Crop,
                                         alpha = 0.2f
