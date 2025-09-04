@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.game.maimai
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -92,18 +93,35 @@ fun MaimaiPlayerDetails(
 //            )
 
         Row{
-            playerData?.options?.iconDeka?.png.let { imageUrl ->
+            if (playerData?.options?.iconDeka?.png != null) {
+                playerData.options?.iconDeka?.png.let { imageUrl ->
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(imageUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Avatar of ${playerData?.name}",
+                    contentDescription = "Avatar of ${playerData.name}",
                     modifier = Modifier
                         .size(100.dp),
                     contentScale = ContentScale.Fit
                 )
             }
+            }
+            else {
+                playerData?.options?.icon?.png.let { imageUrl ->
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Avatar of ${playerData?.name}",
+                        modifier = Modifier
+                            .size(100.dp).padding(5.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+
         }
         Column(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).padding(start = 100.dp)
