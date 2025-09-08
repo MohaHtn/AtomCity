@@ -1,0 +1,1465 @@
+{
+  "data": [
+    {
+      "id": 883683,
+      "achievement": 9529,
+      "achievement_formatted": "95.29",
+      "track": 4,
+      "score": 751400,
+      "score_formatted": "751,400",
+      "score_detail": {
+        "hits": {
+          "perfect": 932,
+          "great": 100,
+          "good": 39,
+          "bad": 15
+        },
+        "tap": {
+          "perfect": 709,
+          "great": 93,
+          "good": 24,
+          "bad": 12
+        },
+        "hold": {
+          "perfect": 71,
+          "great": 2,
+          "good": 9,
+          "bad": 1
+        },
+        "slide": {
+          "perfect": 118,
+          "great": 2,
+          "good": 5,
+          "bad": 1
+        },
+        "break": {
+          "perfect": 34,
+          "great": 3,
+          "good": 1,
+          "bad": 1
+        }
+      },
+      "rank": "AAA",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": false,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T16:13:52.000000Z",
+      "play_date_unix": 1756916032,
+      "song": {
+        "id": 773,
+        "code": "silentblue",
+        "name": {
+          "en": "SILENT BLUE",
+          "jp": "SILENT BLUE"
+        },
+        "artist": {
+          "en": "Kaneko Chiharu",
+          "jp": "\u304b\u306d\u3053\u3061\u306f\u308b"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883682,
+      "achievement": 9616,
+      "achievement_formatted": "96.16",
+      "track": 3,
+      "score": 627000,
+      "score_formatted": "627,000",
+      "score_detail": {
+        "hits": {
+          "perfect": 938,
+          "great": 83,
+          "good": 21,
+          "bad": 15
+        },
+        "tap": {
+          "perfect": 831,
+          "great": 80,
+          "good": 12,
+          "bad": 15
+        },
+        "hold": {
+          "perfect": 29,
+          "great": 0,
+          "good": 6,
+          "bad": 0
+        },
+        "slide": {
+          "perfect": 59,
+          "great": 2,
+          "good": 1,
+          "bad": 0
+        },
+        "break": {
+          "perfect": 19,
+          "great": 1,
+          "good": 2,
+          "bad": 0
+        }
+      },
+      "rank": "AAA",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": false,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T16:10:26.000000Z",
+      "play_date_unix": 1756915826,
+      "song": {
+        "id": 833,
+        "code": "the_emperror",
+        "name": {
+          "en": "the EmpErroR",
+          "jp": "the EmpErroR"
+        },
+        "artist": {
+          "en": "sasakure.UK",
+          "jp": "sasakure.UK"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883681,
+      "achievement": 9834,
+      "achievement_formatted": "98.34",
+      "track": 2,
+      "score": 462700,
+      "score_formatted": "462,700",
+      "score_detail": {
+        "hits": {
+          "perfect": 590,
+          "great": 33,
+          "good": 4,
+          "bad": 3
+        },
+        "tap": {
+          "perfect": 445,
+          "great": 30,
+          "good": 2,
+          "bad": 3
+        },
+        "hold": {
+          "perfect": 37,
+          "great": 0,
+          "good": 0,
+          "bad": 0
+        },
+        "slide": {
+          "perfect": 87,
+          "great": 0,
+          "good": 2,
+          "bad": 0
+        },
+        "break": {
+          "perfect": 21,
+          "great": 3,
+          "good": 0,
+          "bad": 0
+        }
+      },
+      "rank": "S+",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": false,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 6,
+        "value": "remaster",
+        "label": "Re:MASTER"
+      },
+      "play_date": "2025-09-03T16:07:30.000000Z",
+      "play_date_unix": 1756915650,
+      "song": {
+        "id": 728,
+        "code": "pop_team_epic",
+        "name": {
+          "en": "POP TEAM EPIC",
+          "jp": "POP TEAM EPIC"
+        },
+        "artist": {
+          "en": "\u4e0a\u5742\u3059\u307f\u308c\u300c\u30dd\u30d7\u30c6\u30d4\u30d4\u30c3\u30af\u300d",
+          "jp": "\u4e0a\u5742\u3059\u307f\u308c\u300c\u30dd\u30d7\u30c6\u30d4\u30d4\u30c3\u30af\u300d"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883680,
+      "achievement": 9370,
+      "achievement_formatted": "93.70",
+      "track": 1,
+      "score": 331700,
+      "score_formatted": "331,700",
+      "score_detail": {
+        "hits": {
+          "perfect": 441,
+          "great": 41,
+          "good": 17,
+          "bad": 13
+        },
+        "tap": {
+          "perfect": 381,
+          "great": 35,
+          "good": 12,
+          "bad": 10
+        },
+        "hold": {
+          "perfect": 7,
+          "great": 0,
+          "good": 3,
+          "bad": 0
+        },
+        "slide": {
+          "perfect": 28,
+          "great": 4,
+          "good": 2,
+          "bad": 1
+        },
+        "break": {
+          "perfect": 25,
+          "great": 2,
+          "good": 0,
+          "bad": 2
+        }
+      },
+      "rank": "AA",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": false,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T16:04:51.000000Z",
+      "play_date_unix": 1756915491,
+      "song": {
+        "id": 80,
+        "code": "escapefromthecity",
+        "name": {
+          "en": "City Escape: Act1",
+          "jp": "City Escape: Act1"
+        },
+        "artist": {
+          "en": "Cash Cash \u201cSonic Generations\u201d",
+          "jp": "Cash Cash\u300c\u30bd\u30cb\u30c3\u30af \u30b8\u30a7\u30cd\u30ec\u30fc\u30b7\u30e7\u30f3\u30ba\u300d"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883652,
+      "achievement": 9301,
+      "achievement_formatted": "93.01",
+      "track": 4,
+      "score": 906400,
+      "score_formatted": "906,400",
+      "score_detail": {
+        "hits": {
+          "perfect": 1047,
+          "great": 168,
+          "good": 55,
+          "bad": 39
+        },
+        "tap": {
+          "perfect": 797,
+          "great": 145,
+          "good": 44,
+          "bad": 31
+        },
+        "hold": {
+          "perfect": 84,
+          "great": 9,
+          "good": 2,
+          "bad": 3
+        },
+        "slide": {
+          "perfect": 101,
+          "great": 6,
+          "good": 6,
+          "bad": 4
+        },
+        "break": {
+          "perfect": 65,
+          "great": 8,
+          "good": 3,
+          "bad": 1
+        }
+      },
+      "rank": "AA",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": false,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T15:26:25.000000Z",
+      "play_date_unix": 1756913185,
+      "song": {
+        "id": 834,
+        "code": "pandora_paradoxxx",
+        "name": {
+          "en": "PANDORA PARADOXXX",
+          "jp": "PANDORA PARADOXXX"
+        },
+        "artist": {
+          "en": "Sakuzyo",
+          "jp": "\u524a\u9664"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883651,
+      "achievement": 9756,
+      "achievement_formatted": "97.56",
+      "track": 3,
+      "score": 1053750,
+      "score_formatted": "1,053,750",
+      "score_detail": {
+        "hits": {
+          "perfect": 897,
+          "great": 40,
+          "good": 42,
+          "bad": 8
+        },
+        "tap": {
+          "perfect": 524,
+          "great": 32,
+          "good": 27,
+          "bad": 7
+        },
+        "hold": {
+          "perfect": 19,
+          "great": 0,
+          "good": 2,
+          "bad": 0
+        },
+        "slide": {
+          "perfect": 170,
+          "great": 1,
+          "good": 5,
+          "bad": 0
+        },
+        "break": {
+          "perfect": 184,
+          "great": 7,
+          "good": 8,
+          "bad": 1
+        }
+      },
+      "rank": "S",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": true,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T15:22:58.000000Z",
+      "play_date_unix": 1756912978,
+      "song": {
+        "id": 606,
+        "code": "thewheeltotheright",
+        "name": {
+          "en": "The wheel to the right",
+          "jp": "The wheel to the right"
+        },
+        "artist": {
+          "en": "Sampling Masters MEGA",
+          "jp": "Sampling Masters MEGA"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883650,
+      "achievement": 9764,
+      "achievement_formatted": "97.64",
+      "track": 2,
+      "score": 673250,
+      "score_formatted": "673,250",
+      "score_detail": {
+        "hits": {
+          "perfect": 853,
+          "great": 46,
+          "good": 9,
+          "bad": 7
+        },
+        "tap": {
+          "perfect": 668,
+          "great": 39,
+          "good": 4,
+          "bad": 5
+        },
+        "hold": {
+          "perfect": 32,
+          "great": 2,
+          "good": 0,
+          "bad": 0
+        },
+        "slide": {
+          "perfect": 110,
+          "great": 1,
+          "good": 3,
+          "bad": 1
+        },
+        "break": {
+          "perfect": 43,
+          "great": 4,
+          "good": 2,
+          "bad": 1
+        }
+      },
+      "rank": "S",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": false,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T15:19:43.000000Z",
+      "play_date_unix": 1756912783,
+      "song": {
+        "id": 771,
+        "code": "wegonnajourney",
+        "name": {
+          "en": "We Gonna Journey",
+          "jp": "We Gonna Journey"
+        },
+        "artist": {
+          "en": "Queen P.A.L.",
+          "jp": "Queen P.A.L."
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883649,
+      "achievement": 9729,
+      "achievement_formatted": "97.29",
+      "track": 1,
+      "score": 653850,
+      "score_formatted": "653,850",
+      "score_detail": {
+        "hits": {
+          "perfect": 897,
+          "great": 48,
+          "good": 10,
+          "bad": 8
+        },
+        "tap": {
+          "perfect": 727,
+          "great": 42,
+          "good": 4,
+          "bad": 5
+        },
+        "hold": {
+          "perfect": 45,
+          "great": 2,
+          "good": 2,
+          "bad": 0
+        },
+        "slide": {
+          "perfect": 99,
+          "great": 2,
+          "good": 3,
+          "bad": 2
+        },
+        "break": {
+          "perfect": 26,
+          "great": 2,
+          "good": 1,
+          "bad": 1
+        }
+      },
+      "rank": "S",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": true,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T15:16:43.000000Z",
+      "play_date_unix": 1756912603,
+      "song": {
+        "id": 566,
+        "code": "amenohoakari",
+        "name": {
+          "en": "Amenohoakari",
+          "jp": "\u5929\u706b\u660e\u547d"
+        },
+        "artist": {
+          "en": "Sakuzyo",
+          "jp": "\u524a\u9664"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883638,
+      "achievement": 9589,
+      "achievement_formatted": "95.89",
+      "track": 4,
+      "score": 667450,
+      "score_formatted": "667,450",
+      "score_detail": {
+        "hits": {
+          "perfect": 847,
+          "great": 59,
+          "good": 26,
+          "bad": 15
+        },
+        "tap": {
+          "perfect": 641,
+          "great": 42,
+          "good": 13,
+          "bad": 15
+        },
+        "hold": {
+          "perfect": 58,
+          "great": 2,
+          "good": 3,
+          "bad": 0
+        },
+        "slide": {
+          "perfect": 131,
+          "great": 14,
+          "good": 10,
+          "bad": 0
+        },
+        "break": {
+          "perfect": 17,
+          "great": 1,
+          "good": 0,
+          "bad": 0
+        }
+      },
+      "rank": "AAA",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": true,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 6,
+        "value": "remaster",
+        "label": "Re:MASTER"
+      },
+      "play_date": "2025-09-03T15:12:37.000000Z",
+      "play_date_unix": 1756912357,
+      "song": {
+        "id": 820,
+        "code": "fft",
+        "name": {
+          "en": "FFT",
+          "jp": "FFT"
+        },
+        "artist": {
+          "en": "cybermiso",
+          "jp": "cybermiso"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883637,
+      "achievement": 9595,
+      "achievement_formatted": "95.95",
+      "track": 3,
+      "score": 603100,
+      "score_formatted": "603,100",
+      "score_detail": {
+        "hits": {
+          "perfect": 766,
+          "great": 48,
+          "good": 24,
+          "bad": 18
+        },
+        "tap": {
+          "perfect": 531,
+          "great": 41,
+          "good": 13,
+          "bad": 16
+        },
+        "hold": {
+          "perfect": 137,
+          "great": 2,
+          "good": 5,
+          "bad": 1
+        },
+        "slide": {
+          "perfect": 80,
+          "great": 5,
+          "good": 6,
+          "bad": 1
+        },
+        "break": {
+          "perfect": 18,
+          "great": 0,
+          "good": 0,
+          "bad": 0
+        }
+      },
+      "rank": "AAA",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": false,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T15:08:52.000000Z",
+      "play_date_unix": 1756912132,
+      "song": {
+        "id": 705,
+        "code": "maremaris",
+        "name": {
+          "en": "Mare Maris",
+          "jp": "Mare Maris"
+        },
+        "artist": {
+          "en": "M2U",
+          "jp": "M2U"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            w
+            "ebp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883636,
+      "achievement": 9859,
+      "achievement_formatted": "98.59",
+      "track": 2,
+      "score": 640850,
+      "score_formatted": "640,850",
+      "score_detail": {
+        "hits": {
+          "perfect": 765,
+          "great": 45,
+          "good": 8,
+          "bad": 8
+        },
+        "tap": {
+          "perfect": 547,
+          "great": 32,
+          "good": 4,
+          "bad": 8
+        },
+        "hold": {
+          "perfect": 94,
+          "great": 9,
+          "good": 3,
+          "bad": 0
+        },
+        "slide": {
+          "perfect": 70,
+          "great": 3,
+          "good": 1,
+          "bad": 0
+        },
+        "break": {
+          "perfect": 54,
+          "great": 1,
+          "good": 0,
+          "bad": 0
+        }
+      },
+      "rank": "S+",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": true,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T15:05:40.000000Z",
+      "play_date_unix": 1756911940,
+      "song": {
+        "id": 760,
+        "code": "ragnarok",
+        "name": {
+          "en": "Ragnarok",
+          "jp": "Ragnarok"
+        },
+        "artist": {
+          "en": "sky_delta",
+          "jp": "sky_delta"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    },
+    {
+      "id": 883635,
+      "achievement": 9426,
+      "achievement_formatted": "94.26",
+      "track": 1,
+      "score": 634900,
+      "score_formatted": "634,900",
+      "score_detail": {
+        "hits": {
+          "perfect": 745,
+          "great": 70,
+          "good": 39,
+          "bad": 22
+        },
+        "tap": {
+          "perfect": 545,
+          "great": 64,
+          "good": 19,
+          "bad": 19
+        },
+        "hold": {
+          "perfect": 56,
+          "great": 3,
+          "good": 10,
+          "bad": 2
+        },
+        "slide": {
+          "perfect": 108,
+          "great": 0,
+          "good": 8,
+          "bad": 0
+        },
+        "break": {
+          "perfect": 36,
+          "great": 3,
+          "good": 2,
+          "bad": 1
+        }
+      },
+      "rank": "AAA",
+      "full_combo": 0,
+      "full_combo_label": null,
+      "is_high_score": true,
+      "is_all_perfect": false,
+      "is_track_skip": false,
+      "difficulty_level": {
+        "key": 5,
+        "value": "master",
+        "label": "MASTER"
+      },
+      "play_date": "2025-09-03T15:03:01.000000Z",
+      "play_date_unix": 1756911781,
+      "song": {
+        "id": 777,
+        "code": "hana_yuki_bass",
+        "name": {
+          "en": "Flower, snow and Drum'n'bass.",
+          "jp": "\u82b1\u3068\u3001\u96ea\u3068\u3001\u30c9\u30e9\u30e0\u30f3\u30d9\u30fc\u30b9\u3002"
+        },
+        "artist": {
+          "en": "kanone feat. Sennzai",
+          "jp": "kanone feat. \u305b\u3093\u3056\u3044"
+        }
+      },
+      "player": {
+        "id": 8459,
+        "name": "\uff2d\uff5e\uff28\uff21\u266a\u266a\u266a\u266a",
+        "rating": 1389,
+        "rating_highest": 1389,
+        "level": 430,
+        "play_stats": {
+          "total": 197,
+          "wins": 387,
+          "vs": 155,
+          "sync": 0,
+          "first": {
+            "id": 681855,
+            "date": "2025-02-09T15:41:08.000000Z",
+            "date_unix": 1739115668,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/681855"
+          },
+          "latest": {
+            "id": 883683,
+            "date": "2025-09-03T16:13:52.000000Z",
+            "date_unix": 1756916032,
+            "api_route": "https:\/\/maitea.app\/api\/v1\/plays\/883683"
+          }
+        },
+        "options": {
+          "icon": {
+            "id": 756,
+            "is_deka": false,
+            "png": "https:\/\/maitea.app\/storage\/user_icons\/0756.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_icons\/0756.webp"
+          },
+          "icon_deka": null,
+          "nameplate": {
+            "id": 205,
+            "png": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_nameplates\/0205.webp"
+          },
+          "frame": {
+            "id": 673,
+            "png": "https:\/\/maitea.app\/storage\/user_frames\/0673.png",
+            "webp": "https:\/\/maitea.app\/storage\/user_frames\/0673.webp"
+          },
+          "title": {
+            "id": 1632,
+            "value": "\uff1e\uff1c"
+          }
+        },
+        "is_primary": true
+      }
+    }
+  ],
+  "links": {
+    "first": "https:\/\/maitea.app\/api\/v1\/plays?page=1",
+    "last": "https:\/\/maitea.app\/api\/v1\/plays?page=65",
+    "prev": null,
+    "next": "https:\/\/maitea.app\/api\/v1\/plays?page=2"
+  },
+  "meta": {
+    "current_page": 1,
+    "from": 1,
+    "last_page": 65,
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; Previous",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=1",
+        "label": "1",
+        "active": true
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=2",
+        "label": "2",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=3",
+        "label": "3",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=4",
+        "label": "4",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=5",
+        "label": "5",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=6",
+        "label": "6",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=7",
+        "label": "7",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=8",
+        "label": "8",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=9",
+        "label": "9",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=10",
+        "label": "10",
+        "active": false
+      },
+      {
+        "url": null,
+        "label": "...",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=64",
+        "label": "64",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=65",
+        "label": "65",
+        "active": false
+      },
+      {
+        "url": "https:\/\/maitea.app\/api\/v1\/plays?page=2",
+        "label": "Next &raquo;",
+        "active": false
+      }
+    ],
+    "path": "https:\/\/maitea.app\/api\/v1\/plays",
+    "per_page": 12,
+    "to": 12,
+    "total": 772
+  }
+}

@@ -2,7 +2,6 @@ package org.arcade.atomcity.model.maitea.playsResponse
 
 import com.squareup.moshi.Json
 
-
 data class MaiteaApiData (
   @Json(name = "id") var id: Int? = null,
   @Json(name = "achievement") var achievement: Int? = null,
@@ -20,5 +19,6 @@ data class MaiteaApiData (
   @Json(name = "play_date") var playDate: String? = null,
   @Json(name = "play_date_unix") var playDateUnix: Int? = null,
   @Json(name = "song") var song: Song? = Song(),
-  @Json(name = "player") var player: Player? = Player()
+  @Json(name = "player") var player: Player? = Player(),
+  @Json(name = "jacket_image_url") var jacketImageUrl: String? = null
 )

@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.arcade.atomcity.di.apiKeyManagerModule
+import org.arcade.atomcity.di.jacketImagesModule
 import org.arcade.atomcity.di.network.maiteaNetworkModule
 import org.arcade.atomcity.di.network.taikoNetworkModule
 import org.arcade.atomcity.di.viewmodel.maiTeaViewModelModule
@@ -34,7 +35,8 @@ class AtomCityApplication : Application() {
 
             val maiteaModules = listOf(
                 maiteaNetworkModule,
-                maiTeaViewModelModule
+                maiTeaViewModelModule,
+                jacketImagesModule
             )
 
             val taikoModules = listOf(
@@ -59,6 +61,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
 
         setContent {
             MainActivityContent(

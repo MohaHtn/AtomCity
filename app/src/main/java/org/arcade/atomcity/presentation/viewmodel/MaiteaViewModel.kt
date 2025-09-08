@@ -9,9 +9,17 @@ import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
+import com.squareup.moshi.JsonClass
 
 // TODO: Use UseCase instead of Repository directly in ViewModel.
-class MaiteaViewModel(private val repository: MaiteaRepository) : ViewModel() {
+
+@JsonClass(generateAdapter = true)
+data class JacketUrl(val title: String, val imageUrl: String)
+
+class MaiteaViewModel(
+    private val repository: MaiteaRepository,
+    private val jacketImages: List<JacketUrl>
+) : ViewModel() {
 
     // StateFlow to hold the plays data
     private val _playsData = MutableStateFlow<MaiteaPlaysResponse?>(null)
@@ -26,7 +34,7 @@ class MaiteaViewModel(private val repository: MaiteaRepository) : ViewModel() {
     val playerData: StateFlow<MaiteaPlayerDetailsResponse?> = _playerData
 
     // Expose the current page
-    internal val _currentPage = MutableStateFlow(1);
+    internal val _currentPage = MutableStateFlow(1)
 
     fun onPageChange(newPage: Int) {
         _currentPage.value = newPage
@@ -44,11 +52,19 @@ class MaiteaViewModel(private val repository: MaiteaRepository) : ViewModel() {
         }
     }
 
+    init {
+        Log.d("MaiteaViewModel", "Loaded ${jacketImages.size} jacket URLs from images.json")
+    }
+
     fun fetchMaimaiPaginatedData(page: Int) {
         try {
             viewModelScope.launch {
                 _isLoadingPlays.value = true
                 repository.getMaiTeaPaginatedData(page).collect { response ->
+                    response?.data?.forEach { entry ->
+                        entry.jacketImageUrl = findJacketUrlBySongName(entry.song?.name?.jp)
+                        Log.d("MaiteaViewModel", "Mapped jacket URL for ${entry.song?.name?.jp}: ${entry.jacketImageUrl}")
+                    }
                     _playsData.value = response
                     _isLoadingPlays.value = false
                 }
@@ -57,6 +73,10 @@ class MaiteaViewModel(private val repository: MaiteaRepository) : ViewModel() {
             Log.e("MainActivityViewModel", "Error: ${e.message}")
             _isLoadingPlays.value = false
         }
+    }
+
+    fun findJacketUrlBySongName(songName: String?): String? {
+        return jacketImages.firstOrNull { it.title == songName }?.imageUrl
     }
 
     fun fetchMaimaiPlayerDetails() {

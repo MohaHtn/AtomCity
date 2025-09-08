@@ -1,10 +1,6 @@
 package org.arcade.atomcity.ui.game.maimai
 
 import android.util.Log
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,13 +47,6 @@ import org.arcade.atomcity.ui.core.AchievementChip
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.utils.formatPlayDate
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.CardDefaults
-import androidx.compose.ui.draw.scale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -182,33 +171,53 @@ fun MaimaiScores(
                             modifier = Modifier.padding(8.dp),
                             onClick = {
                                 isExpanded = !isExpanded
-
-                                /*
-                                                                navController.navigate("maimaiScoresDetails/${data?.data?.get(score)?.id}")
-                                */
+                                navController.navigate("maimaiScoresDetails/${data?.data?.get(score)?.id}")
                             }
                         ) {
                             Row(
-                                modifier = Modifier.padding(16.dp)
+                                modifier = Modifier.padding(16.dp),
                             ) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(data?.data?.get(score)?.jacketImageUrl)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "Jacket of ${data?.data?.get(score)?.song?.name?.jp}",
+                                    modifier = Modifier.size(64.dp),
+                                    contentScale = ContentScale.Crop
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text(
-                                        text = "${data?.data?.get(score)?.song?.name?.en}",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                    Text(
-                                        text = "${data?.data?.get(score)?.song?.name?.jp}",
-                                        style = MaterialTheme.typography.headlineSmall
-                                    )
-                                    Text(
-                                        text = "${data?.data?.get(score)?.song?.artist?.en} | ${
-                                            data?.data?.get(
-                                                score
-                                            )?.song?.artist?.jp
-                                        }",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
+                                Column {val songNameEn = data?.data?.get(score)?.song?.name?.en
+                                    val songNameJp = data?.data?.get(score)?.song?.name?.jp
+
+                                    if (songNameEn == songNameJp) {
+                                        Text(
+                                            text = songNameEn ?: "",
+                                            style = MaterialTheme.typography.headlineSmall
+                                        )
+                                    } else {
+                                        Text(
+                                            text = songNameEn ?: "",
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                        Text(
+                                            text = songNameJp ?: "",
+                                            style = MaterialTheme.typography.headlineSmall
+                                        )
+                                    }
+
+                                    if (data?.data?.get(score)?.song?.artist?.en == data?.data?.get(score)?.song?.artist?.jp) {
+                                        Text(
+                                            text = data?.data?.get(score)?.song?.artist?.en ?: "",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    } else {
+                                        Text(
+                                            text = "${data?.data?.get(score)?.song?.artist?.en} | ${data?.data?.get(score)?.song?.artist?.jp}",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {

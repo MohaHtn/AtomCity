@@ -80,46 +80,23 @@ fun MaimaiPlayerDetails(
 
     )
     {
-//        playerData?.options?.frame?.png.let { imageUrl ->
-//            AsyncImage(
-//                model = ImageRequest.Builder(LocalContext.current)
-//                    .data(imageUrl)
-//                    .crossfade(true)
-//                    .build(),
-//                contentDescription = "Background Frame of ${playerData?.name}",
-//                modifier = Modifier.fillMaxSize(),
-//                contentScale = ContentScale.Crop,
-//                alpha = 0.5f
-//            )
-
         Row{
-            if (playerData?.options?.iconDeka?.png != null) {
-                playerData.options?.iconDeka?.png.let { imageUrl ->
+            val imageUrl = playerData?.options?.iconDeka?.png ?: playerData?.options?.icon?.png
+            val modifier = if (playerData?.options?.iconDeka?.png != null) {
+                Modifier.size(100.dp)
+            } else {
+                Modifier.size(100.dp).padding(5.dp)
+            }
+            imageUrl?.let { url ->
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
+                        .data(url)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Avatar of ${playerData.name}",
-                    modifier = Modifier
-                        .size(100.dp),
+                    contentDescription = "Avatar of ${playerData?.name}",
+                    modifier = modifier,
                     contentScale = ContentScale.Fit
                 )
-            }
-            }
-            else {
-                playerData?.options?.icon?.png.let { imageUrl ->
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(imageUrl)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = "Avatar of ${playerData?.name}",
-                        modifier = Modifier
-                            .size(100.dp).padding(5.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                }
             }
 
         }
@@ -149,7 +126,7 @@ fun MaimaiPlayerDetails(
                         } else {
                             0.dp
                         }
-                    ) // Ajoute une marge en haut
+                    )
                     .background(
                     color = selectRatingBackgroundColor(playerData?.rating),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp)

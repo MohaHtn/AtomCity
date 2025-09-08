@@ -28,7 +28,7 @@ class MaiteaRepository(private val maiteaService: MaiteaService) {
 
         // If not, make API call
         val response = maiteaService.getAllUserScores(page)
-        response?.let {
+        response.let {
             // Store data in cache
             pageCache.put(it)
         }
