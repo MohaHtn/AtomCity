@@ -1,6 +1,8 @@
 package org.arcade.atomcity.ui.game.maimai
 
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,12 +35,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -47,6 +52,9 @@ import org.arcade.atomcity.ui.core.AchievementChip
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.utils.formatPlayDate
+import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
+import org.arcade.atomcity.ui.game.common.getDifficultyLevelFromCSV
+import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -168,24 +176,70 @@ fun MaimaiScores(
                 ) {
                     items(count = maiteaViewModel.playsDataSize) { score ->
                         Card(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.
+                                padding(8.dp)
+                                .border(
+                                2.dp,
+                                if (data?.data?.get(score)?.isHighScore == true) Color(0x4B5E5E5B) else Color.Transparent,
+                                androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                            ),
                             onClick = {
                                 isExpanded = !isExpanded
                                 navController.navigate("maimaiScoresDetails/${data?.data?.get(score)?.id}")
-                            }
+                            },
+                            colors = getDifficultyColorBackground(data?.data?.get(score)?.difficultyLevel?.value),
                         ) {
                             Row(
                                 modifier = Modifier.padding(16.dp),
                             ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data(data?.data?.get(score)?.jacketImageUrl)
-                                        .crossfade(true)
-                                        .build(),
-                                    contentDescription = "Jacket of ${data?.data?.get(score)?.song?.name?.jp}",
-                                    modifier = Modifier.size(64.dp),
-                                    contentScale = ContentScale.Crop
-                                )
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(data?.data?.get(score)?.jacketImageUrl)
+                                            .crossfade(true)
+                                            .build(),
+                                        contentDescription = "Jacket of ${data?.data?.get(score)?.song?.name?.jp}",
+                                        modifier = Modifier.size(64.dp)
+                                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                                            .border(4.dp, getJacketBorderColor(data?.data?.get(score)?.difficultyLevel?.value), androidx.compose.foundation.shape.RoundedCornerShape(16.dp)),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(androidx.compose.foundation.shape.CircleShape)
+                                            .background(getJacketBorderColor(data?.data?.get(score)?.difficultyLevel?.value))
+                                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    ) {
+                                        Text(
+                                            text = getDifficultyLevelFromCSV(
+                                                context = LocalContext.current,
+                                                songName = data?.data?.get(score)?.song?.name?.jp ?: "Unknown",
+                                                difficulty = data?.data?.get(score)?.difficultyLevel?.value
+                                            ),
+                                            style = MaterialTheme.typography.headlineSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                            )
+                                        )
+                                        if (data?.data?.get(score)?.isHighScore == true) {
+                                            Text(
+                                                text = "★",
+                                                modifier = Modifier
+                                                    .align(Alignment.TopEnd).offset {
+                                                        androidx.compose.ui.unit.IntOffset(
+                                                            x = 50,
+                                                            y = (-12)
+                                                        )
+                                                    },
+                                                style = MaterialTheme.typography.headlineSmall.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.Yellow
+                                            ))
+                                        }
+                                    }
+                                }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {val songNameEn = data?.data?.get(score)?.song?.name?.en
                                     val songNameJp = data?.data?.get(score)?.song?.name?.jp
@@ -209,12 +263,12 @@ fun MaimaiScores(
                                     if (data?.data?.get(score)?.song?.artist?.en == data?.data?.get(score)?.song?.artist?.jp) {
                                         Text(
                                             text = data?.data?.get(score)?.song?.artist?.en ?: "",
-                                            style = MaterialTheme.typography.bodySmall
+                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
                                         )
                                     } else {
                                         Text(
                                             text = "${data?.data?.get(score)?.song?.artist?.en} | ${data?.data?.get(score)?.song?.artist?.jp}",
-                                            style = MaterialTheme.typography.bodySmall
+                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
                                         )
                                     }
 
@@ -227,15 +281,27 @@ fun MaimaiScores(
                                             Text(
                                                 text = formatPlayDate(data?.data?.get(score)?.playDate),
                                                 modifier = Modifier.align(Alignment.CenterStart),
-                                                style = MaterialTheme.typography.bodySmall
+                                                style = MaterialTheme.typography.bodyLarge
                                             )
 
                                             AchievementChip(
                                                 text = data?.data?.get(score)?.achievementFormatted?: "",
                                                 modifier = Modifier.align(Alignment.CenterEnd)
                                             )
+
                                         }
                                     }
+                                    Box(
+                                        modifier = Modifier
+                                            .alpha(0.3f)
+                                            .align(Alignment.End)
+                                    ) {
+                                        Text(
+                                            text = data?.data?.get(score)?.difficultyLevel?.label ?: "",
+                                            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+
                                 }
                             }
                         }

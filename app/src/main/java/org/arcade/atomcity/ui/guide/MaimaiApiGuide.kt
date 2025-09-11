@@ -157,7 +157,7 @@ fun MaimaiApiGuideContent(apiKeyManager: ApiKeyManager, isVisible: MutableState<
     EnterApiTextBox(apiKeyManager = apiKeyManager, isVisible = isVisible, showSnackbar = showSnackbar, maiteaViewModel = maiteaViewModel)
 
     if (showSnackbar.value) {
-        SnackbarMesage("Clé API enregistrée avec succès")
+        SnackbarMessage("Clé API enregistrée avec succès")
     }
 }
 
@@ -185,15 +185,15 @@ fun EnterApiTextBox(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolea
                 when {
                     newText.isBlank() -> {
                         isError = true
-                        errorMessage = "La clé API ne peut pas être vide"
+                        errorMessage = "La clé API ne peut pas être vide."
                     }
                     !newText.contains("|") -> {
                         isError = true
-                        errorMessage = "Format invalide: la clé doit contenir le caractère '|'"
+                        errorMessage = "Format invalide. La clé doit contenir le caractère '|'"
                     }
                     newText.length < minApiKeyLength -> {
                         isError = true
-                        errorMessage = "La clé API est trop courte (minimum $minApiKeyLength caractères)"
+                        errorMessage = "La clé API est trop courte (minimum $minApiKeyLength caractères)."
                     }
                     else -> {
                         isError = false
@@ -249,7 +249,7 @@ fun EnterApiTextBox(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolea
 }
 
 @Composable
-fun SnackbarMesage(message: String) {
+fun SnackbarMessage(message: String) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 

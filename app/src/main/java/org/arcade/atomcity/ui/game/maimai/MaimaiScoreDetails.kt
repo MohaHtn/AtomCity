@@ -2,32 +2,39 @@ package org.arcade.atomcity.ui.game.maimai
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
 import org.arcade.atomcity.utils.formatPlayDate
 import java.io.BufferedReader
 import java.io.InputStreamReader
-
+import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
+import org.arcade.atomcity.ui.game.common.getDifficultyLevelFromCSV
+import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 
 @Composable
 fun MaimaiScoresDetails(
@@ -42,7 +49,22 @@ fun MaimaiScoresDetails(
                 .fillMaxSize(),
             shape = MaterialTheme.shapes.large,
         ) {
-            Column {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(scoreEntry?.jacketImageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = scoreEntry?.song?.name?.jp ?: "Song Jacket",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                        .border(4.dp, getJacketBorderColor(scoreEntry?.difficultyLevel?.value),
+                            androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -85,7 +107,6 @@ fun MaimaiScoresDetails(
                     )
                 }
 
-
                 Row(
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -103,8 +124,7 @@ fun MaimaiScoresDetails(
                             labelColor = if (scoreEntry?.isHighScore == true) Color.Black else Color.Gray
                         ),
                         leadingIcon = if (scoreEntry?.isHighScore == true) {
-                            {
-                            }
+                            {}
                         } else null,
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
@@ -232,85 +252,5 @@ fun TableRow(label: String = "", nbPerfect: String, nbGreat: String, nbGood: Str
     }
 }
 
-@Composable
-fun getDifficultyColorBackground(difficulty: String?): CardColors {
-    return when (difficulty) {
-        "easy" -> CardDefaults.cardColors(containerColor = Color(0xFF45AEFF))
-        "basic" -> CardDefaults.cardColors(containerColor = Color(0xFF6FD43C))
-        "advanced" -> CardDefaults.cardColors(containerColor = Color(0xFFBB8A05))
-        "expert" -> CardDefaults.cardColors(containerColor = Color(0xFFFF2E42))
-        "master" -> CardDefaults.cardColors(containerColor = Color(0x339F51DC))
-        "remaster" -> CardDefaults.cardColors(containerColor = Color(0xFFD172ED))
-        else -> CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0)) // Default color
-    }
-}
 
 
-// Good'ol cache to avoid reloading the CSV file multiple times
-private val difficultyCache = mutableMapOf<Pair<String, String?>, String>()
-private var csvDataLoaded = false
-private val csvData = mutableMapOf<String, Map<String, String>>()
-
-@Composable
-fun getDifficultyLevelFromCSV(context: Context, songName: String, difficulty: String?): String {
-    // Checking the cache first
-    val cacheKey = Pair(songName, difficulty)
-    difficultyCache[cacheKey]?.let { return it }
-
-    // Load CSV data if not already loaded
-    if (!csvDataLoaded) {
-        try {
-            loadCsvData(context)
-        } catch (e: Exception) {
-            Log.e("MaimaiScoreDetails", "Erreur lors du chargement du fichier CSV", e)
-        }
-    }
-
-    // Else, retrieve the difficulty level from the CSV data
-    val songData = csvData[songName.lowercase()]
-    val difficultyValue = when (difficulty?.lowercase()) {
-        "easy" -> songData?.get("easy")
-        "basic" -> songData?.get("basic")
-        "advanced" -> songData?.get("advanced")
-        "expert" -> songData?.get("expert")
-        "master" -> songData?.get("master")
-        "remaster" -> songData?.get("remaster")
-        else -> null
-    }
-
-    val result = if (difficultyValue != null && difficultyValue != "-") difficultyValue else "N/A"
-
-    // Store the result in the cache
-    difficultyCache[cacheKey] = result
-
-    return result
-}
-
-private fun loadCsvData(context: Context) {
-    context.resources.assets.open("maimai/songs.csv").use { inputStream ->
-        BufferedReader(InputStreamReader(inputStream)).use { reader ->
-
-            // Skip header
-            reader.readLine()
-
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                val values = line?.split(",")
-
-                if (values != null && values.size >= 8) {
-                    val songName = values[0].trim().lowercase()
-                    val difficulties = mapOf(
-                        "easy" to values[2].trim(),
-                        "basic" to values[3].trim(),
-                        "advanced" to values[4].trim(),
-                        "expert" to values[5].trim(),
-                        "master" to values[6].trim(),
-                        "remaster" to values[7].trim()
-                    )
-                    csvData[songName] = difficulties
-                }
-            }
-        }
-    }
-    csvDataLoaded = true
-}

@@ -104,8 +104,7 @@ fun MaimaiPlayerDetails(
             Text(
                 text = computeRating(playerData?.rating),
                 fontSize = if (collaspedFraction < 0.5f) 20.sp else 16.sp,
-                color = getContrastingColor(selectRatingBackgroundColor(playerData?.rating))
-                ,
+                color = getContrastingColor(selectRatingBackgroundColor(playerData?.rating)),
                 modifier = Modifier
                     .padding(
                         if (collaspedFraction < 0.5f) {
