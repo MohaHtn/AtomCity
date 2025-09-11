@@ -17,19 +17,16 @@ fun GameScreen(
 ) {
     when (gameId) {
         "maimai" -> {
-            Log.d("GameScreen", "Navigating to maimai scores screen")
             MaimaiScores(
                 maiteaViewModel = maiteaViewModel,
                 navController = navController
             )
         }
         "taiko no tatsujin" -> {
-            Log.d("GameScreen", "Navigating to taiko scores screen")
             TaikoScores(
-                taikoViewModel = taikoViewModel, // Assuming you have a TaikoViewModel similar to MaiteaViewModel
+                taikoViewModel = taikoViewModel,
                 navController = navController
             )
         }
-        // etc.
     }
 }

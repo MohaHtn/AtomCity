@@ -23,6 +23,7 @@ import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.SettingsScreen
 import org.arcade.atomcity.ui.core.WelcomeScreen
 import org.arcade.atomcity.ui.core.openApiGuide
+import org.arcade.atomcity.ui.core.settings.ApiSettings
 import org.arcade.atomcity.ui.game.maimai.GameScreen
 import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.guide.MaimaiApiGuide
@@ -53,8 +54,8 @@ fun AppNavigation(
         startDestination = Screen.Home.route,
         enterTransition = { expandHorizontally() },
         exitTransition = { fadeOut(animationSpec = tween(500)) + slideOutHorizontally() },
-        popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(700)) },
-        popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(700)) }
+        popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) },
+        popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) }
     ) {
         composable(Screen.Home.route) {
             val apiChecklistState = apiKeyManager.getApiChecklistState()
@@ -87,14 +88,18 @@ fun AppNavigation(
         composable("welcome") {
             WelcomeScreen(
                 navController = navController,
-                apiChecklistState = apiKeyManager.getApiChecklistState()
+                apiChecklistState = apiKeyManager.getApiChecklistState(),
+                onContinueClick = {
+                    navController.navigate(Screen.Game.createRoute(apiKeyManager.getApiChecklistState().value.first()))
+                }
             )
 
             // TODO: Ce sera un switch plus tard
             if (openApiGuide.value) {
                 MaimaiApiGuide(
                     apiKeyManager = apiKeyManager,
-                    isVisible = openApiGuide
+                    isVisible = openApiGuide,
+                    maiteaViewModel = maiteaViewModel
                 )
             }
         }
@@ -113,7 +118,15 @@ fun AppNavigation(
 
         composable(route = "settings") {
             SettingsScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                navController = navController,
+            )
+        }
+
+        composable(route = "apiSettings") {
+            ApiSettings(
+                onBackClick = { navController.popBackStack() },
+                apiKeyManager = apiKeyManager
             )
         }
     }

@@ -52,10 +52,6 @@ class MaiteaViewModel(
         }
     }
 
-    init {
-        Log.d("MaiteaViewModel", "Loaded ${jacketImages.size} jacket URLs from images.json")
-    }
-
     fun fetchMaimaiPaginatedData(page: Int) {
         try {
             viewModelScope.launch {
@@ -63,7 +59,6 @@ class MaiteaViewModel(
                 repository.getMaiTeaPaginatedData(page).collect { response ->
                     response?.data?.forEach { entry ->
                         entry.jacketImageUrl = findJacketUrlBySongName(entry.song?.name?.jp)
-                        Log.d("MaiteaViewModel", "Mapped jacket URL for ${entry.song?.name?.jp}: ${entry.jacketImageUrl}")
                     }
                     _playsData.value = response
                     _isLoadingPlays.value = false
@@ -91,6 +86,22 @@ class MaiteaViewModel(
         } catch (e: Exception) {
             Log.e("MainActivityViewModel", "Error: ${e.message}")
             _isLoadingPlayer.value = false
+        }
+    }
+
+    fun addApiKey(apikey: String) {
+        try {
+            viewModelScope.launch {
+                repository.addApiKey(apikey).collect { success ->
+                    if (success) {
+                        Log.d("MaiteaViewModel", "API key added successfully")
+                    } else {
+                        Log.e("MaiteaViewModel", "Failed to add API key")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MaiteaViewModel", "Error adding API key: ${e.message}")
         }
     }
 }

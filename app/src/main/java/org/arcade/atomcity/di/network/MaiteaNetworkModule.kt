@@ -15,9 +15,8 @@ import org.koin.core.qualifier.named
 import java.util.concurrent.TimeUnit
 
 val maiteaNetworkModule = module {
-    single<Retrofit>(named("maitea")) {
+    single<Retrofit>(named("maitea_scores")) {
         val context = androidContext()
-        val apiKeyManager = ApiKeyManager(context)
 
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -30,27 +29,22 @@ val maiteaNetworkModule = module {
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
                 .addInterceptor { chain: Interceptor.Chain ->
-                val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }
                 val request = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer $apiKey")
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Accept", "application/json")
+                    .addHeader("X-API-KEY", "ut52IrahAF7mTF9eIgSchTvjkWziKB1J1MWFewaFfcZrQmvUxZEi3InGhDSwbV5zklkBqXRUjuXksFMJ1gfaQlxCeBsghbB1rc68kH46IW9q93HvU2oWU1WIPDCOviAh")
+                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
                     .build()
                 chain.proceed(request)
             }
-            .connectTimeout(300, TimeUnit.SECONDS) // Délai d'attente de connexion
-            .readTimeout(300, TimeUnit.SECONDS)    // Délai d'attente de lecture
-            .writeTimeout(300, TimeUnit.SECONDS)   // Délai d'attente d'écriture
             .build()
 
         Retrofit.Builder()
-            .baseUrl("https://maitea.app/api/v1/")
+            .baseUrl("https://scorefetcher.mohahtn.xyz")
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
     }
 
     single<MaiteaService> {
-        get<Retrofit>(named("maitea")).create(MaiteaService::class.java)
+        get<Retrofit>(named("maitea_scores")).create(MaiteaService::class.java)
     }
 }

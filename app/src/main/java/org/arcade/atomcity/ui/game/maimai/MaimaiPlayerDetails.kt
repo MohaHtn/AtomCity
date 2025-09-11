@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.ui.game.common.selectRatingBackgroundColor
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,21 +49,7 @@ fun MaimaiPlayerDetails(
         return "0.00"
     }
 
-    fun selectRatingBackgroundColor(rating: Int?): Color {
-        return when (rating) {
-            null -> Color.Transparent
-            in 0..200 -> Color.White
-            in 200..399 -> Color.Blue
-            in 400..699 -> Color.Green
-            in 700..999 -> Color.Cyan
-            in 1000..1199 -> Color.Red
-            in 1200..1299 -> Color.Magenta
-            in 1300..1399 -> Color(0xFFA52A2A) // Brown
-            in 1400..1449 -> Color.Gray
-            in 1450..1499 -> Color.Yellow
-            else -> Color.Black
-        }
-    }
+
      fun getContrastingColor(backgroundColor: Color): Color {
         // On calcule la luminosité de la couleur (formule standard)
         val luminance = (0.299 * backgroundColor.red + 0.587 * backgroundColor.green + 0.114 * backgroundColor.blue)

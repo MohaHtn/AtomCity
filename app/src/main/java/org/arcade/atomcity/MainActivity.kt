@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import org.arcade.atomcity.di.apiKeyManagerModule
 import org.arcade.atomcity.di.jacketImagesModule
 import org.arcade.atomcity.di.network.maiteaNetworkModule
+import org.arcade.atomcity.di.network.maiteaProfileDataModule
 import org.arcade.atomcity.di.network.taikoNetworkModule
 import org.arcade.atomcity.di.viewmodel.maiTeaViewModelModule
 import org.arcade.atomcity.di.viewmodel.taikoServerViewModelModule
@@ -35,6 +36,7 @@ class AtomCityApplication : Application() {
 
             val maiteaModules = listOf(
                 maiteaNetworkModule,
+                maiteaProfileDataModule,
                 maiTeaViewModelModule,
                 jacketImagesModule
             )

@@ -8,7 +8,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val maiTeaViewModelModule = module {
-    single { MaiteaRepository(get()) }
+    single { MaiteaRepository(get(), get(), get()) }
     single { GetMaiteaDataUseCase(get()) }
     single {
         MaiteaViewModel(

@@ -54,7 +54,11 @@ var openApiGuide = mutableStateOf(false)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WelcomeScreen(navController: NavController, apiChecklistState: MutableState<List<String>>) {
+fun WelcomeScreen(
+    navController: NavController,
+    apiChecklistState: MutableState<List<String>>,
+    onContinueClick: () -> Unit
+) {
 
     Scaffold(
         topBar = {
@@ -86,7 +90,7 @@ fun WelcomeScreen(navController: NavController, apiChecklistState: MutableState<
                 if (isPage1) {
                     WelcomeCard()
                 } else {
-                    SetupCard(navController, apiChecklistState)
+                    SetupCard(navController, apiChecklistState, onContinueClick)
                 }
             }
         }
@@ -134,7 +138,11 @@ fun WelcomeCard() {
 }
 
 @Composable
-fun SetupCard(navController: NavController, apiChecklistState: MutableState<List<String>>) {
+fun SetupCard(
+    navController: NavController,
+    apiChecklistState: MutableState<List<String>>,
+    onContinueClick: () -> Unit
+) {
     val context = LocalContext.current
     val apiKeyManager = ApiKeyManager(context)
 
@@ -180,7 +188,12 @@ fun SetupCard(navController: NavController, apiChecklistState: MutableState<List
 
             if (apiChecklistState.value.isNotEmpty()) {
                 Button(
-                    onClick = { navController.navigate(Screen.Game.createRoute(apiKeyManager.getApiChecklistState().value.first()))},                ) {
+                    onClick = {
+                        Log.d("WelcomeScreen", "Navigating to Game screen")
+                        navController.navigate(route = Screen.Game.createRoute(apiKeyManager.getApiChecklistState().value.first()))
+                    }
+                )
+                {
                     Text(
                         text = "Suivant",
                         style = MaterialTheme.typography.labelMedium

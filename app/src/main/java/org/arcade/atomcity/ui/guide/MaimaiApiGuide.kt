@@ -1,8 +1,6 @@
 package org.arcade.atomcity.ui.guide
 
-import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -33,20 +30,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.R
+import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.ui.core.LinkText
 import org.arcade.atomcity.ui.core.openApiGuide
 import org.arcade.atomcity.utils.ApiKeyManager
@@ -66,13 +56,10 @@ const val MAIMAI_API_GUIDE_PLACEHOLDER = "Exemple: 391|UBvwFPZvDrC3lm9DMSd50e4zX
 const val MAIMAI_API_GUIDE_VALIDATE = "Valider"
 const val MAIMAI_API_GUIDE_BACK = "Retour"
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MaimaiApiGuide(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean>) {
+fun MaimaiApiGuide(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean>, maiteaViewModel: MaiteaViewModel) {
     val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
-    var showBottomSheet by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = {
@@ -84,153 +71,183 @@ fun MaimaiApiGuide(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean
             modifier = Modifier.padding(16.dp)
         ) {
             item {
-                MaimaiApiGuideContent(apiKeyManager = apiKeyManager, isVisible = isVisible)
+                MaimaiApiGuideContent(apiKeyManager = apiKeyManager, isVisible = isVisible, maiteaViewModel = maiteaViewModel)
             }
         }
     }
 }
 
+@Composable
+fun MaimaiApiGuideContent(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean>, maiteaViewModel: MaiteaViewModel) {
+    val showSnackbar = remember { mutableStateOf(false) }
 
- @Composable
- fun MaimaiApiGuideContent(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean>) {
-     val showSnackbar = remember { mutableStateOf(false) }
+    Text(
+        text = MAIMAI_API_GUIDE_TITLE,
+        style = MaterialTheme.typography.headlineMedium.copy(textAlign = TextAlign.Center),
+        modifier = Modifier.padding(16.dp),
+    )
 
-     Text(
-         text = MAIMAI_API_GUIDE_TITLE,
-         style = MaterialTheme.typography.headlineMedium.copy(textAlign = TextAlign.Center),
-         modifier = Modifier.padding(16.dp),
-     )
+    LinkText(
+        fullText = MAIMAI_API_GUIDE_TEXT,
+        linkText = "maitea.app",
+        url = MAIMAI_API_GUIDE_URL,
+    )
 
-     LinkText(
-         fullText = MAIMAI_API_GUIDE_TEXT,
-         linkText = "maitea.app",
-         url = MAIMAI_API_GUIDE_URL,
-     )
+    Image(
+        painter = painterResource(id = R.drawable.guide_maimai_step1),
+        contentDescription = MAIMAI_API_GUIDE_STEP1,
+        modifier = Modifier
+            .fillMaxWidth()
+            .width(300.dp)
+            .height(300.dp)
+            .padding(vertical = 8.dp),
+        contentScale = ContentScale.Fit
+    )
 
-     Image(
-         painter = painterResource(id = R.drawable.guide_maimai_step1),
-         contentDescription = MAIMAI_API_GUIDE_STEP1,
-         modifier = Modifier
-             .fillMaxWidth()
-             .width(300.dp)
-             .height(300.dp)
-             .padding(vertical = 8.dp),
-         contentScale = ContentScale.Fit
-     )
+    Text(
+        text = MAIMAI_API_GUIDE_TEXT2,
+        style = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Justify),
+        modifier = Modifier.padding(16.dp)
+    )
 
-     Text(
-         text = MAIMAI_API_GUIDE_TEXT2,
-         style = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Justify),
-         modifier = Modifier.padding(16.dp)
-     )
+    Image(
+        painter = painterResource(id = R.drawable.guide_maimai_step2),
+        contentDescription = MAIMAI_API_GUIDE_STEP2,
+        modifier = Modifier
+            .fillMaxWidth()
+            .width(300.dp)
+            .height(300.dp)
+            .padding(vertical = 8.dp),
+        contentScale = ContentScale.Fit
+    )
 
-     Image(
-         painter = painterResource(id = R.drawable.guide_maimai_step2),
-         contentDescription = MAIMAI_API_GUIDE_STEP2,
-         modifier = Modifier
-             .fillMaxWidth()
-             .width(300.dp)
-             .height(300.dp)
-             .padding(vertical = 8.dp),
-         contentScale = ContentScale.Fit
-     )
+    Text(
+        modifier = Modifier.padding(16.dp),
+        text = MAIMAI_API_GUIDE_TEXT3,
+        style = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Justify)
+    )
 
-     Text(
-         modifier = Modifier.padding(16.dp),
-         text = MAIMAI_API_GUIDE_TEXT3,
-         style = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Justify)
-     )
+    Image(
+        painter = painterResource(id = R.drawable.guide_maimai_step3),
+        contentDescription = MAIMAI_API_GUIDE_STEP3,
+        modifier = Modifier
+            .fillMaxWidth()
+            .width(300.dp)
+            .height(300.dp)
+            .padding(vertical = 8.dp),
+    )
 
-     Image(
-         painter = painterResource(id = R.drawable.guide_maimai_step3),
-         contentDescription = MAIMAI_API_GUIDE_STEP3,
-         modifier = Modifier
-             .fillMaxWidth()
-             .width(300.dp)
-             .height(300.dp)
-             .padding(vertical = 8.dp),
-     )
+    Text(
+        modifier = Modifier.padding(16.dp),
+        text = MAIMAI_API_GUIDE_SUCCESS,
+        style = MaterialTheme.typography.bodyMedium
+    )
 
-     Text(
-         modifier = Modifier.padding(16.dp),
-         text = MAIMAI_API_GUIDE_SUCCESS,
-         style = MaterialTheme.typography.bodyMedium
-     )
+    Image(
+        painter = painterResource(id = R.drawable.guide_maimai_step4),
+        contentDescription = MAIMAI_API_GUIDE_STEP4,
+        modifier = Modifier
+            .fillMaxWidth()
+            .width(300.dp)
+            .height(300.dp)
+            .padding(vertical = 8.dp),
+        contentScale = ContentScale.Fit
+    )
 
-     Image(
-         painter = painterResource(id = R.drawable.guide_maimai_step4),
-         contentDescription = MAIMAI_API_GUIDE_STEP4,
-         modifier = Modifier
-             .fillMaxWidth()
-             .width(300.dp)
-             .height(300.dp)
-             .padding(vertical = 8.dp),
-         contentScale = ContentScale.Fit
-     )
-
-     EnterApiTextBox(apiKeyManager = apiKeyManager, isVisible = isVisible, showSnackbar = showSnackbar)
+    EnterApiTextBox(apiKeyManager = apiKeyManager, isVisible = isVisible, showSnackbar = showSnackbar, maiteaViewModel = maiteaViewModel)
 
     if (showSnackbar.value) {
         SnackbarMesage("Clé API enregistrée avec succès")
     }
-
- }
+}
 
 @Composable
-fun EnterApiTextBox(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean>, showSnackbar: MutableState<Boolean>) {
-    var text: MutableState<String> = remember { mutableStateOf("") }
-    val navController = rememberNavController()
+fun EnterApiTextBox(apiKeyManager: ApiKeyManager, isVisible: MutableState<Boolean>, showSnackbar: MutableState<Boolean>, maiteaViewModel: MaiteaViewModel) {
     val scope = rememberCoroutineScope()
+    var text by remember { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    val isValidInput by remember(text, isError) {
+        mutableStateOf(text.isNotBlank() && !isError && text.contains("|"))
+    }
 
+    val minApiKeyLength = 10
 
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
         OutlinedTextField(
-            value = text.value,
-            onValueChange = { newText: String -> text.value = newText },
+            value = text,
+            onValueChange = { newText ->
+                text = newText
+                when {
+                    newText.isBlank() -> {
+                        isError = true
+                        errorMessage = "La clé API ne peut pas être vide"
+                    }
+                    !newText.contains("|") -> {
+                        isError = true
+                        errorMessage = "Format invalide: la clé doit contenir le caractère '|'"
+                    }
+                    newText.length < minApiKeyLength -> {
+                        isError = true
+                        errorMessage = "La clé API est trop courte (minimum $minApiKeyLength caractères)"
+                    }
+                    else -> {
+                        isError = false
+                        errorMessage = ""
+                    }
+                }
+            },
             label = { Text(MAIMAI_API_GUIDE_LABEL) },
             placeholder = { Text(MAIMAI_API_GUIDE_PLACEHOLDER) },
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            modifier = Modifier.fillMaxWidth(),
+            isError = isError,
+            supportingText = {
+                if (isError) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            singleLine = true
         )
 
         Row(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth()
+                .padding(top = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            if (!showSnackbar.value) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(
-                        onClick = { isVisible.value = false },
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(MAIMAI_API_GUIDE_BACK)
-                    }
+            TextButton(
+                onClick = { isVisible.value = false }
+            ) {
+                Text(MAIMAI_API_GUIDE_BACK)
+            }
 
-                    val scope = rememberCoroutineScope()
 
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                apiKeyManager.saveApiKey("maimai", text.value)
-                                showSnackbar.value = true
-                                isVisible.value = false
-                            }
-                        },
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(MAIMAI_API_GUIDE_VALIDATE)
+            Button(
+                onClick = {
+                    if (isValidInput) {
+                        scope.launch {
+                            apiKeyManager.saveApiKey("maimai", text)
+                            maiteaViewModel.addApiKey(text)
+                            isVisible.value = false
+                        }
                     }
-                }
-            } else {
+                },
+                enabled = isValidInput,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text(MAIMAI_API_GUIDE_VALIDATE)
             }
         }
     }
 }
+
 @Composable
 fun SnackbarMesage(message: String) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -263,5 +280,3 @@ fun SnackbarMesage(message: String) {
         }
     }
 }
-
-

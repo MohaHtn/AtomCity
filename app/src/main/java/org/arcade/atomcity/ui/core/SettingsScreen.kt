@@ -1,17 +1,23 @@
 package org.arcade.atomcity.ui.core
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 @Composable
-fun SettingsScreen(onBackClick: () -> Unit) {
+fun SettingsScreen(
+    onBackClick: () -> Unit,
+    navController: NavController
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -23,17 +29,17 @@ fun SettingsScreen(onBackClick: () -> Unit) {
             )
         }
         item {
-            Text(
-                text = "Cette section est en cours de développement.",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-        item {
-            Text(
-                text = "Pour l'instant, vous pouvez consulter les guides API pour configurer vos jeux.",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(16.dp)
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = "Paramètres des clés API",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                modifier = Modifier.padding(8.dp)
+                    .clickable {
+                        navController.navigate("apiSettings")
+                    }
             )
         }
     }
