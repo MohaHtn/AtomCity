@@ -7,15 +7,12 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import org.arcade.atomcity.network.MaiteaService
 import okhttp3.OkHttpClient
 import okhttp3.Interceptor
-import org.koin.android.ext.koin.androidContext
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.core.qualifier.named
 import org.arcade.atomcity.BuildConfig
 
 val maiteaNetworkModule = module {
     single<Retrofit>(named("maitea_scores")) {
-        val context = androidContext()
-
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
