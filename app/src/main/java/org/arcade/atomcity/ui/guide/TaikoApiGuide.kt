@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.guide
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,7 +46,7 @@ import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
 
 const val TAIKO_API_GUIDE_TITLE = "Ajouter une clé API Taiko pour Taiko no Tatsujin"
-const val TAIKO_API_GUIDE_TEXT = "Le serveur Taiko permet de synchroniser vos scores et réglages. Pour le moment, seul l'ID utilisateur est requis pour accéder à vos données publiques."
+const val TAIKO_API_GUIDE_TEXT = "Le serveur Taiko permet de synchroniser vos scores et réglages. Seul l'ID utilisateur est requis pour accéder à vos données publiques."
 const val TAIKO_API_GUIDE_STEP1_TITLE = "Récupération de l'ID"
 const val TAIKO_API_GUIDE_STEP1_DESC = "Etape 1 Récupération de l'ID utilisateur"
 const val TAIKO_API_GUIDE_STEP1_TEXT = "Entrez votre ID utilisateur (User Number) pour synchroniser vos données. Vous pouvez le trouver sur votre profil du serveur Taiko."
@@ -62,14 +63,15 @@ fun TaikoServerApiGuide(
     taikoViewModel: TaikoViewModel
 ) {
     val scope = rememberCoroutineScope()
-    val hasExistingApiKey = remember { !apiKeyManager.getApiKey("taiko").isNullOrEmpty() }
+    val existingApiKey = remember { apiKeyManager.getApiKey("taiko") }
 
     TaikoApiGuideContent(
         onDismiss = { isVisible.value = false },
-        hasExistingApiKey = hasExistingApiKey,
+        existingApiKey = existingApiKey,
         onSaveApiKey = { text ->
             scope.launch {
                 apiKeyManager.saveApiKey("taiko", text)
+                Log.d("TaikoServerApiGuide", "API Key saved: $text")
                 // taikoViewModel.addApiKey(text) // Si TaikoViewModel a une méthode similaire
                 isVisible.value = false
             }
@@ -81,7 +83,7 @@ fun TaikoServerApiGuide(
 @Composable
 fun TaikoApiGuideContent(
     onDismiss: () -> Unit,
-    hasExistingApiKey: Boolean,
+    existingApiKey: String?,
     onSaveApiKey: (String) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -94,7 +96,7 @@ fun TaikoApiGuideContent(
         tonalElevation = 0.dp
     ) {
         TaikoApiGuideSheetContent(
-            hasExistingApiKey = hasExistingApiKey,
+            existingApiKey = existingApiKey,
             onDismiss = onDismiss,
             onSaveApiKey = onSaveApiKey
         )
@@ -103,7 +105,7 @@ fun TaikoApiGuideContent(
 
 @Composable
 fun TaikoApiGuideSheetContent(
-    hasExistingApiKey: Boolean,
+    existingApiKey: String?,
     onDismiss: () -> Unit,
     onSaveApiKey: (String) -> Unit
 ) {
@@ -134,7 +136,7 @@ fun TaikoApiGuideSheetContent(
                 GuideStep(
                     number = 1,
                     title = TAIKO_API_GUIDE_STEP1_TITLE,
-                    imageRes = R.drawable.guide_maimai_step1, // Placeholder image
+                    imageRes = R.drawable.guide_taiko_step1,
                     contentDescription = TAIKO_API_GUIDE_STEP1_DESC
                 ) {
                     Text(
@@ -153,7 +155,7 @@ fun TaikoApiGuideSheetContent(
 
             item {
                 EnterTaikoApiTextBoxContent(
-                    hasExistingApiKey = hasExistingApiKey,
+                    existingApiKey = existingApiKey,
                     onDismiss = onDismiss,
                     onSaveApiKey = onSaveApiKey
                 )
@@ -168,11 +170,11 @@ fun TaikoApiGuideSheetContent(
 
 @Composable
 fun EnterTaikoApiTextBoxContent(
-    hasExistingApiKey: Boolean,
+    existingApiKey: String?,
     onDismiss: () -> Unit,
     onSaveApiKey: (String) -> Unit
 ) {
-    var text by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(existingApiKey ?: "") }
     var isError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     val isValidInput by remember(text, isError) {
@@ -211,7 +213,7 @@ fun EnterTaikoApiTextBoxContent(
                 },
                 label = { Text(TAIKO_API_GUIDE_LABEL) },
                 placeholder = {
-                    if (!hasExistingApiKey) {
+                    if (existingApiKey.isNullOrBlank()) {
                         Text(TAIKO_API_GUIDE_PLACEHOLDER)
                     }
                 },
@@ -260,7 +262,7 @@ fun TaikoApiGuidePreview() {
     AtomCityTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
             TaikoApiGuideSheetContent(
-                hasExistingApiKey = true,
+                existingApiKey = "152",
                 onDismiss = {},
                 onSaveApiKey = {}
             )

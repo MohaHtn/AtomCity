@@ -294,6 +294,7 @@ fun setDifficultyColorBackground(difficulty: Int?): CardColors {
         2 -> CardDefaults.cardColors(containerColor = Color(0xFF657E25))
         3 -> CardDefaults.cardColors(containerColor = Color(0xFF223004))
         4 -> CardDefaults.cardColors(containerColor = Color(0xFFCE2D76))
+        5 -> CardDefaults.cardColors(containerColor = Color(0xFF6B1D8C)) // Added purple for Ura Oni
         else -> CardDefaults.cardColors(containerColor = Color.Gray)
     }
 }

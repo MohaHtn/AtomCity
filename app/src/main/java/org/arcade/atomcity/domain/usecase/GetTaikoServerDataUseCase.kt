@@ -11,10 +11,10 @@ import org.arcade.atomcity.network.TaikoServerService
 
 class GetTaikoServerDataUseCase(private val taikoServerService: TaikoServerService) {
 
-    suspend fun getPlayHistoryFlow(page: String): Flow<TaikoServerPlayHistoryResponse?> {
+    suspend fun getPlayHistoryFlow(userNumber: String): Flow<TaikoServerPlayHistoryResponse?> {
         return withContext(Dispatchers.IO) {
             flow {
-                val response = taikoServerService.getPlayHistory(page)
+                val response = taikoServerService.getPlayHistory(userNumber)
                 emit(response)
             }
         }
@@ -29,10 +29,10 @@ class GetTaikoServerDataUseCase(private val taikoServerService: TaikoServerServi
         }
     }
 
-    suspend fun getUserSettingsFlow(): Flow<TaikoServerUserSettingsResponse?> {
+    suspend fun getUserSettingsFlow(userNumber: String): Flow<TaikoServerUserSettingsResponse?> {
         return withContext(Dispatchers.IO) {
             flow {
-                val response = taikoServerService.getUserSettings()
+                val response = taikoServerService.getUserSettings(userNumber)
                 emit(response)
             }
         }

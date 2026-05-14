@@ -33,11 +33,12 @@ import org.arcade.atomcity.utils.ApiKeyManager
 @Composable
 internal fun ApiItem(
     name: String,
+    key: String = name.lowercase().replace(" ", ""),
     hasKey: Boolean
 ) {
     val context = LocalContext.current
     val apiKeyManager = ApiKeyManager(context)
-    val apiKey = apiKeyManager.getApiKey(name.lowercase().replace(" ", ""))
+    val apiKey = apiKeyManager.getApiKey(key)
     val dialogVisible = remember { mutableStateOf(false) }
     val revealed = remember { mutableStateOf(false) }
 
@@ -176,6 +177,7 @@ fun ApiItemConfiguredPreview() {
     AtomCityTheme {
         ApiItem(
             name = "maimai",
+            key = "maimai",
             hasKey = true
         )
     }
@@ -187,6 +189,7 @@ fun ApiItemNotConfiguredPreview() {
     AtomCityTheme {
         ApiItem(
             name = "Taiko no Tatsujin",
+            key = "taiko",
             hasKey = false
         )
     }

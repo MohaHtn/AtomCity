@@ -17,8 +17,10 @@ interface TaikoServerService {
     suspend fun getMusicDetails()
     : TaikoServerMusicDetailsResponse
 
-    @GET("UserSettings/1")
-    suspend fun getUserSettings(): TaikoServerUserSettingsResponse
+    @GET("UserSettings/{userNumber}")
+    suspend fun getUserSettings(
+        @Path("userNumber") userNumber: String
+    ): TaikoServerUserSettingsResponse
 
     @GET("PlayData/152")
     suspend fun getPlayData(): String

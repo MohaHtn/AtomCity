@@ -32,26 +32,32 @@ internal fun ApiCheckList(apiChecklistState: MutableState<List<String>>) {
     ) {
         ApiItem(
             name = "maimai",
+            key = "maimai",
             hasKey = getApiChecklistState("maimai")
         )
         ApiItem(
             name = "SOUND VOLTEX",
+            key = "sdvx",
             hasKey = getApiChecklistState("sdvx")
         )
         ApiItem(
             name = "In The Groove 2",
+            key = "itg",
             hasKey = getApiChecklistState("itg")
         )
         ApiItem(
             name = "beatmania IIDX",
+            key = "iidx",
             hasKey = getApiChecklistState("iidx")
         )
         ApiItem(
             name = "pop'n music",
+            key = "popn",
             hasKey = getApiChecklistState("popn")
         )
         ApiItem(
             name = "Taiko no Tatsujin",
+            key = "taiko",
             hasKey = getApiChecklistState("taiko")
         )
     }

@@ -68,11 +68,11 @@ fun MaimaiApiGuide(
     maiteaViewModel: MaiteaViewModel
 ) {
     val scope = rememberCoroutineScope()
-    val hasExistingApiKey = remember { !apiKeyManager.getApiKey("maimai").isNullOrEmpty() }
+    val existingApiKey = remember { apiKeyManager.getApiKey("maimai") }
 
     MaimaiApiGuideContent(
         onDismiss = { isVisible.value = false },
-        hasExistingApiKey = hasExistingApiKey,
+        existingApiKey = existingApiKey,
         onSaveApiKey = { text ->
             scope.launch {
                 apiKeyManager.saveApiKey("maimai", text)
@@ -87,7 +87,7 @@ fun MaimaiApiGuide(
 @Composable
 fun MaimaiApiGuideContent(
     onDismiss: () -> Unit,
-    hasExistingApiKey: Boolean,
+    existingApiKey: String?,
     onSaveApiKey: (String) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -100,7 +100,7 @@ fun MaimaiApiGuideContent(
         tonalElevation = 0.dp
     ) {
         MaimaiApiGuideSheetContent(
-            hasExistingApiKey = hasExistingApiKey,
+            existingApiKey = existingApiKey,
             onDismiss = onDismiss,
             onSaveApiKey = onSaveApiKey
         )
@@ -109,7 +109,7 @@ fun MaimaiApiGuideContent(
 
 @Composable
 fun MaimaiApiGuideSheetContent(
-    hasExistingApiKey: Boolean,
+    existingApiKey: String?,
     onDismiss: () -> Unit,
     onSaveApiKey: (String) -> Unit
 ) {
@@ -195,7 +195,7 @@ fun MaimaiApiGuideSheetContent(
 
             item {
                 EnterApiTextBoxContent(
-                    hasExistingApiKey = hasExistingApiKey,
+                    existingApiKey = existingApiKey,
                     onDismiss = onDismiss,
                     onSaveApiKey = onSaveApiKey
                 )
@@ -210,11 +210,11 @@ fun MaimaiApiGuideSheetContent(
 
 @Composable
 fun EnterApiTextBoxContent(
-    hasExistingApiKey: Boolean,
+    existingApiKey: String?,
     onDismiss: () -> Unit,
     onSaveApiKey: (String) -> Unit
 ) {
-    var text by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(existingApiKey ?: "") }
     var isError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     val isValidInput by remember(text, isError) {
@@ -264,7 +264,7 @@ fun EnterApiTextBoxContent(
                 },
                 label = { Text(MAIMAI_API_GUIDE_LABEL) },
                 placeholder = {
-                    if (!hasExistingApiKey) {
+                    if (existingApiKey.isNullOrBlank()) {
                         Text(MAIMAI_API_GUIDE_PLACEHOLDER)
                     }
                 },
@@ -313,7 +313,7 @@ fun MaimaiApiGuidePreview() {
     AtomCityTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
             MaimaiApiGuideSheetContent(
-                hasExistingApiKey = true,
+                existingApiKey = "391|mock_api_key",
                 onDismiss = {},
                 onSaveApiKey = {}
             )
