@@ -2,7 +2,9 @@ package org.arcade.atomcity.ui.guide.apistatus
 
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
@@ -95,57 +97,76 @@ internal fun ApiItem(
     )
 
     if (dialogVisible.value) {
-        AlertDialog(
-            onDismissRequest = { dialogVisible.value = false },
-            title = {
-                Text(
-                    text = "Clé API pour $name",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
+        ApiItemDialog(
+            name = name,
+            apiKey = apiKey,
+            revealed = revealed.value,
+            onRevealClick = { revealed.value = !revealed.value },
+            onDismiss = {
+                dialogVisible.value = false
+                revealed.value = false
             },
-            text = {
-                Column {
-                    Text(
-                        text = "Votre clé API  pour $name est affichée ci-dessous. " +
-                                "Cliquez sur la clé pour révéler ou masquer sa valeur.",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Text(
-                        text = "Note : Ne partagez jamais votre clé API avec d'autres personnes ou applications non fiables.",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                    Text(
-                        text = when {
-                            apiKey.isNullOrBlank() -> "(aucune clé)"
-                            revealed.value -> apiKey
-                            else -> maskKey(apiKey)
-                        },
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontFamily = FontFamily.Monospace
-                        ),
-                        modifier = Modifier
-                            .clickable(enabled = !apiKey.isNullOrBlank()) {
-                                revealed.value = !revealed.value
-                            }
-                            .padding(vertical = 2.dp)
-                    )
-                }
-            },
-            confirmButton = {
-                androidx.compose.material3.Button(onClick = {
-                    dialogVisible.value = false
-                    revealed.value = false
-                }) {
-                    Text("Fermer")
-                }
-            }
+            maskKey = ::maskKey
         )
         apiKeyManager.logAllApiKeys()
     }
+}
+
+@Composable
+fun ApiItemDialog(
+    name: String,
+    apiKey: String?,
+    revealed: Boolean,
+    onRevealClick: () -> Unit,
+    onDismiss: () -> Unit,
+    maskKey: (String?) -> String
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Clé API pour $name",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Votre clé API  pour $name est affichée ci-dessous. " +
+                            "Cliquez sur la clé pour révéler ou masquer sa valeur.",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Note : Ne partagez jamais votre clé API avec d'autres personnes ou applications non fiables.",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                Text(
+                    text = when {
+                        apiKey.isNullOrBlank() -> "(aucune clé)"
+                        revealed -> apiKey
+                        else -> maskKey(apiKey)
+                    },
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.Monospace
+                    ),
+                    modifier = Modifier
+                        .clickable(enabled = !apiKey.isNullOrBlank()) {
+                            onRevealClick()
+                        }
+                        .padding(vertical = 2.dp)
+                )
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.Button(onClick = onDismiss) {
+                Text("Fermer")
+            }
+        }
+    )
 }
 
 @Preview(showBackground = true)
@@ -153,7 +174,7 @@ internal fun ApiItem(
 fun ApiItemConfiguredPreview() {
     AtomCityTheme {
         ApiItem(
-            name = "Maimai",
+            name = "maimai",
             hasKey = true
         )
     }
@@ -164,8 +185,68 @@ fun ApiItemConfiguredPreview() {
 fun ApiItemNotConfiguredPreview() {
     AtomCityTheme {
         ApiItem(
-            name = "Taiko",
+            name = "Taiko no Tatsujin",
             hasKey = false
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ApiItemDialogPreviewLongKeyAPI() {
+    AtomCityTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            ApiItemDialog(
+                name = "maimai",
+                apiKey = "1234567890abcdef1234567890abcdef1234567890abcdef",
+                revealed = false,
+                onRevealClick = {},
+                onDismiss = {},
+                maskKey = { key ->
+                    if (key.isNullOrBlank()) ""
+                    else {
+                        val visibleStart = 4.coerceAtMost(key.length)
+                        val visibleEnd = 4.coerceAtMost(key.length - visibleStart)
+                        when {
+                            key.length <= visibleStart + visibleEnd -> "*".repeat(key.length)
+                            else -> key.take(visibleStart) + " … " + key.takeLast(visibleEnd)
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ApiItemDialogPreviewNoLongKeyAPI() {
+    AtomCityTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            ApiItemDialog(
+                name = "maimai",
+                apiKey = "12345",
+                revealed = false,
+                onRevealClick = {},
+                onDismiss = {},
+                maskKey = { key ->
+                    if (key.isNullOrBlank()) ""
+                    else {
+                        val visibleStart = 4.coerceAtMost(key.length)
+                        val visibleEnd = 4.coerceAtMost(key.length - visibleStart)
+                        when {
+                            key.length <= visibleStart + visibleEnd -> "*".repeat(key.length)
+                            else -> key.take(visibleStart) + " … " + key.takeLast(visibleEnd)
+                        }
+                    }
+                }
+            )
+        }
     }
 }
