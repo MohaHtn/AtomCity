@@ -204,10 +204,6 @@ fun SetupCard(
     }
 }
 
-
-
-
-
 fun toPage2() {
     page1.value = false
 }

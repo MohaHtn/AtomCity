@@ -43,7 +43,6 @@ fun TaikoApiGuideContent(apiKeyManager: ApiKeyManager, isVisible: MutableState<B
         modifier = Modifier.padding(bottom = 8.dp)
     )
     Text(
-        text = "This guide provides information on how to use the Taiko Server API. " +
-                "Make sure to have your API key ready for authentication."
+        text = "This guide provides information on how to use the Taiko Server API. "
     )
 }
