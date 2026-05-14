@@ -23,7 +23,7 @@ private fun loadJacketImages(context: Context, moshi: Moshi): List<JacketUrl> {
             adapter.fromJson(json) ?: emptyList()
         }
     } catch (e: Exception) {
-        Log.e("JacketImagesModule", "images.json for Maimai song jackets not found: ${e.message}")
+        Log.e("JacketImagesModule", "images.json for maimai song jackets not found: ${e.message}")
         emptyList()
     }
 }
