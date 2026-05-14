@@ -1,11 +1,9 @@
 package org.arcade.atomcity.ui.core
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,11 +14,24 @@ import androidx.navigation.NavController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.ui.tooling.preview.Preview
+import org.arcade.atomcity.ui.theme.AtomCityTheme
 
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
     navController: NavController
+) {
+    SettingsContent(
+        onBackClick = onBackClick,
+        onApiSettingsClick = { navController.navigate("apiSettings") }
+    )
+}
+
+@Composable
+fun SettingsContent(
+    onBackClick: () -> Unit,
+    onApiSettingsClick: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
@@ -56,9 +67,20 @@ fun SettingsScreen(
                 modifier = Modifier
                     .padding(8.dp)
                     .clickable {
-                        navController.navigate("apiSettings")
+                        onApiSettingsClick()
                     }
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    AtomCityTheme {
+        SettingsContent(
+            onBackClick = {},
+            onApiSettingsClick = {}
+        )
     }
 }
