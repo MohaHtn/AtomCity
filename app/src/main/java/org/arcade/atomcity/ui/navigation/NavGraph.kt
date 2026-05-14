@@ -101,7 +101,8 @@ fun AppNavigation(
                     "Taiko no Tatsujin" -> {
                         TaikoServerApiGuide(
                             apiKeyManager = apiKeyManager,
-                            isVisible = GlobalUIState.openApiGuide
+                            isVisible = GlobalUIState.openApiGuide,
+                            taikoViewModel = taikoViewModel
                         )
                     }
                     else -> {
@@ -123,7 +124,8 @@ fun AppNavigation(
             val dataState = maiteaViewModel.data.collectAsState()
             val scoreEntry = dataState.value?.data?.find { it.id == scoreId }
             MaimaiScoresDetails(
-                scoreEntry = scoreEntry
+                scoreEntry = scoreEntry,
+                onBackClick = { navController.popBackStack() }
             )
         }
 
@@ -138,7 +140,8 @@ fun AppNavigation(
             ApiSettings(
                 onBackClick = { navController.popBackStack() },
                 apiKeyManager = apiKeyManager,
-                maiteaViewModel = maiteaViewModel
+                maiteaViewModel = maiteaViewModel,
+                taikoViewModel = taikoViewModel
             )
         }
     }

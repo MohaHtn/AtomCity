@@ -20,5 +20,6 @@ data class MaiteaApiData (
   @Json(name = "play_date_unix") var playDateUnix: Int? = null,
   @Json(name = "song") var song: Song? = Song(),
   @Json(name = "player") var player: Player? = Player(),
-  @Json(name = "jacket_image_url") var jacketImageUrl: String? = null
+  @Json(name = "jacket_image_url") var jacketImageUrl: String? = null,
+  @Json(name = "rank") var rank: String? = null
 )

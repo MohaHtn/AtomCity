@@ -28,25 +28,25 @@ fun selectRatingBackgroundColor(rating: Int?): Color {
 @Composable
 fun getDifficultyColorBackground(difficulty: String?): CardColors {
     return when (difficulty) {
-        "easy" -> CardDefaults.cardColors(containerColor = Color(0xFF45AEFF))
-        "basic" -> CardDefaults.cardColors(containerColor = Color(0xFF6FD43C))
-        "advanced" -> CardDefaults.cardColors(containerColor = Color(0xFFBB8A05))
-        "expert" -> CardDefaults.cardColors(containerColor = Color(0xFFFF2E42))
-        "master" -> CardDefaults.cardColors(containerColor = Color(0x2CAB3CFF))
-        "remaster" -> CardDefaults.cardColors(containerColor = Color(0xFFEFB8FF))
-        else -> CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0)) // Default color
+        "easy" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFE1F5FE))
+        "basic" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF1F8E9))
+        "advanced" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFFF8E1))
+        "expert" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFFEBEE))
+        "master" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF3E5F5))
+        "remaster" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFCE4EC))
+        else -> CardDefaults.elevatedCardColors()
     }
 }
 
 fun getJacketBorderColor(difficulty: String?): Color {
     return when (difficulty) {
-        "easy" -> Color(0xFF45AEFF)
-        "basic" -> Color(0xFF6FD43C)
-        "advanced" -> Color(0xFFBB8A05)
-        "expert" -> Color(0xFFFF2E42)
-        "master" -> Color(0x86B754FF)
-        "remaster" -> Color(0xD2F9E7FF)
-        else -> Color.Transparent // Default color
+        "easy" -> Color(0xFF03A9F4) // Deep Light Blue
+        "basic" -> Color(0xFF4CAF50) // Strong Green
+        "advanced" -> Color(0xFFFBC02D) // Strong Yellow
+        "expert" -> Color(0xFFF44336) // Strong Red
+        "master" -> Color(0xFF9C27B0) // Deep Purple
+        "remaster" -> Color(0xFFFF4081) // Vibrant Pink (Re:Master)
+        else -> Color.Transparent
     }
 }
 

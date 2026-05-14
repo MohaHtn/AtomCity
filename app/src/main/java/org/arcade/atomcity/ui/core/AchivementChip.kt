@@ -26,6 +26,7 @@ fun AchievementChip(
     AssistChip(
         onClick = { /* Do something */ },
         modifier = modifier,
+        border = null,
         colors = AssistChipDefaults.assistChipColors(
             containerColor = backgroundColor,
             labelColor = contentColor

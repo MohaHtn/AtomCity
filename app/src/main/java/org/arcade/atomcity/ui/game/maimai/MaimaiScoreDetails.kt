@@ -1,256 +1,309 @@
 package org.arcade.atomcity.ui.game.maimai
 
-import android.content.Context
-import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
-import org.arcade.atomcity.utils.formatPlayDate
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getDifficultyLevelFromCSV
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
+import org.arcade.atomcity.utils.formatPlayDate
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiScoresDetails(
-    scoreEntry: MaiteaApiData? = null
+    scoreEntry: MaiteaApiData? = null,
+    onBackClick: () -> Unit
 ) {
-    Scaffold { innerPadding ->
-        Card(
-            colors = getDifficultyColorBackground(scoreEntry?.difficultyLevel?.value),
+    val difficultyColor = getJacketBorderColor(scoreEntry?.difficultyLevel?.value)
+    
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Détails du Score",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxSize(),
-            shape = MaterialTheme.shapes.large,
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState())
+            ElevatedCard(
+                colors = getDifficultyColorBackground(scoreEntry?.difficultyLevel?.value),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(32.dp)
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(scoreEntry?.jacketImageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = scoreEntry?.song?.name?.jp ?: "Song Jacket",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
-                        .border(4.dp, getJacketBorderColor(scoreEntry?.difficultyLevel?.value),
-                            androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Header: BEST Badge + Date
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (scoreEntry?.isHighScore == true) {
+                            Surface(
+                                color = Color(0xFFFFF9C4),
+                                shape = RoundedCornerShape(8.dp),
+                                shadowElevation = 2.dp
+                            ) {
+                                Text(
+                                    text = "Meilleur Score",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Black,
+                                        color = Color(0xFFFBC02D)
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.width(1.dp))
+                        }
+                        
+                        Text(
+                            text = formatPlayDate(scoreEntry?.playDate),
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.alpha(0.6f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Center: Expressive Jacket
+                    Box(contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier
+                                .size(200.dp)
+                                .background(difficultyColor.copy(alpha = 0.1f), CircleShape)
+                        )
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(scoreEntry?.jacketImageUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = scoreEntry?.song?.name?.jp,
+                            modifier = Modifier
+                                .size(160.dp)
+                                .clip(CircleShape)
+                                .border(4.dp, difficultyColor, CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Song Info
                     Text(
                         text = scoreEntry?.song?.name?.jp ?: "Unknown",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                    Text(
-                        text = formatPlayDate(scoreEntry?.playDate),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Light,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-                Row (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = scoreEntry?.song?.name?.en ?: "Unknown",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(4.dp)
-
-                    )
-                    Text(
-                        text = getDifficultyLevelFromCSV(
-                            context = LocalContext.current,
-                            songName = scoreEntry?.song?.name?.jp ?: "Unknown",
-                            difficulty = scoreEntry?.difficultyLevel?.value
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
                         ),
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier.padding(4.dp)
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
-                }
+                    
+                    if (scoreEntry?.song?.name?.en != null && scoreEntry.song?.name?.en != scoreEntry.song?.name?.jp) {
+                        Text(
+                            text = scoreEntry.song?.name?.en ?: "",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.alpha(0.5f).padding(top = 4.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
-                Row(
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    AssistChip(
-                        onClick = { },
-                        label = {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Achievement Display
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (scoreEntry?.rank != null) {
                             Text(
-                                text = if (scoreEntry?.isHighScore == true) "Meilleur Score" else "Score",
+                                text = scoreEntry.rank!!,
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    fontWeight = FontWeight.Black,
+                                    color = difficultyColor,
+                                    fontSize = 32.sp
+                                ),
+                                modifier = Modifier.padding(bottom = 12.dp, end = 8.dp)
                             )
-                        },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = if (scoreEntry?.isHighScore == true) Color(0xFFFFEB3B).copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.5f),
-                            labelColor = if (scoreEntry?.isHighScore == true) Color.Black else Color.Gray
+                        }
+
+                        Text(
+                            text = scoreEntry?.achievementFormatted?.replace("%", "") ?: "0.00",
+                            style = MaterialTheme.typography.displayLarge.copy(
+                                fontWeight = FontWeight.Black,
+                                fontSize = 56.sp,
+                                letterSpacing = (-2).sp
+                            )
+                        )
+                        Text(
+                            text = "%",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = difficultyColor
+                            ),
+                            modifier = Modifier.padding(bottom = 8.dp, start = 2.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Difficulty Badge
+                    Surface(
+                        color = difficultyColor,
+                        shape = RoundedCornerShape(12.dp),
+                        shadowElevation = 4.dp
+                    ) {
+                        Text(
+                            text = getDifficultyLevelFromCSV(
+                                context = LocalContext.current,
+                                songName = scoreEntry?.song?.name?.jp ?: "Unknown",
+                                difficulty = scoreEntry?.difficultyLevel?.value
+                            ),
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
+                            ),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Detailed Stats Section
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "DETAILS",
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp
                         ),
-                        leadingIcon = if (scoreEntry?.isHighScore == true) {
-                            {}
-                        } else null,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                        modifier = Modifier.padding(bottom = 16.dp).alpha(0.6f)
                     )
-                    Text(
-                        text = scoreEntry?.achievementFormatted ?: "N/A",
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.padding(16.dp)
 
-                    )
+                    // Table Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        listOf("TYPE", "PERF", "GRT", "GOOD", "MISS").forEach {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.weight(1f),
+                                textAlign = if (it == "TYPE") TextAlign.Start else TextAlign.Center,
+                                color = if (it == "TYPE") MaterialTheme.colorScheme.onSurface else difficultyColor
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(bottom = 12.dp))
+
+                    val detail = scoreEntry?.scoreDetail
+                    
+                    detail?.tap?.let { 
+                        DetailRow("Tap", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
+                    }
+                    detail?.hold?.let { 
+                        DetailRow("Hold", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
+                    }
+                    detail?.breakk?.let { 
+                        DetailRow("Break", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
+                    }
+                    detail?.slide?.let { 
+                        DetailRow("Slide", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
+                    }
+                    detail?.hits?.let { 
+                        DetailRow("Touch", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
+                    }
                 }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Type",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.weight(1.5f)
-
-                    )
-                    Text(
-                        text = "Perfect",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.weight(1f)
-
-                    )
-                    Text(
-                        text = "Great",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "Good",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "Bad",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-
-                TableRow(
-                    label = "Tap",
-                    nbPerfect = scoreEntry?.scoreDetail?.tap?.perfect.toString(),
-                    nbGreat = scoreEntry?.scoreDetail?.tap?.great.toString(),
-                    nbGood = scoreEntry?.scoreDetail?.tap?.good.toString(),
-                    nbBad = scoreEntry?.scoreDetail?.tap?.bad.toString()
-                )
-                TableRow(
-                    label = "Hold",
-                    nbPerfect = scoreEntry?.scoreDetail?.hold?.perfect.toString(),
-                    nbGreat = scoreEntry?.scoreDetail?.hold?.great.toString(),
-                    nbGood = scoreEntry?.scoreDetail?.hold?.good.toString(),
-                    nbBad = scoreEntry?.scoreDetail?.hold?.bad.toString()
-                )
-                TableRow(
-                    label = "Break",
-                    nbPerfect = scoreEntry?.scoreDetail?.breakk?.perfect.toString(),
-                    nbGreat = scoreEntry?.scoreDetail?.breakk?.great.toString(),
-                    nbGood = scoreEntry?.scoreDetail?.breakk?.good.toString(),
-                    nbBad = scoreEntry?.scoreDetail?.breakk?.bad.toString()
-                )
-                TableRow(
-                    label = "Hits",
-                    nbPerfect = scoreEntry?.scoreDetail?.hits?.perfect.toString(),
-                    nbGreat = scoreEntry?.scoreDetail?.hits?.great.toString(),
-                    nbGood = scoreEntry?.scoreDetail?.hits?.good.toString(),
-                    nbBad = scoreEntry?.scoreDetail?.hits?.bad.toString()
-                )
-                TableRow(
-                    label = "Slide",
-                    nbPerfect = scoreEntry?.scoreDetail?.slide?.perfect.toString(),
-                    nbGreat = scoreEntry?.scoreDetail?.slide?.great.toString(),
-                    nbGood = scoreEntry?.scoreDetail?.slide?.good.toString(),
-                    nbBad = scoreEntry?.scoreDetail?.slide?.bad.toString()
-                )
             }
         }
     }
 }
 
 @Composable
-fun TableRow(label: String = "", nbPerfect: String, nbGreat: String, nbGood: String, nbBad: String) {
+fun DetailRow(label: String, p: Int, gr: Int, gd: Int, m: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1.5f)
-        )
-        Text(
-            text = nbPerfect,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f),
-        )
-        Text(
-            text = nbGreat,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black),
             modifier = Modifier.weight(1f)
         )
-        Text(
-            text = nbGood,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = nbBad,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f)
-        )
+        
+        listOf(p, gr, gd, m).forEach { count ->
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = if (count > 0) FontWeight.Bold else FontWeight.Normal
+                ),
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                color = if (count > 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+            )
+        }
     }
 }
-
-
-

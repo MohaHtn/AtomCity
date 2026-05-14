@@ -16,6 +16,7 @@ koinTest = "4.1.0-Beta5"
 koinAndroid = "4.1.0-Beta5"
 loggingInterceptor = "5.0.0-alpha.16"
 material3 = "1.3.2"
+palette = "1.0.0"
 moshiKotlin = "<version>"
 moshiKotlinCodegen = "<version>"
 navigationCompose = "2.9.0"
@@ -24,6 +25,7 @@ gson = "2.13.1"
 converterMoshi = "3.0.0"
 datastorePreferences = "1.2.0-alpha02"
 moshi = "1.15.2"
+coreSplashscreen = "1.2.0"
 
 [libraries]
 accompanist-coil = { module = "com.google.accompanist:accompanist-coil", version.ref = "accompanistCoil" }
@@ -45,6 +47,7 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-palette = { group = "androidx.palette", name = "palette", version.ref = "palette" }
 koin-android = { module = "io.insert-koin:koin-android" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koinCore" }
 koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koinTest" }
@@ -60,6 +63,7 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "converterMoshi" }
 ui = { module = "androidx.compose.ui:ui" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 
 [plugins]

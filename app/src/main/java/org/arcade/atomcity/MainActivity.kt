@@ -6,6 +6,8 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -62,8 +64,9 @@ class MainActivity : ComponentActivity() {
     private val apiKeyManager: ApiKeyManager by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-
+        enableEdgeToEdge()
         setContent {
             MainActivityContent(
                 maiteaViewModel = maiteaViewModel,
@@ -77,15 +80,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainActivityContent(maiteaViewModel: MaiteaViewModel, apiKeyManager: ApiKeyManager, taikoViewModel: TaikoViewModel) {
     AtomCityTheme {
-        Scaffold { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    AppNavigation(
-                        maiteaViewModel = maiteaViewModel,
-                        apiKeyManager = apiKeyManager,
-                        taikoViewModel = taikoViewModel)
-                } else {
-                    // Fallback for devices below API 26
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AppNavigation(
+                maiteaViewModel = maiteaViewModel,
+                apiKeyManager = apiKeyManager,
+                taikoViewModel = taikoViewModel
+            )
+        } else {
+            // Fallback for devices below API 26
+            Scaffold { paddingValues ->
+                Box(modifier = Modifier.padding(paddingValues)) {
                     Text("This feature requires Android 8.0 or higher")
                 }
             }
