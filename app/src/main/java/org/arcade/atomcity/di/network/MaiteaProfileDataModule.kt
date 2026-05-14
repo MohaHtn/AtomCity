@@ -39,9 +39,11 @@ val maiteaProfileDataModule =  module {
                     .build()
                 chain.proceed(request)
             }
-            .connectTimeout(300, TimeUnit.SECONDS) // Délai d'attente de connexion
-            .readTimeout(300, TimeUnit.SECONDS)    // Délai d'attente de lecture
-            .writeTimeout(300, TimeUnit.SECONDS)   // Délai d'attente d'écriture
+
+            // Fix for long API calls to maiTea
+            .connectTimeout(300, TimeUnit.SECONDS) // Connection timeout
+            .readTimeout(300, TimeUnit.SECONDS)    // Reading wait time
+            .writeTimeout(300, TimeUnit.SECONDS)   // Writing wait time
             .build()
 
         Retrofit.Builder()
