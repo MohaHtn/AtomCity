@@ -21,14 +21,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
+import org.arcade.atomcity.model.maitea.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getDifficultyLevelFromCSV
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
+import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.formatPlayDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,14 +111,14 @@ fun MaimaiScoresDetails(
                         
                         Text(
                             text = formatPlayDate(scoreEntry?.playDate),
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.alpha(0.6f)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Center: Expressive Jacket
+                    // Jacket
                     Box(contentAlignment = Alignment.Center) {
                         Box(
                             modifier = Modifier
@@ -155,6 +157,29 @@ fun MaimaiScoresDetails(
                             text = scoreEntry.song?.name?.en ?: "",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.alpha(0.5f).padding(top = 4.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val artistJp = scoreEntry?.song?.artist?.jp
+                    val artistEn = scoreEntry?.song?.artist?.en
+                    
+                    Text(
+                        text = artistJp ?: artistEn ?: "",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.alpha(0.8f)
+                    )
+                    
+                    if (artistEn != null && artistEn != artistJp) {
+                        Text(
+                            text = artistEn,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.alpha(0.4f),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -226,36 +251,55 @@ fun MaimaiScoresDetails(
             // Detailed Stats Section
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                shape = RoundedCornerShape(32.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "DETAILS",
+                        text = "DETAILS DU SCORE",
                         style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 2.sp
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 2.sp,
+                            color = difficultyColor
                         ),
-                        modifier = Modifier.padding(bottom = 16.dp).alpha(0.6f)
+                        modifier = Modifier.padding(bottom = 20.dp)
                     )
 
                     // Table Header
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        listOf("TYPE", "PERF", "GRT", "GOOD", "MISS").forEach {
+                        Text(
+                            text = "TYPE",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                            ),
+                            modifier = Modifier.weight(1.2f)
+                        )
+                        listOf("PERFECT", "GREAT", "GOOD", "MISS").forEach {
                             Text(
                                 text = it,
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                ),
                                 modifier = Modifier.weight(1f),
-                                textAlign = if (it == "TYPE") TextAlign.Start else TextAlign.Center,
-                                color = if (it == "TYPE") MaterialTheme.colorScheme.onSurface else difficultyColor
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
 
-                    HorizontalDivider(modifier = Modifier.padding(bottom = 12.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+                    )
 
                     val detail = scoreEntry?.scoreDetail
                     
@@ -285,25 +329,85 @@ fun DetailRow(label: String, p: Int, gr: Int, gd: Int, m: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black),
-            modifier = Modifier.weight(1f)
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier.weight(1.2f)
         )
         
-        listOf(p, gr, gd, m).forEach { count ->
-            Text(
-                text = count.toString(),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = if (count > 0) FontWeight.Bold else FontWeight.Normal
-                ),
+        // Value columns with pill-shaped backgrounds
+        listOf(
+            p to Color(0xFFFFD700),     // Perfect - Gold
+            gr to Color(0xFFFF4081),    // Great - Pink
+            gd to Color(0xFF00E676),    // Good - Green
+            m to Color.Gray             // Miss - Gray
+        ).forEach { (count, color) ->
+            Box(
                 modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                color = if (count > 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-            )
+                contentAlignment = Alignment.Center
+            ) {
+                if (count > 0) {
+                    Surface(
+                        color = color.copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = count.toString(),
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Black,
+                                color = color
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "0",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
+                    )
+                }
+            }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MaimaiScoresDetailsPreview() {
+    val sampleScore = MaiteaApiData(
+        id = 1,
+        isHighScore = true,
+        achievementFormatted = "100.50%",
+        rank = "SSS+",
+        playDate = "2023-10-27T10:00:00Z",
+        difficultyLevel = DifficultyLevel(value = "master", label = "Master"),
+        song = Song(
+            name = Name(jp = "Oshama Scramble!", en = "Oshama Scramble!"),
+            artist = Artist(jp = "t+pazolite", en = "t+pazolite")
+        ),
+        jacketImageUrl = "https://maimai.sega.jp/storage/DX_jacket/715258450d147139c3543de1cd5fb024.jpg",
+        scoreDetail = ScoreDetail(
+            tap = Tap(perfect = 500, great = 10, good = 1, bad = 0),
+            hold = Hold(perfect = 50, great = 2, good = 0, bad = 0),
+            slide = Slide(perfect = 30, great = 1, good = 0, bad = 0),
+            breakk = Break(perfect = 20, great = 0, good = 0, bad = 0),
+            hits = Hits(perfect = 40, great = 0, good = 0, bad = 0)
+        )
+    )
+
+    AtomCityTheme {
+        MaimaiScoresDetails(
+            scoreEntry = sampleScore,
+            onBackClick = {}
+        )
     }
 }
