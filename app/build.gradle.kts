@@ -1,4 +1,5 @@
 import org.gradle.kotlin.dsl.implementation
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -21,6 +22,18 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         signingConfig = signingConfigs.getByName("debug")
+
+        // from https://stackoverflow.com/questions/77224069/saving-api-keys-on-local-properties-file-to-avoid-version-control-checking-in
+        val keystoreFile = project.rootProject.file("apikeys.properties")
+        val properties = Properties()
+        properties.load(keystoreFile.inputStream())
+        val scorefetcherApiKey = properties.getProperty("SCOREFETCHER_API_KEY") ?: ""
+
+        buildConfigField(
+            "String",
+            "SCOREFETCHER_API_KEY",
+            "\"$scorefetcherApiKey\""
+        )
     }
 
     buildTypes {
@@ -41,6 +54,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
