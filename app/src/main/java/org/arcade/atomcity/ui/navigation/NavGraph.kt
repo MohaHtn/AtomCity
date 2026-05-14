@@ -22,7 +22,8 @@ import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.SettingsScreen
 import org.arcade.atomcity.ui.core.WelcomeScreen
-import org.arcade.atomcity.ui.core.openApiGuide
+import org.arcade.atomcity.ui.core.GlobalUIState
+import org.arcade.atomcity.ui.guide.TaikoServerApiGuide
 import org.arcade.atomcity.ui.core.settings.ApiSettings
 import org.arcade.atomcity.ui.game.maimai.GameScreen
 import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
@@ -95,12 +96,22 @@ fun AppNavigation(
             )
 
             // TODO: Ce sera un switch plus tard
-            if (openApiGuide.value) {
-                MaimaiApiGuide(
-                    apiKeyManager = apiKeyManager,
-                    isVisible = openApiGuide,
-                    maiteaViewModel = maiteaViewModel
-                )
+            if (GlobalUIState.openApiGuide.value) {
+                when (GlobalUIState.selectedGameForGuide.value) {
+                    "Taiko no Tatsujin" -> {
+                        TaikoServerApiGuide(
+                            apiKeyManager = apiKeyManager,
+                            isVisible = GlobalUIState.openApiGuide
+                        )
+                    }
+                    else -> {
+                        MaimaiApiGuide(
+                            apiKeyManager = apiKeyManager,
+                            isVisible = GlobalUIState.openApiGuide,
+                            maiteaViewModel = maiteaViewModel
+                        )
+                    }
+                }
             }
         }
 
@@ -126,7 +137,8 @@ fun AppNavigation(
         composable(route = "apiSettings") {
             ApiSettings(
                 onBackClick = { navController.popBackStack() },
-                apiKeyManager = apiKeyManager
+                apiKeyManager = apiKeyManager,
+                maiteaViewModel = maiteaViewModel
             )
         }
     }

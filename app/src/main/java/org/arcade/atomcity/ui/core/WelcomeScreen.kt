@@ -49,7 +49,6 @@ const val setupTextIntro = "Pour commencer, il vous faudra créer et indiquer vo
 const val setupTextAPI = "Pour l'instant, voici les jeux disponibles et ceux que vous avez déjà configuré :"
 
 var page1 = mutableStateOf(true)
-var openApiGuide = mutableStateOf(false)
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)

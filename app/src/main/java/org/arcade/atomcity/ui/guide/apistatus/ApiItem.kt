@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.arcade.atomcity.ui.core.openApiGuide
+import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
 
@@ -77,7 +77,8 @@ internal fun ApiItem(
         trailingContent = {
             TextButton(
                 onClick = {
-                    openApiGuide.value = true
+                    GlobalUIState.selectedGameForGuide.value = name
+                    GlobalUIState.openApiGuide.value = true
                     Log.d("API", "Open guide for $name (hasKey=$hasKey)")
                 }
             ) {

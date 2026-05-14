@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.arcade.atomcity.ui.core.openApiGuide
+import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.utils.ApiKeyManager
 
 
@@ -22,7 +22,7 @@ fun TaikoServerApiGuide(apiKeyManager: ApiKeyManager, isVisible: MutableState<Bo
 
     ModalBottomSheet(
         onDismissRequest = {
-            openApiGuide.value = false
+            GlobalUIState.openApiGuide.value = false
         },
         sheetState = sheetState
     ) {
