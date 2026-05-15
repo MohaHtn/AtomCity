@@ -44,4 +44,7 @@ interface MaiteaService {
     suspend fun checkApiKey(
         @Field("key") key: String
     ): ApiKeyCheckResponse
+
+    @GET("apikeys/profiles")
+    suspend fun getProfiles(): Map<String, List<String>>
 }

@@ -33,6 +33,10 @@ class MaiteaViewModel(
     private val _playerData = MutableStateFlow<MaiteaPlayerDetailsResponse?>(null)
     val playerData: StateFlow<MaiteaPlayerDetailsResponse?> = _playerData
 
+    // StateFlow to hold the profiles data
+    private val _profiles = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    val profiles: StateFlow<Map<String, List<String>>> = _profiles
+
     // Expose the current page
     internal val _currentPage = MutableStateFlow(1)
 
@@ -42,10 +46,15 @@ class MaiteaViewModel(
 
     private val _isLoadingPlays = MutableStateFlow(false)
     private val _isLoadingPlayer = MutableStateFlow(false)
+    private val _isLoadingProfiles = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = MutableStateFlow(false).apply {
         viewModelScope.launch {
-            kotlinx.coroutines.flow.combine(_isLoadingPlays, _isLoadingPlayer) { playsLoading, playerLoading ->
-                playsLoading || playerLoading
+            kotlinx.coroutines.flow.combine(
+                _isLoadingPlays,
+                _isLoadingPlayer,
+                _isLoadingProfiles
+            ) { playsLoading, playerLoading, profilesLoading ->
+                playsLoading || playerLoading || profilesLoading
             }.collect { value ->
                 this@apply.value = value
             }
@@ -102,6 +111,21 @@ class MaiteaViewModel(
             }
         } catch (e: Exception) {
             Log.e("MaiteaViewModel", "Error adding API key: ${e.message}")
+        }
+    }
+
+    fun fetchProfiles() {
+        viewModelScope.launch {
+            try {
+                _isLoadingProfiles.value = true
+                repository.getProfiles().collect {
+                    _profiles.value = it
+                    _isLoadingProfiles.value = false
+                }
+            } catch (e: Exception) {
+                Log.e("MaiteaViewModel", "Error fetching profiles: ${e.message}")
+                _isLoadingProfiles.value = false
+            }
         }
     }
 }

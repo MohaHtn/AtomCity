@@ -135,7 +135,7 @@ fun ApiItemDialog(
             Column {
                 Text(
                     text = "Votre clé API  pour $name est affichée ci-dessous. " +
-                            "Cliquez sur la clé pour révéler ou masquer sa valeur.",
+                            "Appuyez sur la clé pour révéler ou masquer sa valeur.",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )

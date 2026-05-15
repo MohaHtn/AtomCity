@@ -104,6 +104,10 @@ class MaiteaRepository(
         emit(response)
     }
 
+    fun getProfiles(): Flow<Map<String, List<String>>> = flow {
+        emit(maiteaService.getProfiles())
+    }
+
     // Method to clear cache if needed
     fun clearCache() {
         playsCache.values.forEach { it.clear() }

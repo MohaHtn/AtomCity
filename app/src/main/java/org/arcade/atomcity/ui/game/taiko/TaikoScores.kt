@@ -147,7 +147,10 @@ fun TaikoScores(
                 },
                 onSettingsClick = {
                     navController.navigate("settings")
-                }
+                },
+                onMaimaiUsersClick = {
+                    navController.navigate("maimai-users")
+                },
             )
         },
     ) { paddingValues ->

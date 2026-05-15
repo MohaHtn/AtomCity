@@ -48,9 +48,10 @@ fun MaimaiScores(
     var frameColor by remember { mutableStateOf<Color?>(null) }
     var showMiniMenu by remember { mutableStateOf(false) }
     var lastClickTime by remember { mutableLongStateOf(0L) }
+    val currentPage by maiteaViewModel._currentPage.collectAsState()
 
     LaunchedEffect(Unit) {
-        maiteaViewModel.fetchMaimaiPaginatedData(page = 1)
+        maiteaViewModel.fetchMaimaiPaginatedData(page = currentPage)
     }
 
     val isBackgroundDark = remember(frameColor) {
@@ -166,7 +167,7 @@ fun MaimaiScores(
         },
         bottomBar = {
             BottomBarPill(
-                currentPage = maiteaViewModel._currentPage.collectAsState().value,
+                currentPage = currentPage,
                 onPageChange = { newPage ->
                     maiteaViewModel.onPageChange(newPage)
                     maiteaViewModel.fetchMaimaiPaginatedData(newPage)
@@ -176,6 +177,10 @@ fun MaimaiScores(
                     navController.navigate("settings")
                     showMiniMenu = false
                 },
+                onMaimaiUsersClick = {
+                    navController.navigate("maimaiUsers")
+                    showMiniMenu = false
+                }
             )
         }
     ) { paddingValues ->

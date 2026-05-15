@@ -3,14 +3,12 @@ package org.arcade.atomcity.ui.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.navigation.NavType
@@ -25,6 +23,7 @@ import org.arcade.atomcity.ui.core.WelcomeScreen
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.guide.TaikoServerApiGuide
 import org.arcade.atomcity.ui.core.settings.ApiSettings
+import org.arcade.atomcity.ui.game.maimai.AtomCityUsers
 import org.arcade.atomcity.ui.game.maimai.GameScreen
 import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.guide.MaimaiApiGuide
@@ -46,9 +45,7 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
 
-    var showMiniMenu: MutableState<Boolean> = remember { mutableStateOf(false) }
-    var lastClickTime: MutableState<Long> = remember { mutableLongStateOf(0L) }
-    val currentRoute = navController.currentBackStackEntry?.destination?.route
+    val showMiniMenu: MutableState<Boolean> = remember { mutableStateOf(false) }
 
     NavHost(
         navController = navController,
@@ -144,6 +141,17 @@ fun AppNavigation(
                 taikoViewModel = taikoViewModel
             )
         }
+
+        composable (route = "maimaiUsers"){
+            AtomCityUsers(
+                maiteaViewModel = maiteaViewModel,
+                onBackClick = { navController.popBackStack() },
+                navController = navController,
+                showMiniMenu = showMiniMenu,
+                taikoViewModel = taikoViewModel
+            )
+        }
+
     }
 }
 

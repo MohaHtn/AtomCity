@@ -17,7 +17,8 @@ fun BottomBarPill(
     currentPage: Int,
     onPageChange: (Int) -> Unit,
     onHomeClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onMaimaiUsersClick: () -> Unit
 ) {
     NavigationBar {
         NavigationBarItem(
@@ -34,6 +35,16 @@ fun BottomBarPill(
                 )
             },
             label = { Text("") }
+        )
+        NavigationBarItem(
+            selected = false,
+            onClick = onMaimaiUsersClick,
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.stadia_controller_24px),
+                    contentDescription = "Maimai Users"
+                )
+            }
         )
         NavigationBarItem(
             selected = false,
