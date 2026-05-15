@@ -41,7 +41,7 @@ fun BottomBarPill(
             onClick = onMaimaiUsersClick,
             icon = {
                 Icon(
-                    painter = painterResource(R.drawable.stadia_controller_24px),
+                    painter = painterResource(R.drawable.groups_24px),
                     contentDescription = "Maimai Users"
                 )
             }

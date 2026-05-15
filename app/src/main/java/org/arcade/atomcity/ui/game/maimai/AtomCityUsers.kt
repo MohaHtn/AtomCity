@@ -71,24 +71,7 @@ fun AtomCityUsers(
                     }
                 }
             )
-        },
-        bottomBar = {
-            BottomBarPill(
-                currentPage = taikoViewModel._currentPage.collectAsState().value,
-                onPageChange = { newPage ->
-                    taikoViewModel.onPageChange(newPage)
-                },
-                onHomeClick = {
-                    showMiniMenu.value = !showMiniMenu.value
-                },
-                onSettingsClick = {
-                    navController.navigate("settings")
-                },
-                onMaimaiUsersClick = {
-                    navController.navigate("maimai-users")
-                },
-            )
-        },
+        }
     ) { paddingValues ->
         Box(
             modifier = modifier
