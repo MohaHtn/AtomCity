@@ -19,13 +19,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.SolidColor
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.Data
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.Icon
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.Options
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
-import org.arcade.atomcity.ui.game.common.selectRatingBackgroundColor
+import org.arcade.atomcity.ui.game.common.selectRatingBackground
 
 
 @Composable
@@ -74,7 +75,12 @@ fun MaimaiPlayerDetailsContent(
         return if (luminance > 0.5f) Color.Black else Color.White
     }
 
-    val ratingBgColor = selectRatingBackgroundColor(playerData?.rating)
+    val ratingBackground = selectRatingBackground(playerData?.rating)
+    val ratingTextColor = if (ratingBackground is SolidColor) {
+        getContrastingColor(ratingBackground.value)
+    } else {
+        Color.White
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -116,9 +122,11 @@ fun MaimaiPlayerDetailsContent(
             )
 
             Surface(
-                color = ratingBgColor,
                 shape = RoundedCornerShape(4.dp),
-                modifier = Modifier.padding(top = 2.dp),
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .background(ratingBackground, RoundedCornerShape(4.dp)),
+                color = Color.Transparent,
                 tonalElevation = 4.dp
             ) {
                 Text(
@@ -128,7 +136,7 @@ fun MaimaiPlayerDetailsContent(
                         fontSize = 13.sp,
                         letterSpacing = 0.sp
                     ),
-                    color = getContrastingColor(ratingBgColor),
+                    color = ratingTextColor,
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
                 )
             }

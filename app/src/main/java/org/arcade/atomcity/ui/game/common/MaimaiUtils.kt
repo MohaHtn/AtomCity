@@ -5,23 +5,37 @@ import android.util.Log
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-fun selectRatingBackgroundColor(rating: Int?): Color {
+fun selectRatingBackground(rating: Int?): Brush {
     return when (rating) {
-        null -> Color.Transparent
-        in 0..200 -> Color.White
-        in 200..399 -> Color.Blue
-        in 400..699 -> Color.Green
-        in 700..999 -> Color.Cyan
-        in 1000..1199 -> Color.Red
-        in 1200..1299 -> Color.Magenta
-        in 1300..1399 -> Color(0xFFA52A2A) // Brown
-        in 1400..1449 -> Color.Gray
-        in 1450..1499 -> Color.Yellow
-        else -> Color.Black
+        null -> SolidColor(Color.Transparent)
+        in 0..200 -> SolidColor(Color.White)
+        in 200..399 -> SolidColor(Color.Blue)
+        in 400..699 -> SolidColor(Color.Green)
+        in 700..999 -> SolidColor(Color.Cyan)
+        in 1000..1199 -> SolidColor(Color.Red)
+        in 1200..1299 -> SolidColor(Color.Magenta)
+        in 1300..1399 -> SolidColor(Color(0xFFA52A2A)) // Brown
+        in 1400..1449 -> SolidColor(Color.Gray)
+        in 1450..1499 -> SolidColor(Color.Yellow)
+        else -> Brush.linearGradient(
+            colors = listOf(
+                Color(0xFFFFD700), // Gold
+                Color(0xFFFF8C00), // Orange
+                Color(0xFFFF0080), // Pink
+                Color(0xFF8000FF), // Purple
+                Color(0xFF0080FF), // Blue
+                Color(0xFF00FF80)  // Green/Teal
+            ),
+            start = Offset(0f, 0f),
+            end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+        )
     }
 }
 

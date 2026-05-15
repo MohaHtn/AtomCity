@@ -301,5 +301,3 @@ fun setDifficultyColorBackground(difficulty: Int?): CardColors {
         else -> CardDefaults.cardColors(containerColor = Color.Gray)
     }
 }
-
-
