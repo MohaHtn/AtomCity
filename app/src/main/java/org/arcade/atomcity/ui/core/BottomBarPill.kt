@@ -15,6 +15,7 @@ import org.arcade.atomcity.R
 @Composable
 fun BottomBarPill(
     currentPage: Int,
+    isLoading: Boolean = false,
     onPageChange: (Int) -> Unit,
     onHomeClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -23,6 +24,7 @@ fun BottomBarPill(
     NavigationBar {
         NavigationBarItem(
             selected = false,
+            enabled = !isLoading,
             onClick = {
                 if (currentPage > 1) {
                     onPageChange(currentPage - 1)
@@ -42,9 +44,10 @@ fun BottomBarPill(
             icon = {
                 Icon(
                     painter = painterResource(R.drawable.groups_24px),
-                    contentDescription = "Maimai Users"
+                    contentDescription = "Groups"
                 )
-            }
+            },
+            label = { Text("Utilsateurs") }
         )
         NavigationBarItem(
             selected = false,
@@ -69,6 +72,7 @@ fun BottomBarPill(
         )
         NavigationBarItem(
             selected = false,
+            enabled = !isLoading,
             onClick = { onPageChange(currentPage + 1) },
             icon = {
                 Icon(

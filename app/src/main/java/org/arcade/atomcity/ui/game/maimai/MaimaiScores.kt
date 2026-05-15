@@ -168,6 +168,7 @@ fun MaimaiScores(
         bottomBar = {
             BottomBarPill(
                 currentPage = currentPage,
+                isLoading = isLoading,
                 onPageChange = { newPage ->
                     maiteaViewModel.onPageChange(newPage)
                     maiteaViewModel.fetchMaimaiPaginatedData(newPage)

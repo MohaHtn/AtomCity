@@ -84,29 +84,38 @@ fun MaimaiScoresDetails(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Header: BEST Badge + Date
+                    // Header: Badges + Date
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (scoreEntry?.isHighScore == true) {
-                            Surface(
-                                color = Color(0xFFFFF9C4),
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 2.dp
-                            ) {
-                                Text(
-                                    text = "Meilleur Score",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Black,
-                                        color = Color(0xFFFBC02D)
-                                    ),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            if (scoreEntry?.isHighScore == true) {
+                                ScoreBadge(
+                                    text = "MEILLEUR SCORE",
+                                    containerColor = Color(0xFFFFF9C4),
+                                    contentColor = Color(0xFFFBC02D)
                                 )
                             }
-                        } else {
-                            Spacer(modifier = Modifier.width(1.dp))
+                            if (scoreEntry?.isAllPerfect == true) {
+                                ScoreBadge(
+                                    text = "ALL PERFECT",
+                                    containerColor = Color(0xFFE0F2F1),
+                                    contentColor = Color(0xFF00897B)
+                                )
+                            }
+                            if (scoreEntry?.isTrackSkip == true) {
+                                ScoreBadge(
+                                    text = "TRACK SKIP",
+                                    containerColor = Color(0xFFFFEBEE),
+                                    contentColor = Color(0xFFE53935)
+                                )
+                            }
                         }
                         
                         Text(
@@ -326,6 +335,24 @@ fun MaimaiScoresDetails(
 }
 
 @Composable
+fun ScoreBadge(text: String, containerColor: Color, contentColor: Color) {
+    Surface(
+        color = containerColor,
+        shape = RoundedCornerShape(8.dp),
+        shadowElevation = 2.dp
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = FontWeight.Black,
+                color = contentColor
+            ),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+    }
+}
+
+@Composable
 fun DetailRow(label: String, p: Int, gr: Int, gd: Int, m: Int) {
     Row(
         modifier = Modifier
@@ -381,12 +408,14 @@ fun DetailRow(label: String, p: Int, gr: Int, gd: Int, m: Int) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, device = "id:pixel_9_pro")
 @Composable
 fun MaimaiScoresDetailsPreview() {
     val sampleScore = MaiteaApiData(
         id = 1,
         isHighScore = true,
+        isAllPerfect = true,
+        isTrackSkip = false,
         achievementFormatted = "100.50%",
         rank = "SSS+",
         playDate = "2023-10-27T10:00:00Z",
