@@ -302,8 +302,12 @@ fun MaimaiScoresDetails(
                     )
 
                     val detail = scoreEntry?.scoreDetail
-                    
-                    detail?.tap?.let { 
+
+                    detail?.hits?.let {
+                        DetailRow("Hits", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
+                    }
+
+                    detail?.tap?.let {
                         DetailRow("Tap", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
                     }
                     detail?.hold?.let { 
@@ -314,9 +318,6 @@ fun MaimaiScoresDetails(
                     }
                     detail?.slide?.let { 
                         DetailRow("Slide", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
-                    }
-                    detail?.hits?.let { 
-                        DetailRow("Touch", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
                 }
             }
