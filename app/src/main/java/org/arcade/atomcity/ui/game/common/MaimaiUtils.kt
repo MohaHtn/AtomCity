@@ -48,6 +48,7 @@ fun getDifficultyColorBackground(difficulty: String?): CardColors {
         "expert" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFFEBEE))
         "master" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF3E5F5))
         "remaster" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFCE4EC))
+        "utage" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF3E5F5))
         else -> CardDefaults.elevatedCardColors()
     }
 }
@@ -57,9 +58,10 @@ fun getJacketBorderColor(difficulty: String?): Color {
         "easy" -> Color(0xFF03A9F4) // Deep Light Blue
         "basic" -> Color(0xFF4CAF50) // Strong Green
         "advanced" -> Color(0xFFFBC02D) // Strong Yellow
-        "expert" -> Color(0xFFF44336) // Strong Red
+        "expert" -> Color(0xffff2e42) // Strong Red
         "master" -> Color(0xFF9C27B0) // Deep Purple
-        "remaster" -> Color(0xFFFF4081) // Vibrant Pink (Re:Master)
+        "remaster" -> Color(0xFFC68BFF) //
+        "utage" -> Color(0xFFFF5722) // Strong Blue (Utage)
         else -> Color.Transparent
     }
 }
@@ -90,10 +92,11 @@ fun getDifficultyLevelFromCSV(context: Context, songName: String, difficulty: St
         "expert" -> songData?.get("expert")
         "master" -> songData?.get("master")
         "remaster" -> songData?.get("remaster")
+        "utage" -> songData?.get("utage")
         else -> null
     }
 
-    val result = if (difficultyValue != null && difficultyValue != "-") difficultyValue else "N/A"
+    val result = if (difficultyValue != null && difficultyValue != "-") difficultyValue else "宴"
 
     // Store the result in the cache
     difficultyCache[cacheKey] = result

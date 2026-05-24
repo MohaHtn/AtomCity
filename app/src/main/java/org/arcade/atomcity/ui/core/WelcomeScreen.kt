@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -57,7 +59,12 @@ fun WelcomeScreen(
     navController: NavController,
     apiChecklistState: MutableState<List<String>>,
     onContinueClick: () -> Unit
+
 ) {
+
+
+
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -71,7 +78,8 @@ fun WelcomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it),
+                .padding(it)
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -89,7 +97,7 @@ fun WelcomeScreen(
                 if (isPage1) {
                     WelcomeCard()
                 } else {
-                    SetupCard(navController, apiChecklistState, onContinueClick)
+                    SetupCard(apiChecklistState, onContinueClick)
                 }
             }
         }
@@ -138,12 +146,12 @@ fun WelcomeCard() {
 
 @Composable
 fun SetupCard(
-    navController: NavController,
     apiChecklistState: MutableState<List<String>>,
     onContinueClick: () -> Unit
 ) {
     val context = LocalContext.current
     val apiKeyManager = ApiKeyManager(context)
+
 
     fun hasApiKey(game: String): Boolean {
         return apiKeyManager.hasApiKey(game)
@@ -156,20 +164,22 @@ fun SetupCard(
             modifier = Modifier.padding(16.dp),
             elevation = CardDefaults.cardElevation(4.dp)
         ) {
-            Text(
-                modifier = Modifier.padding(24.dp),
-                text = setupTextIntro,
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                modifier = Modifier.padding(24.dp, 0.dp, 24.dp, 24.dp),
-                text = setupTextAPI,
-                style = MaterialTheme.typography.bodyLarge
-            )
+            Column {
+                Text(
+                    modifier = Modifier.padding(24.dp),
+                    text = setupTextIntro,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    modifier = Modifier.padding(24.dp, 0.dp, 24.dp, 24.dp),
+                    text = setupTextAPI,
+                    style = MaterialTheme.typography.bodyLarge
+                )
 
-            HorizontalDivider()
+                HorizontalDivider()
 
-            ApiCheckList(apiChecklistState = apiChecklistState)
+                ApiCheckList(apiChecklistState = apiChecklistState)
+            }
         }
 
         Row(
@@ -187,10 +197,7 @@ fun SetupCard(
 
             if (apiChecklistState.value.isNotEmpty()) {
                 Button(
-                    onClick = {
-                        Log.d("WelcomeScreen", "Navigating to Game screen")
-                        navController.navigate(route = Screen.Game.createRoute(apiKeyManager.getApiChecklistState().value.first()))
-                    }
+                    onClick = onContinueClick
                 )
                 {
                     Text(

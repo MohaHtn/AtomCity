@@ -19,15 +19,13 @@ import org.arcade.atomcity.utils.ApiKeyManager
 internal fun ApiCheckList(apiChecklistState: MutableState<List<String>>) {
     val context = LocalContext.current
     val apiKeyManager = ApiKeyManager(context)
-
-
+    
     fun getApiChecklistState(name: String): Boolean {
         Log.d("ApiCheckList", "Checking API key for: $name, in checklist: ${apiChecklistState.value}")
         return apiChecklistState.value.contains(name.lowercase().replace(" ", ""))
     }
 
-    Column(
-        modifier = Modifier.padding(24.dp),
+    Column(        modifier = Modifier.padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         ApiItem(

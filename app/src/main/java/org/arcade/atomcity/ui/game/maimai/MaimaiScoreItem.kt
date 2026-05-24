@@ -333,8 +333,30 @@ fun MaimaiScoreItemBasicPreview() {
         ),
         jacketImageUrl = "https://maimai.sega.jp/storage/DX_jacket/55ebb569d2a1ce954c0754c1373afb56.jpg"
     )
-    
+
     Box(modifier = Modifier.padding(8.dp)) {
         MaimaiScoreItem(play = samplePlay, onClick = {})
     }
+}
+
+@Preview(showBackground = true, name="Utage")
+@Composable
+fun MaimaiScoreItemUtagePreview() {
+    val samplePlay = MaiteaApiData(
+        id = 7,
+        isHighScore = false,
+        achievementFormatted = "100.00%",
+        rank = "SSS",
+        playDate = "2023-10-23T18:45:00Z",
+        difficultyLevel = DifficultyLevel(key = 0, value = "utage" , label = "Utage"),
+        song = Song(
+            name = Name(jp = "Flower", en = "Flower"),
+            artist = Artist(jp = "DJ YOSHITAKA", en = "DJ YOSHITAKA")
+        ),
+        jacketImageUrl = "https://maimai.sega.jp/storage/DX_jacket/55ebb569d2a1ce954c0754c1373afb56.jpg"
+    )
+    Box(modifier = Modifier.padding(8.dp)) {
+        MaimaiScoreItem(play = samplePlay, onClick = {})
+    }
+
 }
