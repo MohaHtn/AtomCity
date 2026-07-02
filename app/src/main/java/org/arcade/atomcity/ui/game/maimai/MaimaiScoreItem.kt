@@ -23,7 +23,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.arcade.atomcity.model.maitea.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
-import org.arcade.atomcity.ui.game.common.getDifficultyLevelFromCSV
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.formatPlayDate
 
@@ -96,6 +95,7 @@ fun MaimaiScoreItem(
                             shadowElevation = 1.dp
                         ) {
                             Text(
+                                //TODO: i18n
                                 text = "Meilleur score",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Black,
@@ -157,24 +157,24 @@ fun MaimaiScoreItem(
                     )
 
                     Spacer(modifier = Modifier.height(6.dp))
-                    
+
+                    // Difficulty Badge
                     Surface(
                         color = difficultyColor,
-                        shape = RoundedCornerShape(6.dp),
-                        shadowElevation = 1.dp
+                        shape = RoundedCornerShape(12.dp),
+                        shadowElevation = 4.dp
                     ) {
+                        val diffLevel = play.difficultyLevel?.value
+                        val difficultyText = getDifficultyText(diffLevel)
+
                         Text(
-                            text = getDifficultyLevelFromCSV(
-                                context = LocalContext.current,
-                                songName = play.song?.name?.jp ?: "Unknown",
-                                difficulty = play.difficultyLevel?.value
-                            ),
+                            text = difficultyText,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.ExtraBold,
                                 color = Color.White,
                                 fontSize = 12.sp
                             ),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                         )
                     }
                 }

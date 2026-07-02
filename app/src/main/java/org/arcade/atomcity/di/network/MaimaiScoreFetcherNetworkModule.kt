@@ -22,14 +22,14 @@ val maiteaNetworkModule = module {
             .build()
 
         val okHttpClient = OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-                .addInterceptor { chain: Interceptor.Chain ->
+            .addInterceptor { chain: Interceptor.Chain ->
                 val request = chain.request().newBuilder()
                     .addHeader("X-API-KEY", BuildConfig.SCOREFETCHER_API_KEY)
                     .addHeader("Content-Type", "application/x-www-form-urlencoded")
                     .build()
                 chain.proceed(request)
             }
+            .addInterceptor(loggingInterceptor)
             .build()
 
         Retrofit.Builder()

@@ -26,12 +26,16 @@ converterMoshi = "3.0.0"
 datastorePreferences = "1.2.0-alpha02"
 moshi = "1.15.2"
 coreSplashscreen = "1.2.0"
+roomCompiler = "2.8.4"
+ksp = "2.2.10-2.0.2"
+roomCompilerVersion = "2.5.2"
 
 [libraries]
 accompanist-coil = { module = "com.google.accompanist:accompanist-coil", version.ref = "accompanistCoil" }
 accompanist-svg = { module = "com.google.accompanist:accompanist-svg", version.ref = "accompanistSvg" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-room-compiler-v252 = { module = "androidx.room:room-compiler", version.ref = "roomCompilerVersion" }
 coil = { module = "io.coil-kt:coil", version = "2.7.0" }
 coil-compose = { module = "io.coil-kt:coil-compose", version = "2.7.0" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -65,8 +69,12 @@ ui = { module = "androidx.compose.ui:ui" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomCompiler" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomCompiler" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

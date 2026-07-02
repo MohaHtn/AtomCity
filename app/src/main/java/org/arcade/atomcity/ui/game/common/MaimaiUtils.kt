@@ -1,7 +1,5 @@
 package org.arcade.atomcity.ui.game.common
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
@@ -9,8 +7,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
 fun selectRatingBackground(rating: Int?): Brush {
     return when (rating) {
@@ -60,81 +56,11 @@ fun getJacketBorderColor(difficulty: String?): Color {
         "advanced" -> Color(0xFFFBC02D) // Strong Yellow
         "expert" -> Color(0xffff2e42) // Strong Red
         "master" -> Color(0xFF9C27B0) // Deep Purple
-        "remaster" -> Color(0xFFC68BFF) //
+        "remaster" -> Color(0xFFD172ED) // Pink
         "utage" -> Color(0xFFFF5722) // Strong Blue (Utage)
         else -> Color.Transparent
     }
 }
 
-@Composable
-fun getDifficultyLevelFromCSV(context: Context, songName: String, difficulty: String?): String {
-    // Checking the cache first
-    val cacheKey = Pair(songName, difficulty)
-    difficultyCache[cacheKey]?.let { return it }
-
-    // Load CSV data if not already loaded
-    if (!csvDataLoaded) {
-        try {
-            loadCsvData(context)
-        } catch (e: Exception) {
-            Log.e("MaimaiScoreDetails", "Erreur lors du chargement du fichier CSV", e)
-        }
-    }
-
-    // Else, retrieve the difficulty level from the CSV data
-    val songData = csvData[songName.lowercase()]
-    Log.d("MaimaiScoreDetails", "Searching for song: $songName with difficulty: $difficulty")
-    Log.d("MaimaiScoreDetails", songData.toString())
-    val difficultyValue = when (difficulty?.lowercase()) {
-        "easy" -> songData?.get("easy")
-        "basic" -> songData?.get("basic")
-        "advanced" -> songData?.get("advanced")
-        "expert" -> songData?.get("expert")
-        "master" -> songData?.get("master")
-        "remaster" -> songData?.get("remaster")
-        "utage" -> songData?.get("utage")
-        else -> null
-    }
-
-    val result = if (difficultyValue != null && difficultyValue != "-") difficultyValue else "宴"
-
-    // Store the result in the cache
-    difficultyCache[cacheKey] = result
-
-    return result
-}
-
-// Good'ol cache to avoid reloading the CSV file multiple times
-private val difficultyCache = mutableMapOf<Pair<String, String?>, String>()
-private var csvDataLoaded = false
-private val csvData = mutableMapOf<String, Map<String, String>>()
-
-
-private fun loadCsvData(context: Context) {
-    context.resources.assets.open("maimai/songs.csv").use { inputStream ->
-        BufferedReader(InputStreamReader(inputStream)).use { reader ->
-
-            // Skip header
-            reader.readLine()
-
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                val values = line?.split(",")
-
-                if (values != null && values.size >= 8) {
-                    val songName = values[0].trim().lowercase()
-                    val difficulties = mapOf(
-                        "easy" to values[2].trim(),
-                        "basic" to values[3].trim(),
-                        "advanced" to values[4].trim(),
-                        "expert" to values[5].trim(),
-                        "master" to values[6].trim(),
-                        "remaster" to values[7].trim()
-                    )
-                    csvData[songName] = difficulties
-                }
-            }
-        }
-    }
-    csvDataLoaded = true
-}
+// Note: JSON/CSV loaders have been removed. Difficulty lookups are provided by
+// org.arcade.atomcity.data.DifficultyRepository which loads data from the prepopulated Room DB.

@@ -28,7 +28,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.arcade.atomcity.model.maitea.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
-import org.arcade.atomcity.ui.game.common.getDifficultyLevelFromCSV
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.formatPlayDate
@@ -239,12 +238,11 @@ fun MaimaiScoresDetails(
                         shape = RoundedCornerShape(12.dp),
                         shadowElevation = 4.dp
                     ) {
+                        val diffLevel = scoreEntry?.difficultyLevel?.value
+                        val difficultyText = getDifficultyText(diffLevel)
+
                         Text(
-                            text = getDifficultyLevelFromCSV(
-                                context = LocalContext.current,
-                                songName = scoreEntry?.song?.name?.jp ?: "Unknown",
-                                difficulty = scoreEntry?.difficultyLevel?.value
-                            ),
+                            text = difficultyText,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Black,
                                 color = Color.White
@@ -317,16 +315,16 @@ fun MaimaiScoresDetails(
                     }
 
                     detail?.tap?.let {
-                        DetailRow("Tap", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
+                        DetailRow("Taps", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
                     detail?.hold?.let { 
-                        DetailRow("Hold", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
-                    }
-                    detail?.breakk?.let { 
-                        DetailRow("Break", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
+                        DetailRow("Holds", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
                     detail?.slide?.let { 
-                        DetailRow("Slide", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0) 
+                        DetailRow("Slides", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
+                    }
+                    detail?.breakk?.let {
+                        DetailRow("Breaks", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
                 }
             }
