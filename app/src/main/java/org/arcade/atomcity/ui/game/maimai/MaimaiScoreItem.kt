@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import android.util.Log
+import kotlinx.coroutines.launch
+import org.arcade.atomcity.data.LevelInfo
 import org.arcade.atomcity.model.maitea.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
@@ -31,7 +34,20 @@ fun MaimaiScoreItem(
     play: MaiteaApiData,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val difficultyColor = getJacketBorderColor(play.difficultyLevel?.value)
+    
+    var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
+    val scope = rememberCoroutineScope()
+
+    // Getting level info at the start of the page.
+    LaunchedEffect(play.song?.id, play.difficultyLevel?.key) {
+        if (play.song?.id != null && play.difficultyLevel?.key != null) {
+            scope.launch {
+                levelInfo = getMaimaiLevelInfo(context, play.song!!.id!!, play.difficultyLevel!!.key!!)
+            }
+        }
+    }
     
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -40,7 +56,7 @@ fun MaimaiScoreItem(
         shape = RoundedCornerShape(24.dp)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            // Large transparent background label (expressive)
+            // ...existing code...
             Text(
                 text = play.difficultyLevel?.label?.uppercase() ?: "",
                 style = MaterialTheme.typography.displayLarge.copy(
@@ -84,7 +100,7 @@ fun MaimaiScoreItem(
                         )
                     }
 
-                    // Best Score Chip
+                    // Best score chip
                     if (play.isHighScore == true) {
                         Surface(
                             color = Color(0xFFFFF9C4), // Pastel Yellow
@@ -136,7 +152,8 @@ fun MaimaiScoreItem(
                             modifier = Modifier.alpha(0.5f)
                         )
                     }
-                    
+
+                    // Artist name, which is printed only if it is defined.
                     val artistJp = play.song?.artist?.jp
                     val artistEn = play.song?.artist?.en
                     val displayArtist = if (artistJp != null && artistEn != null && artistJp != artistEn) {
@@ -158,25 +175,16 @@ fun MaimaiScoreItem(
 
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    // Difficulty Badge
-                    Surface(
-                        color = difficultyColor,
-                        shape = RoundedCornerShape(12.dp),
-                        shadowElevation = 4.dp
-                    ) {
-                        val diffLevel = play.difficultyLevel?.value
-                        val difficultyText = getDifficultyText(diffLevel)
-
-                        Text(
-                            text = difficultyText,
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Color.White,
-                                fontSize = 12.sp
-                            ),
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    // Difficulty / Level info chip.
+                    MaimaiDifficultyBadge(
+                        difficultyValue = play.difficultyLevel?.value,
+                        levelInfo = levelInfo,
+                        textStyle = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White,
+                            fontSize = 12.sp
                         )
-                    }
+                    )
                 }
 
                 // Achievement Column

@@ -10,7 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import kotlinx.coroutines.launch
+import org.arcade.atomcity.data.LevelInfo
 import org.arcade.atomcity.model.maitea.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
@@ -38,7 +40,19 @@ fun MaimaiScoresDetails(
     scoreEntry: MaiteaApiData? = null,
     onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val difficultyColor = getJacketBorderColor(scoreEntry?.difficultyLevel?.value)
+    
+    var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
+    val scope = rememberCoroutineScope()
+    
+    LaunchedEffect(scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
+        if (scoreEntry?.song?.id != null && scoreEntry.difficultyLevel?.key != null) {
+            scope.launch {
+                levelInfo = getMaimaiLevelInfo(context, scoreEntry.song!!.id!!, scoreEntry.difficultyLevel!!.key!!)
+            }
+        }
+    }
     
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -232,24 +246,15 @@ fun MaimaiScoresDetails(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Difficulty Badge
-                    Surface(
-                        color = difficultyColor,
-                        shape = RoundedCornerShape(12.dp),
-                        shadowElevation = 4.dp
-                    ) {
-                        val diffLevel = scoreEntry?.difficultyLevel?.value
-                        val difficultyText = getDifficultyText(diffLevel)
-
-                        Text(
-                            text = difficultyText,
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            ),
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    // Difficulty Badge with Level Info
+                    MaimaiDifficultyBadge(
+                        difficultyValue = scoreEntry?.difficultyLevel?.value,
+                        levelInfo = levelInfo,
+                        textStyle = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
                         )
-                    }
+                    )
                 }
             }
 
@@ -311,7 +316,7 @@ fun MaimaiScoresDetails(
                     val detail = scoreEntry?.scoreDetail
 
                     detail?.hits?.let {
-                        DetailRow("Hits", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
+                        DetailRow("Total", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
 
                     detail?.tap?.let {

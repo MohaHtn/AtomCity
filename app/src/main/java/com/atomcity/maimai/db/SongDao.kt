@@ -47,4 +47,7 @@ interface SongDao {
 
     @Query("SELECT * FROM song")
     suspend fun getAllSongs(): List<SongEntity>
+
+    @Query("SELECT * FROM level WHERE songId = :songId AND diffIndex = :difficultyValue ORDER BY uid LIMIT 1")
+    suspend fun getLevelByDifficulty(songId: Int, difficultyValue: Int): LevelEntity?
 }

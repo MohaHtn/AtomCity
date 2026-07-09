@@ -100,4 +100,61 @@ object DifficultyRepository {
         }
         return getDifficultyFlow(songName)
     }
+
+    /**
+     * Récupère le niveau de difficulté et l'internal level pour une chanson et une difficulté données.
+     * @param context Contexte Android
+     * @param songId L'ID de la chanson
+     * @param difficultyValue L'index de difficulté (1=easy, 2=basic, 3=advanced, 4=expert, 5=master, 6=remaster)
+     * @return Un objet contenant level et internal_level, ou null si non trouvé
+     */
+    suspend fun getLevelByDifficulty(
+        context: Context,
+        songId: Int,
+        difficultyValue: Int
+    ): LevelInfo? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val db = AppDatabase.getInstance(context)
+                val dao = db.songDao()
+
+                val songCount = dao.getAllSongs().size
+                Log.d("DifficultyRepository", "Runtime DB song count = $songCount")
+
+                Log.d("DifficultyRepository", "Query getLevelByDifficulty(songId=$songId, difficultyValue=$difficultyValue)")
+
+                val levelEntity = dao.getLevelByDifficulty(songId, difficultyValue)
+
+                if (levelEntity == null) {
+                    Log.d("DifficultyRepository", "No row found for songId=$songId, difficultyValue=$difficultyValue")
+                    return@withContext null
+                }
+
+                Log.d(
+                    "DifficultyRepository",
+                    "Row found for songId=$songId, difficultyValue=$difficultyValue -> level=${levelEntity.level}, internalLevel=${levelEntity.internal_level}, diffIndex=${levelEntity.diffIndex}"
+                )
+
+                levelEntity.let {
+                    LevelInfo(
+                        level = it.level,
+                        internalLevel = it.internal_level,
+                        diffIndex = it.diffIndex
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("DifficultyRepository", "Failed to get level for songId=$songId, difficultyValue=$difficultyValue", e)
+                null
+            }
+        }
+    }
 }
+
+/**
+ * Data class representing a Level.
+ */
+data class LevelInfo(
+    val level: String?,
+    val internalLevel: String?,
+    val diffIndex: Int?
+)
