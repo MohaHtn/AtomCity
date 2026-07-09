@@ -118,22 +118,8 @@ object DifficultyRepository {
                 val db = AppDatabase.getInstance(context)
                 val dao = db.songDao()
 
-                val songCount = dao.getAllSongs().size
-                Log.d("DifficultyRepository", "Runtime DB song count = $songCount")
-
-                Log.d("DifficultyRepository", "Query getLevelByDifficulty(songId=$songId, difficultyValue=$difficultyValue)")
-
-                val levelEntity = dao.getLevelByDifficulty(songId, difficultyValue)
-
-                if (levelEntity == null) {
-                    Log.d("DifficultyRepository", "No row found for songId=$songId, difficultyValue=$difficultyValue")
-                    return@withContext null
-                }
-
-                Log.d(
-                    "DifficultyRepository",
-                    "Row found for songId=$songId, difficultyValue=$difficultyValue -> level=${levelEntity.level}, internalLevel=${levelEntity.internal_level}, diffIndex=${levelEntity.diffIndex}"
-                )
+                val levelEntity =
+                    dao.getLevelByDifficulty(songId, difficultyValue) ?: return@withContext null
 
                 levelEntity.let {
                     LevelInfo(

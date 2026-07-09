@@ -29,8 +29,8 @@ class ApiKeyManager(private val context: Context) {
     }
 
     /**
-     * Fournit un Flow de la liste des jeux ayant une clé API (état persistant).
-     */
+     * Provides a Flow of the list of games having an API key (persistent state).
+    */
     fun getApiChecklistStateFlow(): Flow<List<String>> {
         return context.apiKeysDataStore.data.map { preferences ->
             preferences.asMap().mapNotNull { (key, value) ->
@@ -40,9 +40,9 @@ class ApiKeyManager(private val context: Context) {
     }
 
     /**
-     * Fournit un MutableState<List<String>> initialisé à partir du DataStore (pour usage Compose).
-     * Attention : il ne sera pas mis à jour automatiquement si le DataStore change.
-     * Privilégier getApiChecklistStateFlow() pour la réactivité.
+     * Provides a MutableState<List<String>> initialized from the DataStore (for Compose usage).
+     * Note: it will not be automatically updated if the DataStore changes.
+     * Prefer getApiChecklistStateFlow() for responsiveness.
      */
     fun getApiChecklistState(): MutableState<List<String>> {
         val state = mutableStateOf<List<String>>(emptyList())
@@ -60,7 +60,6 @@ class ApiKeyManager(private val context: Context) {
      * @return true if an API key is registered, false otherwise.
      */
     fun containsApiKey(gameName: String): Boolean {
-        // Utilise le DataStore pour vérifier la présence de la clé, persistant
         return getAvailableApiKeys().contains(gameName)
     }
 
@@ -75,7 +74,6 @@ class ApiKeyManager(private val context: Context) {
         context.apiKeysDataStore.edit { preferences ->
             preferences[key] = apiKey
         }
-        // Suppression de la gestion mémoire locale
     }
 
     /**
