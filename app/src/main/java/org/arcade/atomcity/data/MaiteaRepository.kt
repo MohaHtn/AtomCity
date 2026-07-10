@@ -4,14 +4,17 @@ package org.arcade.atomcity.data
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import okhttp3.Response
 import org.arcade.atomcity.data.cache.DataCache
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
 import org.arcade.atomcity.network.ApiCheckRequest
 import org.arcade.atomcity.network.ApiKeyRequest
+import org.arcade.atomcity.network.DeleteApiKeyResponse
 import org.arcade.atomcity.network.MaiteaProfileService
 import org.arcade.atomcity.network.MaiteaService
 import org.arcade.atomcity.utils.ApiKeyManager
+import retrofit2.HttpException
 
 class MaiteaRepository(
     private val maiteaService: MaiteaService,
@@ -43,7 +46,7 @@ class MaiteaRepository(
         }
 
         val keyCheck = maiteaService.checkApiKey(apiKey)
-        if (keyCheck.exists) {
+        if (keyCheck.isKeyProvidedInDatabase) {
             getScores(apiKey, page.toString()).collect { response ->
                 response?.let {
                     // Store data in cache
@@ -62,10 +65,10 @@ class MaiteaRepository(
 
     fun addApiKey(apikey: String) = flow {
         maiteaService.checkApiKey(apikey).let {
-            if (it.exists) {
+            if (it.isKeyProvidedInDatabase) {
                 maiteaService.addApiKey(
                     key = apikey,
-                    description = "MIKU MIKU BEAM!"
+                    description = "maimai API key"
                 )
                 return@flow
             }
@@ -75,18 +78,30 @@ class MaiteaRepository(
     }
 
   fun getScores(token: String, page: String): Flow<MaiteaPlaysResponse?> = flow {
-      var response: MaiteaPlaysResponse?
-        try {
-            response = maiteaService.getScores(token = token, pageNumber = page)
-        } catch (e: retrofit2.HttpException) {
-            if (e.code() == 404) {
-                response = maiteaProfileService.getAllUserScores(page = page.toInt())
-            } else {
-                throw e
-            }
-        }
+      val response = try {
+          maiteaService.getScores(token = token, pageNumber = page)
+      } catch (e: HttpException) {
+          if (e.code() == 404) {
+              maiteaProfileService.getAllUserScores(page = page.toInt())
+          } else {
+              throw e
+          }
+      }
       emit(response)
   }
+
+
+    fun removeApiKey(apiKey: String):Flow <DeleteApiKeyResponse> = flow {
+        val response = try {
+            maiteaService.deleteApiKey(
+                apikey = apiKey
+            )
+        } catch (e: HttpException) {
+            throw e
+        }
+        emit(response)
+    }
+
 
     fun getMaiTeaPlayerDetails(): Flow<MaiteaPlayerDetailsResponse?> = flow {
         // Check if cached data is still valid
@@ -114,4 +129,6 @@ class MaiteaRepository(
         playsCache.clear()
         playerDetailsCache.clear()
     }
+
+
 }

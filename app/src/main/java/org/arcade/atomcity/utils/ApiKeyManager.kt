@@ -54,16 +54,6 @@ class ApiKeyManager(private val context: Context) {
     }
 
     /**
-     * Checks if an API key is registered for a specific game.
-     *
-     * @param gameName The name of the game to check.
-     * @return true if an API key is registered, false otherwise.
-     */
-    fun containsApiKey(gameName: String): Boolean {
-        return getAvailableApiKeys().contains(gameName)
-    }
-
-    /**
      * Saves an API key for a specific game.
      *
      * @param gameName The name of the game for which the API key is being registered.
@@ -73,19 +63,6 @@ class ApiKeyManager(private val context: Context) {
         val key = stringPreferencesKey(gameName)
         context.apiKeysDataStore.edit { preferences ->
             preferences[key] = apiKey
-        }
-    }
-
-    /**
-     * Synchronous version of saveApiKey for migration compatibility.
-     * Consider using the suspend version in new code.
-     *
-     * @param gameName The name of the game for which the API key is being registered.
-     * @param apiKey The API key to register.
-     */
-    fun saveApiKeyBlocking(gameName: String, apiKey: String) {
-        runBlocking {
-            saveApiKey(gameName, apiKey)
         }
     }
 
@@ -128,20 +105,8 @@ class ApiKeyManager(private val context: Context) {
         context.apiKeysDataStore.edit { preferences ->
             preferences.remove(key)
         }
-        // Suppression de la gestion mémoire locale
     }
 
-    /**
-     * Removes the API key for a specific game synchronously.
-     * Consider using the suspend version in new code.
-     *
-     * @param gameName The name of the game for which to remove the API key.
-     */
-    fun removeApiKeyBlocking(gameName: String) {
-        runBlocking {
-            removeApiKey(gameName)
-        }
-    }
 
     /**
      * Checks if an API key exists for a specific game.
@@ -187,7 +152,6 @@ class ApiKeyManager(private val context: Context) {
                         keys.add(key.name)
                     }
                 }
-
                 Log.d("DataStore", "Liste des clés API disponibles : $keys")
 
             } catch (e: Exception) {

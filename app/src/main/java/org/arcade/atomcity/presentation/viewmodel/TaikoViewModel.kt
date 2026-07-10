@@ -160,12 +160,18 @@ class TaikoViewModel(
     }
 
     suspend fun mergeImages(urls: List<String>): Bitmap = withContext(Dispatchers.IO) {
-        val bitmaps: List<Bitmap> = urls.map { url ->
-            val input = URL(url).openStream()
-            BitmapFactory.decodeStream(input)
+        val bitmaps: List<Bitmap> = urls.mapNotNull { url ->
+            try {
+                val input = URL(url).openStream()
+                BitmapFactory.decodeStream(input)
+            } catch (e: Exception) {
+                Log.e("TaikoViewModel", "Failed to load image from $url", e)
+                null
+            }
         }
         if (bitmaps.isEmpty()) {
-            throw IllegalArgumentException("No bitmaps provided to merge.")
+            // Return a blank bitmap or handle as needed
+            return@withContext createBitmap(100, 100, Bitmap.Config.ARGB_8888)
         }
         val result: Bitmap = createBitmap(
             bitmaps[0].width,

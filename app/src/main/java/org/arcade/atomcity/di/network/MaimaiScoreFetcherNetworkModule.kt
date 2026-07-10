@@ -17,6 +17,8 @@ val maiteaNetworkModule = module {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
+
+
         val moshi = Moshi.Builder()
             .add(com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory())
             .build()
@@ -33,7 +35,8 @@ val maiteaNetworkModule = module {
             .build()
 
         Retrofit.Builder()
-            .baseUrl("https://scorefetcher.mohahtn.xyz")
+             //.baseUrl("https://scorefetcher.mohahtn.xyz")
+            .baseUrl("http://192.168.1.132:8080")
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()

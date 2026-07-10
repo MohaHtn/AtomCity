@@ -5,4 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 object GlobalUIState {
     var openApiGuide = mutableStateOf(false)
     var selectedGameForGuide = mutableStateOf("")
+    var openSaveKeyDialog = mutableStateOf(false)
+
 }

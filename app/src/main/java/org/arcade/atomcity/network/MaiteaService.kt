@@ -1,16 +1,13 @@
 package org.arcade.atomcity.network
 
-import androidx.compose.ui.graphics.Path
+import retrofit2.http.Path
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
-import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
-import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
-import retrofit2.http.Header
+import retrofit2.http.HTTP
 import retrofit2.http.POST
-import retrofit2.http.PUT
-import retrofit2.http.Query
 
 data class ApiKeyRequest(
     val apikey: String,
@@ -18,7 +15,11 @@ data class ApiKeyRequest(
 )
 
 data class ApiKeyCheckResponse(
-    val exists: Boolean,
+    val isKeyProvidedInDatabase: Boolean,
+)
+
+data class DeleteApiKeyResponse(
+    val message: String,
 )
 
 data class ApiCheckRequest(
@@ -48,4 +49,9 @@ interface MaiteaService {
 
     @GET("apikeys/profiles")
     suspend fun getProfiles(): Map<String, List<String>>
+
+    @DELETE("apikeys/{apikey}")
+    suspend fun deleteApiKey(
+        @Path("apikey") apikey: String
+    ): DeleteApiKeyResponse
 }

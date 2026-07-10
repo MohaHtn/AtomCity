@@ -2,6 +2,7 @@ package org.arcade.atomcity.network
 
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -15,4 +16,5 @@ interface MaiteaProfileService {
     suspend fun getAllUserScores(
         @Query("page") page: Int
     ): MaiteaPlaysResponse
+
 }

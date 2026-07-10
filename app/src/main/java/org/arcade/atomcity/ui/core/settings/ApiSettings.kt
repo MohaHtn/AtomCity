@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.core.settings
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -58,13 +59,11 @@ fun ApiSettings(
                         text = "Voici l'état des clés API que vous avez entré dans l'application. " +
                                 "Vous pouvez les modifier, les supprimer ou ajouter de nouvelles si nécessaire.",
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(32.dp)
                     )
                 }
                 item {
-                    ApiCheckList(
-                        apiChecklistState = apiKeyManager.getApiChecklistState(),
-                    )
+                    ApiCheckList()
                 }
             }
 
@@ -77,12 +76,24 @@ fun ApiSettings(
                             taikoViewModel = taikoViewModel
                         )
                     }
-                    else -> {
+                    "maimai" -> {
                         MaimaiApiGuide(
                             apiKeyManager = apiKeyManager,
                             isVisible = GlobalUIState.openApiGuide,
                             maiteaViewModel = maiteaViewModel
                         )
+                    }
+                    "In The Groove 2" -> {
+
+                    }
+                    "beatmania IIDX" -> {
+
+                    }
+                    "pop'n music" -> {
+
+                    }
+                    "SOUND VOLTEX" -> {
+
                     }
                 }
             }

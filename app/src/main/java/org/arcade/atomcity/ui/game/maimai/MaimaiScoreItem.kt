@@ -179,12 +179,14 @@ fun MaimaiScoreItem(
                     MaimaiDifficultyBadge(
                         difficultyValue = play.difficultyLevel?.value,
                         levelInfo = levelInfo,
+                        rating = play.rating,
                         textStyle = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White,
                             fontSize = 12.sp
                         )
                     )
+
                 }
 
                 // Achievement Column
@@ -197,7 +199,7 @@ fun MaimaiScoreItem(
                             text = play.rank!!,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Black,
-                                fontSize = 20.sp,
+                                fontSize = 24.sp,
                                 letterSpacing = 0.5.sp
                             ),
                             color = difficultyColor,
@@ -215,6 +217,8 @@ fun MaimaiScoreItem(
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                         )
+
+
                         Text(
                             text = "%",
                             style = MaterialTheme.typography.labelMedium.copy(
@@ -223,6 +227,18 @@ fun MaimaiScoreItem(
                             ),
                             color = difficultyColor,
                             modifier = Modifier.padding(bottom = 2.dp, start = 1.dp)
+                        )
+                    }
+
+                    play.rating?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Black,
+                                fontSize = 18.sp,
+                                letterSpacing = (-0.5).sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     
@@ -242,6 +258,7 @@ fun MaimaiScoreItem(
 fun MaimaiScoreItemMasterPreview() {
     val samplePlay = MaiteaApiData(
         id = 1,
+        rating = "12.87",
         isHighScore = true,
         achievementFormatted = "100.50%",
         rank = "SSS+",
@@ -265,6 +282,7 @@ fun MaimaiScoreItemExpertPreview() {
     val samplePlay = MaiteaApiData(
         id = 2,
         isHighScore = false,
+        rating = "12.87",
         achievementFormatted = "99.00%",
         rank = "SS",
         playDate = "2023-10-26T15:30:00Z",
@@ -287,6 +305,7 @@ fun MaimaiScoreItemRemasterPreview() {
     val samplePlay = MaiteaApiData(
         id = 3,
         isHighScore = true,
+        rating = "12.87",
         achievementFormatted = "101.00%",
         rank = "SSS+",
         playDate = "2023-10-25T12:00:00Z",
@@ -309,6 +328,7 @@ fun MaimaiScoreItemAdvancedPreview() {
     val samplePlay = MaiteaApiData(
         id = 4,
         isHighScore = false,
+        rating = "12.87",
         achievementFormatted = "97.50%",
         rank = "S",
         playDate = "2023-10-24T09:15:00Z",
@@ -331,6 +351,7 @@ fun MaimaiScoreItemBasicPreview() {
     val samplePlay = MaiteaApiData(
         id = 5,
         isHighScore = false,
+        rating = "12.87",
         achievementFormatted = "100.00%",
         rank = "SSS",
         playDate = "2023-10-23T18:45:00Z",
@@ -353,6 +374,7 @@ fun MaimaiScoreItemUtagePreview() {
     val samplePlay = MaiteaApiData(
         id = 7,
         isHighScore = false,
+        rating = "12.87",
         achievementFormatted = "100.00%",
         rank = "SSS",
         playDate = "2023-10-23T18:45:00Z",

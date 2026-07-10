@@ -3,38 +3,23 @@ package org.arcade.atomcity.ui.guide
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,7 +57,7 @@ fun TaikoServerApiGuide(
             scope.launch {
                 apiKeyManager.saveApiKey("taiko", text)
                 Log.d("TaikoServerApiGuide", "API Key saved: $text")
-                // taikoViewModel.addApiKey(text) // Si TaikoViewModel a une méthode similaire
+                // taikoViewModel.addApiKey(text) //TODO : wait why i did that i forget
                 isVisible.value = false
             }
         }
@@ -147,114 +132,12 @@ fun TaikoApiGuideSheetContent(
             }
 
             item {
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-            }
-
-            item {
-                EnterTaikoApiTextBoxContent(
-                    existingApiKey = existingApiKey,
-                    onDismiss = onDismiss,
-                    onSaveApiKey = onSaveApiKey
-                )
-            }
-
-            item {
                 Spacer(modifier = Modifier.height(48.dp))
             }
         }
     }
 }
 
-@Composable
-fun EnterTaikoApiTextBoxContent(
-    existingApiKey: String?,
-    onDismiss: () -> Unit,
-    onSaveApiKey: (String) -> Unit
-) {
-    var text by remember { mutableStateOf(existingApiKey ?: "") }
-    var isError by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
-    val isValidInput by remember(text, isError) {
-        derivedStateOf { text.isNotBlank() && !isError }
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.elevatedCardColors()
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "Enregistrer l'ID",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-
-            OutlinedTextField(
-                value = text,
-                onValueChange = { newText ->
-                    text = newText
-                    if (newText.isBlank()) {
-                        isError = true
-                        errorMessage = "L'ID ne peut pas être vide."
-                    } else if (!newText.all { it.isDigit() }) {
-                        isError = true
-                        errorMessage = "L'ID doit être composé uniquement de chiffres."
-                    } else {
-                        isError = false
-                        errorMessage = ""
-                    }
-                },
-                label = { Text(TAIKO_API_GUIDE_LABEL) },
-                placeholder = {
-                    if (existingApiKey.isNullOrBlank()) {
-                        Text(TAIKO_API_GUIDE_PLACEHOLDER)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                isError = isError,
-                supportingText = {
-                    if (isError) {
-                        Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
-            ) {
-                TextButton(
-                    onClick = onDismiss,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(TAIKO_API_GUIDE_BACK)
-                }
-
-                Button(
-                    onClick = {
-                        if (isValidInput) {
-                            onSaveApiKey(text)
-                        }
-                    },
-                    enabled = isValidInput,
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
-                ) {
-                    Text(TAIKO_API_GUIDE_VALIDATE)
-                }
-            }
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable

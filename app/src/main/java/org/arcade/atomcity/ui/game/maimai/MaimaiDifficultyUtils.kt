@@ -1,6 +1,8 @@
 package org.arcade.atomcity.ui.game.maimai
 
 import android.content.Context
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +59,8 @@ suspend fun getMaimaiLevelInfo(
 @Composable
 fun MaimaiDifficultyBadge(
     difficultyValue: String?,
-    levelInfo: LevelInfo?,
+    levelInfo: LevelInfo? = null,
+    rating: String? = "",
     modifier: Modifier = Modifier,
     textStyle: TextStyle = MaterialTheme.typography.labelSmall.copy(
         fontWeight = FontWeight.ExtraBold,
@@ -71,11 +74,12 @@ fun MaimaiDifficultyBadge(
         val internal = levelInfo?.internalLevel?.takeIf { it.isNotEmpty() && it != level }
 
         // Creating level/internal level separator
-        val levels = listOfNotNull(level, internal).joinToString(" | ")
+        val levels = listOfNotNull(level, internal).joinToString(" • ")
 
         // Adding the difficulty name at the end
         if (levels.isNotEmpty()) "$difficultyText $levels" else difficultyText
     }
+
 
     Surface(
         color = difficultyColor,
@@ -83,10 +87,13 @@ fun MaimaiDifficultyBadge(
         shadowElevation = 4.dp,
         modifier = modifier
     ) {
-        Text(
-            text = displayText,
-            style = textStyle,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-        )
+        Row(){
+            Text(
+                text = displayText,
+                style = textStyle,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
     }
+
 }

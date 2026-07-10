@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.AlertDialog
@@ -16,31 +16,47 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
+import org.koin.core.context.GlobalContext
 
 @Composable
 internal fun ApiItem(
     name: String,
     key: String = name.lowercase().replace(" ", ""),
-    hasKey: Boolean
 ) {
     val context = LocalContext.current
     val apiKeyManager = ApiKeyManager(context)
-    val apiKey = apiKeyManager.getApiKey(key)
+    val maiteaRepository: MaiteaRepository = remember { GlobalContext.get().get() }
+    val scope = rememberCoroutineScope()
+    val apiKey by apiKeyManager.getApiKeyFlow(key).collectAsState(initial = null)
+    val hasKeyActual = apiKey != null
     val dialogVisible = remember { mutableStateOf(false) }
     val revealed = remember { mutableStateOf(false) }
+    
+    // Actual supported games (for now!)
+    val isGameSupported = name == "maimai" || name == "Taiko no Tatsujin"
 
     fun maskKey(key: String?): String {
         if (key.isNullOrBlank()) return ""
@@ -55,12 +71,12 @@ internal fun ApiItem(
     ListItem(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = hasKey) { dialogVisible.value = true },
+            .clickable(enabled = hasKeyActual) { dialogVisible.value = true },
         leadingContent = {
             Icon(
-                imageVector = if (hasKey) Icons.Rounded.CheckCircle else Icons.Rounded.Close,
-                contentDescription = if (hasKey) "API configurée" else "API non configurée",
-                tint = if (hasKey) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                imageVector = if (hasKeyActual) Icons.Rounded.CheckCircle else Icons.Rounded.Close,
+                contentDescription = if (hasKeyActual) "API configurée" else "API non configurée",
+                tint = if (hasKeyActual) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
             )
         },
         headlineContent = {
@@ -71,30 +87,49 @@ internal fun ApiItem(
         },
         supportingContent = {
             Text(
-                text = if (hasKey) "Clé configurée • ${maskKey(apiKey)}" else "Aucun accès configuré",
+                text = if (hasKeyActual) "Clé configurée • ${maskKey(apiKey)}" else "Aucun accès configuré",
                 style = MaterialTheme.typography.bodyMedium
             )
         },
         trailingContent = {
-            TextButton(
-                onClick = {
-                    GlobalUIState.selectedGameForGuide.value = name
-                    GlobalUIState.openApiGuide.value = true
-                    Log.d("API", "Open guide for $name (hasKey=$hasKey)")
-                }
-            ) {
-                if (hasKey) {
+            Row() {
+                TextButton(
+                    onClick = {
+                        GlobalUIState.selectedGameForGuide.value = name
+                        GlobalUIState.openSaveKeyDialog.value = true
+                    },
+                    enabled = isGameSupported
+                ) {
                     Icon(
-                        imageVector = Icons.Filled.Create,
-                        contentDescription = "Modifier",
+                        imageVector = if (hasKeyActual) Icons.Rounded.Edit else Icons.Rounded.Add,
+                        contentDescription = if (hasKeyActual) "Modifier la clé API" else "Ajouter une clé API",
                         modifier = Modifier.padding(end = 10.dp)
                     )
+                    Text(
+                        text = if (hasKeyActual) "Modifier" else "Ajouter",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
-                Text(
-                    text = if (hasKey) "Modifier" else "Ajouter",
-                    style = MaterialTheme.typography.labelLarge
-                )
+
+                TextButton(
+                    onClick = {
+                        GlobalUIState.selectedGameForGuide.value = name
+                        GlobalUIState.openApiGuide.value = true
+                    },
+                    enabled = isGameSupported
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = "Guide",
+                        modifier = Modifier.padding(end = 10.dp)
+                    )
+                    Text(
+                        text = "Guide",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
+
         }
     )
 
@@ -108,21 +143,115 @@ internal fun ApiItem(
                 dialogVisible.value = false
                 revealed.value = false
             },
-            maskKey = ::maskKey
+            onDeleteClick = {
+                scope.launch {
+                    if (name == "maimai" && apiKey != null) {
+                        try {
+                            maiteaRepository.removeApiKey(apiKey!!).collect {
+                                Log.d("ApiItem", "Clé API supprimée du serveur : ${it.message}")
+                            }
+                        } catch (e: Exception) {
+                            Log.e("ApiItem", "Erreur lors de la suppression de la clé sur le serveur", e)
+                        }
+                    }
+                    apiKeyManager.removeApiKey(key)
+                    dialogVisible.value = false
+                    revealed.value = false
+                }
+            },
+            maskKey = ::maskKey,
+            text = 
+                when (GlobalUIState.selectedGameForGuide.value) {
+                    "maimai" -> "Votre clé API pour maimai est affichée ci-dessous."
+                    "Taiko no Tatsujin" -> "Votre ID utilisateur pour Taiko no Tatsujin est affiché ci-dessous."
+                    else -> ""
+                }
+            
         )
+        // TODO: DEBUG ONLY
         apiKeyManager.logAllApiKeys()
+    }
+
+    if (GlobalUIState.openSaveKeyDialog.value && GlobalUIState.selectedGameForGuide.value == name) {
+        EditApiKeyDialog(
+            title = when (GlobalUIState.selectedGameForGuide.value) {
+                "maimai" -> "Ajouter/Modifier la clé API pour maimai"
+                "Taiko no Tatsujin" -> "Ajouter/Modifier l'ID Utilisateur pour Taiko no Tatsujin"
+                else -> "Ajouter/Modifier"
+            },
+            existingApiKey = apiKey,
+            onDismiss = { GlobalUIState.openSaveKeyDialog.value = false },
+            onSaveApiKey = { newKey ->
+                scope.launch {
+                    apiKeyManager.saveApiKey(key, newKey)
+                    GlobalUIState.openSaveKeyDialog.value = false
+                }
+            },
+            textBoxLabel = when (GlobalUIState.selectedGameForGuide.value) {
+                "maimai" -> "Enregistrer la clé"
+                "Taiko no Tatsujin" -> "Enregistrer l'ID utilisateur"
+                else -> ""
+            },
+            textBoxExample = when (GlobalUIState.selectedGameForGuide.value) {
+                "maimai" -> "Exemple : Exemple: 391|UBvwFPZvDrC3lm9DMSd50e4zXZicB5ssPogJmsw"
+                "Taiko no Tatsujin" -> "Exemple : 1234567890"
+                else -> ""
+            }
+        )
     }
 }
 
 @Composable
 fun ApiItemDialog(
     name: String,
+    text: String,
     apiKey: String?,
     revealed: Boolean,
     onRevealClick: () -> Unit,
     onDismiss: () -> Unit,
+    onDeleteClick: () -> Unit,
     maskKey: (String?) -> String
 ) {
+    val showDeleteConfirmation = remember { mutableStateOf(false) }
+
+    if (showDeleteConfirmation.value) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation.value = false },
+            title = {
+                Text(text = "Supprimer la clé ?")
+            },
+            text = {
+                Column() {
+                    Text(text = "Êtes-vous sûr de vouloir supprimer la clé pour $name ?")
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    Text(
+                        text = "Cette action est irréversible. La clé sera également supprimée sur le serveur distant.",
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmation.value = false
+                        onDeleteClick()
+                        
+                    }
+                ) {
+                    Text("Supprimer", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteConfirmation.value = false }
+                ) {
+                    Text("Annuler")
+                }
+            }
+        )
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -134,38 +263,46 @@ fun ApiItemDialog(
         text = {
             Column {
                 Text(
-                    text = "Votre clé API  pour $name est affichée ci-dessous. " +
-                            "Appuyez sur la clé pour révéler ou masquer sa valeur.",
+                    text = text + "Appuyez sur ci-dessous pour révéler ou masquer sa valeur.",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
-                    text = "Note : Ne partagez jamais votre clé API avec d'autres personnes ou applications non fiables.",
+                    text = "Note : Ne partagez jamais cette information avec d'autres personnes ou applications non fiables.",
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
-                Text(
-                    text = when {
-                        apiKey.isNullOrBlank() -> "(aucune clé)"
-                        revealed -> apiKey
-                        else -> maskKey(apiKey)
-                    },
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = FontFamily.Monospace
-                    ),
-                    modifier = Modifier
-                        .clickable(enabled = !apiKey.isNullOrBlank()) {
-                            onRevealClick()
-                        }
-                        .padding(vertical = 2.dp)
-                )
+                SelectionContainer {
+                    Text(
+                        text = when {
+                            apiKey.isNullOrBlank() -> "(aucune clé)"
+                            revealed -> apiKey
+                            else -> maskKey(apiKey)
+                        },
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = FontFamily.Monospace
+                        ),
+                        modifier = Modifier
+                            .clickable(enabled = !apiKey.isNullOrBlank()) {
+                                onRevealClick()
+                            }
+                            .padding(vertical = 2.dp)
+                    )
+                }
             }
         },
         confirmButton = {
             androidx.compose.material3.Button(onClick = onDismiss) {
                 Text("Fermer")
+            }
+        },
+        dismissButton = {
+            if (!apiKey.isNullOrBlank()) {
+                TextButton(onClick = { showDeleteConfirmation.value = true }) {
+                    Text("Supprimer la clé", color = MaterialTheme.colorScheme.error)
+                }
             }
         }
     )
@@ -178,7 +315,6 @@ fun ApiItemConfiguredPreview() {
         ApiItem(
             name = "maimai",
             key = "maimai",
-            hasKey = true
         )
     }
 }
@@ -190,7 +326,6 @@ fun ApiItemNotConfiguredPreview() {
         ApiItem(
             name = "Taiko no Tatsujin",
             key = "taiko",
-            hasKey = false
         )
     }
 }
@@ -205,10 +340,12 @@ fun ApiItemDialogPreviewLongKeyAPI() {
         ) {
             ApiItemDialog(
                 name = "maimai",
+                text = "Votre clé API pour maimai est affichée ci-dessous.",
                 apiKey = "1234567890abcdef1234567890abcdef1234567890abcdef",
                 revealed = false,
                 onRevealClick = {},
                 onDismiss = {},
+                onDeleteClick = {},
                 maskKey = { key ->
                     if (key.isNullOrBlank()) ""
                     else {
@@ -235,10 +372,12 @@ fun ApiItemDialogPreviewNoLongKeyAPI() {
         ) {
             ApiItemDialog(
                 name = "maimai",
+                text = "Votre clé API pour maimai est affichée ci-dessous.",
                 apiKey = "12345",
                 revealed = false,
                 onRevealClick = {},
                 onDismiss = {},
+                onDeleteClick = {},
                 maskKey = { key ->
                     if (key.isNullOrBlank()) ""
                     else {

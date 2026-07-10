@@ -86,9 +86,9 @@ fun AppNavigation(
         composable("welcome") {
             WelcomeScreen(
                 navController = navController,
-                apiChecklistState = apiKeyManager.getApiChecklistState(),
-                onContinueClick = {
-                    navController.navigate(Screen.Game.createRoute(apiKeyManager.getApiChecklistState().value.first()))
+                apiKeyManager = apiKeyManager,
+                onContinueClick = { firstGameId ->
+                    navController.navigate(Screen.Game.createRoute(firstGameId))
                 }
             )
 
