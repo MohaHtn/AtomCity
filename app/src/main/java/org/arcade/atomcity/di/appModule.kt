@@ -1,11 +1,9 @@
-// appModule.kt
 package org.arcade.atomcity.di
 
 import android.content.Context
+import androidx.work.WorkManager
 import org.koin.dsl.module
 
 val appModule = module {
-    single { provideContext(get()) }
+    single<WorkManager> { WorkManager.getInstance(get<Context>()) }
 }
-
-fun provideContext(context: Context): Context = context

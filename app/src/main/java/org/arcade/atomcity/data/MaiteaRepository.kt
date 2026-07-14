@@ -14,12 +14,16 @@ import org.arcade.atomcity.network.DeleteApiKeyResponse
 import org.arcade.atomcity.network.MaiteaProfileService
 import org.arcade.atomcity.network.MaiteaService
 import org.arcade.atomcity.utils.ApiKeyManager
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import org.arcade.atomcity.worker.MaimaiImportWorker
 import retrofit2.HttpException
 
 class MaiteaRepository(
     private val maiteaService: MaiteaService,
     private val apiKeyManager: ApiKeyManager,
-    private val maiteaProfileService: MaiteaProfileService
+    private val maiteaProfileService: MaiteaProfileService,
+    private val workManager: WorkManager
 ) {
     // Cache for paginated data
     private val playsCache = mutableMapOf<Int, DataCache<MaiteaPlaysResponse>>()
@@ -59,6 +63,7 @@ class MaiteaRepository(
             maiteaService.addApiKey(
                 key = apiKey, description = "MIKU MIKU BEAM!"
             )
+            startImportWorker(apiKey)
             emit(null)
         }
     }
@@ -70,11 +75,21 @@ class MaiteaRepository(
                     key = apikey,
                     description = "maimai API key"
                 )
+
+                startImportWorker(apikey)
+
                 return@flow
             }
         }
 
         emit(true)
+    }
+
+    private fun startImportWorker(apiKey: String) {
+        val workRequest = OneTimeWorkRequestBuilder<MaimaiImportWorker>()
+            .setInputData(MaimaiImportWorker.createInputData(apiKey))
+            .build()
+        workManager.enqueue(workRequest)
     }
 
   fun getScores(token: String, page: String): Flow<MaiteaPlaysResponse?> = flow {

@@ -4,7 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
@@ -47,19 +50,13 @@ class MaiteaViewModel(
     private val _isLoadingPlays = MutableStateFlow(false)
     private val _isLoadingPlayer = MutableStateFlow(false)
     private val _isLoadingProfiles = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = MutableStateFlow(false).apply {
-        viewModelScope.launch {
-            kotlinx.coroutines.flow.combine(
-                _isLoadingPlays,
-                _isLoadingPlayer,
-                _isLoadingProfiles
-            ) { playsLoading, playerLoading, profilesLoading ->
-                playsLoading || playerLoading || profilesLoading
-            }.collect { value ->
-                this@apply.value = value
-            }
-        }
-    }
+    val isLoading: StateFlow<Boolean> = combine(
+        _isLoadingPlays,
+        _isLoadingPlayer,
+        _isLoadingProfiles
+    ) { playsLoading, playerLoading, profilesLoading ->
+        playsLoading || playerLoading || profilesLoading
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun fetchMaimaiPaginatedData(page: Int) {
         try {

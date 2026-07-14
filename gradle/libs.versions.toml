@@ -29,6 +29,7 @@ coreSplashscreen = "1.2.0"
 roomCompiler = "2.8.4"
 ksp = "2.2.10-2.0.2"
 roomCompilerVersion = "2.5.2"
+workRuntimeKtx = "2.10.0"
 
 [libraries]
 accompanist-coil = { module = "com.google.accompanist:accompanist-coil", version.ref = "accompanistCoil" }
@@ -72,6 +73,7 @@ moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomCompiler" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomCompiler" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

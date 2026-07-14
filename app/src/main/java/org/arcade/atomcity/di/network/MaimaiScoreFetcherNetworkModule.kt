@@ -35,8 +35,8 @@ val maiteaNetworkModule = module {
             .build()
 
         Retrofit.Builder()
-             //.baseUrl("https://scorefetcher.mohahtn.xyz")
-            .baseUrl("http://192.168.1.132:8080")
+             .baseUrl("https://scorefetcher.mohahtn.xyz")
+            //.baseUrl("http://192.168.1.132:8080")
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
