@@ -1,12 +1,12 @@
 package org.arcade.atomcity.network
 
+import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
 import retrofit2.http.Path
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
-import retrofit2.http.HTTP
 import retrofit2.http.POST
 
 data class ApiKeyRequest(
@@ -54,4 +54,9 @@ interface MaiteaService {
     suspend fun deleteApiKey(
         @Path("apikey") apikey: String
     ): DeleteApiKeyResponse
+
+    @GET("score/top")
+    suspend fun get30BestCharts(
+        @Field("hashKey") hashKey: String
+    ): PlayerBest30Response
 }

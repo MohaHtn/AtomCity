@@ -1,6 +1,7 @@
 package org.arcade.atomcity.presentation.viewmodel
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +14,7 @@ import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
 import com.squareup.moshi.JsonClass
+import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
 
 // TODO: Use UseCase instead of Repository directly in ViewModel.
 
@@ -40,6 +42,13 @@ class MaiteaViewModel(
     private val _profiles = MutableStateFlow<Map<String, List<String>>>(emptyMap())
     val profiles: StateFlow<Map<String, List<String>>> = _profiles
 
+    // StateFlow to hold the 30 maimai best scores
+    private val _maimaiBestScores = mutableStateOf<PlayerBest30Response?>(null)
+    val maimaiBestScores: StateFlow<PlayerBest30Response?> = _maimaiBestScores
+
+
+    private val hashKey = mutableStateOf("")
+
     // Expose the current page
     internal val _currentPage = MutableStateFlow(1)
 
@@ -50,6 +59,8 @@ class MaiteaViewModel(
     private val _isLoadingPlays = MutableStateFlow(false)
     private val _isLoadingPlayer = MutableStateFlow(false)
     private val _isLoadingProfiles = MutableStateFlow(false)
+    private val _isLoading30BestScores = MutableStateFlow(false)
+
     val isLoading: StateFlow<Boolean> = combine(
         _isLoadingPlays,
         _isLoadingPlayer,
@@ -122,6 +133,21 @@ class MaiteaViewModel(
             } catch (e: Exception) {
                 Log.e("MaiteaViewModel", "Error fetching profiles: ${e.message}")
                 _isLoadingProfiles.value = false
+            }
+        }
+    }
+
+    fun fetch30BestScores(){
+        viewModelScope.launch {
+            try {
+                _isLoading30BestScores.value = true
+                repository.get30BestCharts(this.hashKey).collect{
+                    _maimaiBestScores.value = it
+                    _isLoading30BestScores.value = false
+                }
+            } catch (e: Exception) {
+                Log.e("MaiteaViewModel", "Error fetching 30 best scores: ${e.message}")
+                _isLoading30BestScores.value = false
             }
         }
     }

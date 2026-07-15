@@ -152,6 +152,7 @@ fun TaikoScores(
                 onMaimaiUsersClick = {
                     navController.navigate("maimai-users")
                 },
+                onMaimaiBestScoreClick = TODO(),
             )
         },
     ) { paddingValues ->

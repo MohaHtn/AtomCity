@@ -45,6 +45,8 @@ fun MaimaiScoreItem(
         if (play.song?.id != null && play.difficultyLevel?.key != null) {
             scope.launch {
                 levelInfo = getMaimaiLevelInfo(context, play.song!!.id!!, play.difficultyLevel!!.key!!)
+                Log.d("MaimaiScoreItem", "Level info: $levelInfo")
+                Log.d("MaimaiScoreItem", "$play")
             }
         }
     }

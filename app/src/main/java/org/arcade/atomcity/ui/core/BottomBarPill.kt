@@ -19,7 +19,8 @@ fun BottomBarPill(
     onPageChange: (Int) -> Unit,
     onHomeClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onMaimaiUsersClick: () -> Unit
+    onMaimaiUsersClick: () -> Unit,
+    onMaimaiBestScoreClick: () -> Unit
 ) {
     NavigationBar {
         NavigationBarItem(
@@ -37,6 +38,20 @@ fun BottomBarPill(
                 )
             },
             label = { Text("") }
+        )
+        NavigationBarItem(
+            selected = false,
+            onClick = onMaimaiBestScoreClick,
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.star),
+                    contentDescription = "Groups"
+                )
+            },
+            label = { Text(
+                text = "Meilleurs Scores",
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            ) }
         )
         NavigationBarItem(
             selected = false,

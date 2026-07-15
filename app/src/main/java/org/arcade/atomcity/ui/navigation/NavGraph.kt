@@ -25,6 +25,7 @@ import org.arcade.atomcity.ui.guide.TaikoServerApiGuide
 import org.arcade.atomcity.ui.core.settings.ApiSettings
 import org.arcade.atomcity.ui.game.maimai.AtomCityUsers
 import org.arcade.atomcity.ui.game.maimai.GameScreen
+import org.arcade.atomcity.ui.game.maimai.MaimaiBest30Charts
 import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.guide.MaimaiApiGuide
 import org.arcade.atomcity.utils.ApiKeyManager
@@ -149,6 +150,13 @@ fun AppNavigation(
                 navController = navController,
                 showMiniMenu = showMiniMenu,
                 taikoViewModel = taikoViewModel
+            )
+        }
+
+        composable (route = "maimaiBest30Scores") {
+            MaimaiBest30Charts(
+                navController = navController,
+                onBackClick = { navController.popBackStack() },
             )
         }
 

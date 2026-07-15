@@ -181,6 +181,9 @@ fun MaimaiScores(
                 onMaimaiUsersClick = {
                     navController.navigate("maimaiUsers")
                     showMiniMenu = false
+                },
+                onMaimaiBestScoreClick = {
+                    navController.navigate("maimaiBest30Scores")
                 }
             )
         }

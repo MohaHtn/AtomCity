@@ -15,7 +15,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: Room.databaseBuilder(context, AppDatabase::class.java, "maimai_internal_diffs.db")
+                INSTANCE ?: Room.databaseBuilder(context, AppDatabase::class.java, "maimai_internal_diffs_old.db")
                     .createFromAsset("maimai/database/maimai_internal_diffs.db")
                     .fallbackToDestructiveMigration(false)
                     .build()

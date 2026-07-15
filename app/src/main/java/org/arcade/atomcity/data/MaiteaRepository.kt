@@ -2,20 +2,19 @@
 package org.arcade.atomcity.data
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import okhttp3.Response
 import org.arcade.atomcity.data.cache.DataCache
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
-import org.arcade.atomcity.network.ApiCheckRequest
-import org.arcade.atomcity.network.ApiKeyRequest
 import org.arcade.atomcity.network.DeleteApiKeyResponse
 import org.arcade.atomcity.network.MaiteaProfileService
 import org.arcade.atomcity.network.MaiteaService
 import org.arcade.atomcity.utils.ApiKeyManager
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
 import org.arcade.atomcity.worker.MaimaiImportWorker
 import retrofit2.HttpException
 
@@ -138,12 +137,15 @@ class MaiteaRepository(
         emit(maiteaService.getProfiles())
     }
 
-    // Method to clear cache if needed
-    fun clearCache() {
-        playsCache.values.forEach { it.clear() }
-        playsCache.clear()
-        playerDetailsCache.clear()
+    //TODO: check why it returns as an Any?.
+    fun get30BestCharts(hashKey: MutableState<String>): Flow<PlayerBest30Response> = flow {
+        val response  = try {
+                maiteaService.get30BestCharts(hashKey)
+        }
+        catch (e: Exception){
+            Log.e("MaimaiBest30Charts", "Error fetching best 30 charts: ${e.message}")
+        }
+        emit(response as PlayerBest30Response)
     }
-
 
 }
