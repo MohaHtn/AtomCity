@@ -29,6 +29,8 @@ import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.formatPlayDate
 
+
+ //TODO: répondre correctement à ce composant en modifiant la réponse de PlayerBest30Response.
 @Composable
 fun MaimaiScoreItem(
     play: MaiteaApiData,
@@ -45,8 +47,6 @@ fun MaimaiScoreItem(
         if (play.song?.id != null && play.difficultyLevel?.key != null) {
             scope.launch {
                 levelInfo = getMaimaiLevelInfo(context, play.song!!.id!!, play.difficultyLevel!!.key!!)
-                Log.d("MaimaiScoreItem", "Level info: $levelInfo")
-                Log.d("MaimaiScoreItem", "$play")
             }
         }
     }
@@ -58,7 +58,6 @@ fun MaimaiScoreItem(
         shape = RoundedCornerShape(24.dp)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            // ...existing code...
             Text(
                 text = play.difficultyLevel?.label?.uppercase() ?: "",
                 style = MaterialTheme.typography.displayLarge.copy(

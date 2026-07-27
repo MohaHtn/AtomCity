@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "org.arcade.atomcity"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "org.arcade.atomcity"
@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.vico.compose)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)

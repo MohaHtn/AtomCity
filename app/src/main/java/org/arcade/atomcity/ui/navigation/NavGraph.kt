@@ -123,6 +123,7 @@ fun AppNavigation(
             val scoreEntry = dataState.value?.data?.find { it.id == scoreId }
             MaimaiScoresDetails(
                 scoreEntry = scoreEntry,
+                maiteaViewModel = maiteaViewModel,
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -157,6 +158,7 @@ fun AppNavigation(
             MaimaiBest30Charts(
                 navController = navController,
                 onBackClick = { navController.popBackStack() },
+                maiteaViewModel = maiteaViewModel
             )
         }
 

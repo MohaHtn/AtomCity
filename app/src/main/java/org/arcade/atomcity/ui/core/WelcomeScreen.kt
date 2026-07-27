@@ -1,7 +1,6 @@
 package org.arcade.atomcity.ui.core
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -16,9 +15,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -29,9 +30,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.arcade.atomcity.ui.guide.apistatus.ApiCheckList
@@ -42,6 +46,14 @@ const val welcomeTextAppIntro = "Cette application vous permet de consulter vos 
 const val welcomeTextAtomIntro = "Si vous ne savez pas, Atom City est une salle d'arcade située à Lille, qui propose de nombreux jeux d'arcades directement importés du japon, et non seulement des jeux de rythmes !"
 const val setupTextIntro = "Pour commencer, il vous faudra créer et indiquer votre clé API pour chaque serveur de jeu que vous souhaitez consulter."
 const val setupTextAPI = "Pour l'instant, voici les jeux disponibles et ceux que vous avez déjà configuré :"
+
+const val setupWarningScreen =
+    "Votre clé API sera communiqué et stocké de manière sécurisée sur un serveur distant, " +
+    "afin de pouvoir récupérer de manière periodique vos scores. De plus, l'ajout de votre clé API sur cette " +
+    "application vous permettra d'être visible aux yeux d'autres utilisateurs, en montrant vos scores dans un leaderboard. \n\n" +
+    "À tout moment vous avez le choix de supprimer votre clé du serveur distant en allant dans les paramètres de " +
+    "l'application, ou de révoquer votre clé API directement sur le portail de MaiTea. Dans ce cas, le serveur distant supprimera la clé également.\n\n" +
+    "En ajoutant votre clé API, vous reconnaissiez que vous êtes au courant de cette fonctionnalité. Si vous n'êtes pas d'accord, n'utilisez pas l'application."
 
 var page1 = mutableStateOf(true)
 
@@ -55,9 +67,6 @@ fun WelcomeScreen(
 
 ) {
     val apiChecklist by apiKeyManager.getApiChecklistStateFlow().collectAsState(initial = emptyList())
-
-
-
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -100,6 +109,18 @@ fun WelcomeScreen(
 
 @Composable
 fun WelcomeCard() {
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        WarningDialog(
+            onDismissRequest = { showDialog = false },
+            onConfirm = {
+                showDialog = false
+                toPage2()
+            }
+        )
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -128,7 +149,7 @@ fun WelcomeCard() {
         }
 
         Button(
-            onClick = { toPage2() },
+            onClick = { showDialog = true },
         ) {
             Text(
                 text = "Continuer",
@@ -136,6 +157,64 @@ fun WelcomeCard() {
             )
         }
     }
+}
+
+@Composable
+fun WarningDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    var checked by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(
+                text = "\uD83D\uDEA8 Information importante concernant maimai",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(
+                    text = setupWarningScreen,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { checked = !checked }
+                        .padding(vertical = 8.dp)
+                ) {
+                    Checkbox(
+                        checked = checked,
+                        onCheckedChange = { checked = it }
+                    )
+                    Text(
+                        text = "J'ai pris en compte l'information ci-dessus et je suis d'accord.",
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                enabled = checked
+            ) {
+                Text("Accepter et continuer")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismissRequest) {
+                Text("Annuler")
+            }
+        }
+    )
 }
 
 @Composable

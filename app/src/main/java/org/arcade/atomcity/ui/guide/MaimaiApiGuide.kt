@@ -59,13 +59,6 @@ fun MaimaiApiGuide(
     MaimaiApiGuideContent(
         onDismiss = { isVisible.value = false },
         existingApiKey = existingApiKey,
-        onSaveApiKey = { text ->
-            scope.launch {
-                apiKeyManager.saveApiKey("maimai", text)
-                maiteaViewModel.addApiKey(text)
-                isVisible.value = false
-            }
-        }
     )
 }
 
@@ -74,7 +67,6 @@ fun MaimaiApiGuide(
 fun MaimaiApiGuideContent(
     onDismiss: () -> Unit,
     existingApiKey: String?,
-    onSaveApiKey: (String) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -88,7 +80,6 @@ fun MaimaiApiGuideContent(
         MaimaiApiGuideSheetContent(
             existingApiKey = existingApiKey,
             onDismiss = onDismiss,
-            onSaveApiKey = onSaveApiKey
         )
     }
 }
@@ -97,7 +88,6 @@ fun MaimaiApiGuideContent(
 fun MaimaiApiGuideSheetContent(
     existingApiKey: String?,
     onDismiss: () -> Unit,
-    onSaveApiKey: (String) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxHeight(0.9f)) {
         LazyColumn(
@@ -189,7 +179,6 @@ fun MaimaiApiGuidePreview() {
             MaimaiApiGuideSheetContent(
                 existingApiKey = "391|mock_api_key",
                 onDismiss = {},
-                onSaveApiKey = {}
             )
         }
     }

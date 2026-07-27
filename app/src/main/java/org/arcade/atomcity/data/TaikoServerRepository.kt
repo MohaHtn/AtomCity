@@ -7,7 +7,7 @@ import org.arcade.atomcity.model.taikoserver.songHistory.TaikoServerPlayHistoryR
 
 class TaikoServerRepository(private val getTaikoServerDataUseCase: GetTaikoServerDataUseCase) {
 
-    // Cache for pagnitated music details
+    // Cache for paginated music details
     private val taikoServerCache = mutableMapOf<Int, DataCache<TaikoServerPlayHistoryResponse>>()
 
     // Cache for music details
@@ -17,7 +17,7 @@ class TaikoServerRepository(private val getTaikoServerDataUseCase: GetTaikoServe
     //  but if they become paginated in the future, we can implement caching for that as well.
     suspend fun getTaikoServerPaginatedData(page: Int): TaikoServerPlayHistoryResponse? {
         // Get or create cache for this page
-        val pageCache = taikoServerCache.getOrPut(1) { DataCache() }
+        val pageCache = taikoServerCache.getOrPut(page) { DataCache() }
 
         // Check if data is in cache
         pageCache.get()?.let {

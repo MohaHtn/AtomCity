@@ -31,8 +31,10 @@ ksp = "2.2.10-2.0.2"
 roomCompilerVersion = "2.5.2"
 workRuntimeKtx = "2.10.0"
 runtime = "1.11.4"
+vico = "3.2.3"
 
 [libraries]
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
 accompanist-coil = { module = "com.google.accompanist:accompanist-coil", version.ref = "accompanistCoil" }
 accompanist-svg = { module = "com.google.accompanist:accompanist-svg", version.ref = "accompanistSvg" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

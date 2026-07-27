@@ -50,14 +50,15 @@ fun getDifficultyColorBackground(difficulty: String?): CardColors {
 }
 
 fun getJacketBorderColor(difficulty: String?): Color {
-    return when (difficulty) {
+    return when (difficulty?.replace(":", "")?.trim()?.lowercase()) {
         "easy" -> Color(0xFF03A9F4) // Deep Light Blue
         "basic" -> Color(0xFF4CAF50) // Strong Green
         "advanced" -> Color(0xFFFBC02D) // Strong Yellow
         "expert" -> Color(0xffff2e42) // Strong Red
         "master" -> Color(0xFF9C27B0) // Deep Purple
         "remaster" -> Color(0xFFD172ED) // Pink
-        "utage" -> Color(0xFFFF5722) // Strong Blue (Utage)
+        "utage" -> Color(0xFFFF5722) // Orange
+        "宴" -> Color(0xFFFF5722) // Orange
         else -> Color.Transparent
     }
 }

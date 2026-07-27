@@ -6,7 +6,6 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.arcade.atomcity.network.MaiteaProfileService
-import org.arcade.atomcity.network.MaiteaService
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
@@ -29,7 +28,7 @@ val maiteaProfileDataModule =  module {
             .build()
 
         val okHttpClient = OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
+            //.addInterceptor(loggingInterceptor)
             .addInterceptor { chain: Interceptor.Chain ->
                 val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }
                 val request = chain.request().newBuilder()

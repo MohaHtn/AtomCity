@@ -1,6 +1,8 @@
 package org.arcade.atomcity.ui.guide.apistatus
 
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,7 +33,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -47,10 +51,20 @@ internal fun ApiItem(
     key: String = name.lowercase().replace(" ", ""),
 ) {
     val context = LocalContext.current
-    val apiKeyManager = ApiKeyManager(context)
-    val maiteaRepository: MaiteaRepository = remember { GlobalContext.get().get() }
+    val inspectionMode = LocalInspectionMode.current
+    
+    // In preview mode, we don't use Koin or ApiKeyManager
+    val apiKeyManager = if (inspectionMode) null else ApiKeyManager(context)
+    val maiteaRepository = if (inspectionMode) null else GlobalContext.get().get<MaiteaRepository>()
+    
     val scope = rememberCoroutineScope()
-    val apiKey by apiKeyManager.getApiKeyFlow(key).collectAsState(initial = null)
+    
+    val apiKey by if (inspectionMode) {
+        remember { mutableStateOf("Preview Key") }
+    } else {
+        apiKeyManager!!.getApiKeyFlow(key).collectAsState(initial = null)
+    }
+    
     val hasKeyActual = apiKey != null
     val dialogVisible = remember { mutableStateOf(false) }
     val revealed = remember { mutableStateOf(false) }
@@ -71,6 +85,9 @@ internal fun ApiItem(
     ListItem(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.medium)
             .clickable(enabled = hasKeyActual) { dialogVisible.value = true },
         leadingContent = {
             Icon(
@@ -93,6 +110,7 @@ internal fun ApiItem(
         },
         trailingContent = {
             Row() {
+
                 TextButton(
                     onClick = {
                         GlobalUIState.selectedGameForGuide.value = name
@@ -100,15 +118,19 @@ internal fun ApiItem(
                     },
                     enabled = isGameSupported
                 ) {
-                    Icon(
-                        imageVector = if (hasKeyActual) Icons.Rounded.Edit else Icons.Rounded.Add,
-                        contentDescription = if (hasKeyActual) "Modifier la clé API" else "Ajouter une clé API",
-                        modifier = Modifier.padding(end = 10.dp)
-                    )
-                    Text(
-                        text = if (hasKeyActual) "Modifier" else "Ajouter",
-                        style = MaterialTheme.typography.labelLarge
-                    )
+                    Column(
+                    ) {
+                        Icon(
+                            imageVector = if (hasKeyActual) Icons.Rounded.Edit else Icons.Rounded.Add,
+                            contentDescription = if (hasKeyActual) "Modifier la clé API" else "Ajouter une clé API",
+                            modifier = Modifier.align( androidx.compose.ui.Alignment.CenterHorizontally)
+                        )
+                        Text(
+                            text = if (hasKeyActual) "Modifier" else "Ajouter",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+
                 }
 
                 TextButton(
@@ -118,15 +140,19 @@ internal fun ApiItem(
                     },
                     enabled = isGameSupported
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Info,
-                        contentDescription = "Guide",
-                        modifier = Modifier.padding(end = 10.dp)
-                    )
-                    Text(
-                        text = "Guide",
-                        style = MaterialTheme.typography.labelLarge
-                    )
+                    Column(
+                        modifier = Modifier.align( androidx.compose.ui.Alignment.CenterVertically)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = "Guide",
+                            modifier = Modifier.align( androidx.compose.ui.Alignment.CenterHorizontally)
+                        )
+                        Text(
+                            text = "Guide",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
                 }
             }
 
@@ -147,14 +173,14 @@ internal fun ApiItem(
                 scope.launch {
                     if (name == "maimai" && apiKey != null) {
                         try {
-                            maiteaRepository.removeApiKey(apiKey!!).collect {
+                            maiteaRepository?.removeApiKey(apiKey!!)?.collect {
                                 Log.d("ApiItem", "Clé API supprimée du serveur : ${it.message}")
                             }
                         } catch (e: Exception) {
                             Log.e("ApiItem", "Erreur lors de la suppression de la clé sur le serveur", e)
                         }
                     }
-                    apiKeyManager.removeApiKey(key)
+                    apiKeyManager?.removeApiKey(key)
                     dialogVisible.value = false
                     revealed.value = false
                 }
@@ -169,7 +195,7 @@ internal fun ApiItem(
             
         )
         // TODO: DEBUG ONLY
-        apiKeyManager.logAllApiKeys()
+        apiKeyManager?.logAllApiKeys()
     }
 
     if (GlobalUIState.openSaveKeyDialog.value && GlobalUIState.selectedGameForGuide.value == name) {
@@ -183,7 +209,7 @@ internal fun ApiItem(
             onDismiss = { GlobalUIState.openSaveKeyDialog.value = false },
             onSaveApiKey = { newKey ->
                 scope.launch {
-                    apiKeyManager.saveApiKey(key, newKey)
+                    apiKeyManager?.saveApiKey(key, newKey)
                     GlobalUIState.openSaveKeyDialog.value = false
                 }
             },

@@ -4,7 +4,7 @@ import com.squareup.moshi.Moshi
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import org.arcade.atomcity.network.MaiteaService
+import org.arcade.atomcity.network.ScorefetcherService
 import okhttp3.OkHttpClient
 import okhttp3.Interceptor
 import okhttp3.logging.HttpLoggingInterceptor
@@ -27,7 +27,6 @@ val maiteaNetworkModule = module {
             .addInterceptor { chain: Interceptor.Chain ->
                 val request = chain.request().newBuilder()
                     .addHeader("X-API-KEY", BuildConfig.SCOREFETCHER_API_KEY)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
                     .build()
                 chain.proceed(request)
             }
@@ -42,7 +41,7 @@ val maiteaNetworkModule = module {
             .build()
     }
 
-    single<MaiteaService> {
-        get<Retrofit>(named("maitea_scores")).create(MaiteaService::class.java)
+    single<ScorefetcherService> {
+        get<Retrofit>(named("maitea_scores")).create(ScorefetcherService::class.java)
     }
 }

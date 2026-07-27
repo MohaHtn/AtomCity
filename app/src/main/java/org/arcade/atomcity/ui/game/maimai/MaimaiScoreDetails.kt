@@ -1,5 +1,7 @@
 package org.arcade.atomcity.ui.game.maimai
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -26,9 +28,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.hypot
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.LevelInfo
+import org.arcade.atomcity.model.maitea.ChartHistoryResponse
+import org.arcade.atomcity.model.maitea.BestPerPlayerResponse
 import org.arcade.atomcity.model.maitea.playsResponse.*
+import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.ui.theme.AtomCityTheme
@@ -38,6 +57,7 @@ import org.arcade.atomcity.utils.formatPlayDate
 @Composable
 fun MaimaiScoresDetails(
     scoreEntry: MaiteaApiData? = null,
+    maiteaViewModel: MaiteaViewModel? = null,
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -45,15 +65,22 @@ fun MaimaiScoresDetails(
     
     var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
     val scope = rememberCoroutineScope()
-    
+
+    val chartHistory by maiteaViewModel?.chartHistory?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+    val bestPerPlayer by maiteaViewModel?.bestPerPlayer?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+
     LaunchedEffect(scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
         if (scoreEntry?.song?.id != null && scoreEntry.difficultyLevel?.key != null) {
             scope.launch {
                 levelInfo = getMaimaiLevelInfo(context, scoreEntry.song!!.id!!, scoreEntry.difficultyLevel!!.key!!)
             }
         }
+        
+        scoreEntry?.song?.name?.en?.let {
+            maiteaViewModel?.fetchChartHistory(it, scoreEntry.difficultyLevel?.value)
+            maiteaViewModel?.fetchBestPerPlayer(it)
+        }
     }
-    
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
@@ -332,6 +359,170 @@ fun MaimaiScoresDetails(
                         DetailRow("Breaks", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
                 }
+            }
+
+            // SCOREFETCHER: best-per-player results
+            if (bestPerPlayer.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "MEILLEURS SCORES D'ATOM CITY DE CETTE CHART",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 2.sp,
+                        color = difficultyColor
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp, start = 8.dp)
+                )
+
+                bestPerPlayer.forEach { b ->
+                    BestPerPlayerItem(b)
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
+
+            if (chartHistory.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Text(
+                    text = "HISTORIQUE DES SCORES • ${chartHistory.size} ESSAI(S)",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 2.sp,
+                        color = difficultyColor
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp, start = 8.dp)
+                )
+
+                chartHistory.forEach { historyEntry ->
+                    ChartHistoryItem(historyEntry)
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChartHistoryItem(historyEntry: ChartHistoryResponse) {
+    val difficultyColor = getJacketBorderColor(historyEntry.difficulty?.lowercase())
+    
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = formatPlayDate(historyEntry.playDate),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.alpha(0.5f)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(difficultyColor, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "${historyEntry.difficulty} ${historyEntry.difficultyLevel ?: ""}",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = historyEntry.rank ?: "",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        color = difficultyColor
+                    )
+                )
+                Text(
+                    text = String.format("%.2f%%", (historyEntry.achievement ?: 0.0) / 100.0),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun BestPerPlayerItem(b: BestPerPlayerResponse) {
+    val difficultyColor = getJacketBorderColor(b.difficulty?.lowercase())
+    
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = formatPlayDate(b.playDate),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.alpha(0.5f)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(difficultyColor, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = b.playerName ?: "",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "${b.difficulty ?: ""} ${b.difficultyLevel ?: ""}",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.alpha(0.8f)
+                        )
+                    }
+                }
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = b.rank ?: "",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        color = difficultyColor
+                    )
+                )
+                Text(
+                    text = String.format("%.2f%%", (b.achievement ?: 0.0) / 100.0),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                )
             }
         }
     }

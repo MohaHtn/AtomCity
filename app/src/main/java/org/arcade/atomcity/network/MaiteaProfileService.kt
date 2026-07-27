@@ -7,7 +7,6 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface MaiteaProfileService {
-
     @GET("profiles")
     suspend fun getPlayerDetails(
     ): MaiteaPlayerDetailsResponse
@@ -16,5 +15,4 @@ interface MaiteaProfileService {
     suspend fun getAllUserScores(
         @Query("page") page: Int
     ): MaiteaPlaysResponse
-
 }

@@ -1,7 +1,6 @@
 package org.arcade.atomcity.presentation.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,9 +13,13 @@ import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
 import com.squareup.moshi.JsonClass
+import org.arcade.atomcity.model.maitea.ChartHistoryResponse
 import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
 
-// TODO: Use UseCase instead of Repository directly in ViewModel.
+// We can add a field to PlayerBest30Response via extension or just use it as is if it has it.
+// Wait, PlayerBest30Response does not have jacketImageUrl. 
+// I should probably check if I can add it or if I should use a wrapper.
+// Actually, I can just use findJacketUrlBySongName in the UI.
 
 @JsonClass(generateAdapter = true)
 data class JacketUrl(val title: String, val imageUrl: String)
@@ -43,11 +46,17 @@ class MaiteaViewModel(
     val profiles: StateFlow<Map<String, List<String>>> = _profiles
 
     // StateFlow to hold the 30 maimai best scores
-    private val _maimaiBestScores = mutableStateOf<PlayerBest30Response?>(null)
-    val maimaiBestScores: StateFlow<PlayerBest30Response?> = _maimaiBestScores
+    private val _maimaiBestScores = MutableStateFlow<List<PlayerBest30Response>>(emptyList())
+    val maimaiBestScores: StateFlow<List<PlayerBest30Response>> = _maimaiBestScores
 
+    // StateFlow to hold the chart history
+    private val _chartHistory = MutableStateFlow<List<ChartHistoryResponse>>(emptyList())
+    val chartHistory: StateFlow<List<ChartHistoryResponse>> = _chartHistory
 
-    private val hashKey = mutableStateOf("")
+    // StateFlow to hold best-per-player responses
+    private val _bestPerPlayer = MutableStateFlow<List<org.arcade.atomcity.model.maitea.BestPerPlayerResponse>>(emptyList())
+    val bestPerPlayer: StateFlow<List<org.arcade.atomcity.model.maitea.BestPerPlayerResponse>> = _bestPerPlayer
+
 
     // Expose the current page
     internal val _currentPage = MutableStateFlow(1)
@@ -60,13 +69,16 @@ class MaiteaViewModel(
     private val _isLoadingPlayer = MutableStateFlow(false)
     private val _isLoadingProfiles = MutableStateFlow(false)
     private val _isLoading30BestScores = MutableStateFlow(false)
+    private val _isLoadingChartHistory = MutableStateFlow(false)
 
     val isLoading: StateFlow<Boolean> = combine(
         _isLoadingPlays,
         _isLoadingPlayer,
-        _isLoadingProfiles
-    ) { playsLoading, playerLoading, profilesLoading ->
-        playsLoading || playerLoading || profilesLoading
+        _isLoadingProfiles,
+        _isLoading30BestScores,
+        _isLoadingChartHistory
+    ) { playsLoading, playerLoading, profilesLoading, bestScoresLoading, chartHistoryLoading ->
+        playsLoading || playerLoading || profilesLoading || bestScoresLoading || chartHistoryLoading
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun fetchMaimaiPaginatedData(page: Int) {
@@ -106,22 +118,6 @@ class MaiteaViewModel(
         }
     }
 
-    fun addApiKey(apikey: String) {
-        try {
-            viewModelScope.launch {
-                repository.addApiKey(apikey).collect { success ->
-                    if (success) {
-                        Log.d("MaiteaViewModel", "API key added successfully")
-                    } else {
-                        Log.e("MaiteaViewModel", "Failed to add API key")
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("MaiteaViewModel", "Error adding API key: ${e.message}")
-        }
-    }
-
     fun fetchProfiles() {
         viewModelScope.launch {
             try {
@@ -141,13 +137,40 @@ class MaiteaViewModel(
         viewModelScope.launch {
             try {
                 _isLoading30BestScores.value = true
-                repository.get30BestCharts(this.hashKey).collect{
+                repository.get30BestCharts().collect{
                     _maimaiBestScores.value = it
                     _isLoading30BestScores.value = false
                 }
             } catch (e: Exception) {
                 Log.e("MaiteaViewModel", "Error fetching 30 best scores: ${e.message}")
                 _isLoading30BestScores.value = false
+            }
+        }
+    }
+
+    fun fetchChartHistory(songName: String, difficulty: String? = null) {
+        viewModelScope.launch {
+            try {
+                _isLoadingChartHistory.value = true
+                    repository.getChartHistory(songName, difficulty).collect {
+                    _chartHistory.value = it
+                    _isLoadingChartHistory.value = false
+                }
+            } catch (e: Exception) {
+                Log.e("MaiteaViewModel", "Error fetching chart history: ${e.message}")
+                _isLoadingChartHistory.value = false
+            }
+        }
+    }
+
+    fun fetchBestPerPlayer(songName: String) {
+        viewModelScope.launch {
+            try {
+                repository.getBestPerPlayer(songName).collect {
+                    _bestPerPlayer.value = it
+                }
+            } catch (e: Exception) {
+                Log.e("MaiteaViewModel", "Error fetching best-per-player: ${e.message}")
             }
         }
     }

@@ -8,9 +8,8 @@ data class PlayerBest30Response(
     @Json(name = "achievement"              ) var achievement:      Double? = null,
     @Json(name = "playDate"                 ) var playDate:         String? = null,
     @Json(name = "difficulty"               ) var difficulty:       String? = null,
+    @Json(name = "difficultyLevel"          ) var difficultyLevel:  String? = null,
     @Json(name = "rank"                     ) var rank:             String? = null,
     @Json(name = "rating"                   ) var rating:           Double? = null,
     @Json(name = "playerName"               ) var playerName:       String? = null,
-    @Json(name = "maiteaProfileId"          ) var maiteaProfileId:  String? = null,
-    @Json(name = "maiteaProfileUrl"         ) var maiteaProfileUrl: String? = null
 )
