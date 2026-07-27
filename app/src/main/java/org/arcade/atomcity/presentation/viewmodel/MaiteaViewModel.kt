@@ -33,10 +33,6 @@ class MaiteaViewModel(
     private val _playsData = MutableStateFlow<MaiteaPlaysResponse?>(null)
     val data: StateFlow<MaiteaPlaysResponse?> = _playsData
 
-    // Expose the plays data size
-    val playsDataSize: Int
-        get() = _playsData.value?.data?.size ?: 0
-
     // StateFlow to hold the player details data
     private val _playerData = MutableStateFlow<MaiteaPlayerDetailsResponse?>(null)
     val playerData: StateFlow<MaiteaPlayerDetailsResponse?> = _playerData
@@ -171,6 +167,29 @@ class MaiteaViewModel(
                 }
             } catch (e: Exception) {
                 Log.e("MaiteaViewModel", "Error fetching best-per-player: ${e.message}")
+            }
+        }
+    }
+
+    fun getPlayById(id: Int, keyHash: String) {
+        viewModelScope.launch {
+            repository.getPlayById(id, keyHash).collect { response ->
+                response?.let { entry ->
+                    entry.jacketImageUrl = findJacketUrlBySongName(entry.song?.name?.jp)
+                    val currentData = _playsData.value
+                    if (currentData != null) {
+                        val updatedList = currentData.data.toMutableList()
+                        val existingIndex = updatedList.indexOfFirst { it.id == entry.id }
+                        if (existingIndex != -1) {
+                            updatedList[existingIndex] = entry
+                        } else {
+                            updatedList.add(entry)
+                        }
+                        _playsData.value = currentData.copy(data = updatedList)
+                    } else {
+                        _playsData.value = MaiteaPlaysResponse(data = listOf(entry))
+                    }
+                }
             }
         }
     }

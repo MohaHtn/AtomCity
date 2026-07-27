@@ -194,6 +194,16 @@ class MaiteaRepository(
         }
     }
 
+    fun getPlayById(id: Int, keyHash: String): Flow<org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData?> = flow {
+        try {
+            val response = scorefetcherService.getPlayById(id, keyHash)
+            emit(response)
+        } catch (e: Exception) {
+            Log.e("MaiteaRepository", "Error fetching play by ID: ${e.message}")
+            emit(null)
+        }
+    }
+
 
     fun sha256Hex(text: String?): String {
         val bytes = MessageDigest.getInstance("SHA-256").digest(text?.toByteArray(Charsets.UTF_8) ?: byteArrayOf())

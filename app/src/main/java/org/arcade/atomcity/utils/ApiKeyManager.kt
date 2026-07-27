@@ -119,6 +119,25 @@ class ApiKeyManager(private val context: Context) {
     }
 
     /**
+     * Returns the SHA-256 hash of the 'maimai' API key.
+     */
+    fun getKeyHash(): String? {
+        val apiKey = getApiKey("maimai") ?: return null
+        return sha256Hex(apiKey)
+    }
+
+    private fun sha256Hex(text: String): String {
+        val bytes = java.security.MessageDigest.getInstance("SHA-256").digest(text.toByteArray(Charsets.UTF_8))
+        val sb = StringBuilder(bytes.size * 2)
+        for (b in bytes) {
+            val v = b.toInt() and 0xff
+            if (v < 16) sb.append('0')
+            sb.append(Integer.toHexString(v))
+        }
+        return sb.toString()
+    }
+
+    /**
      * Logs all stored API keys for debugging purposes.
      */
     fun logAllApiKeys() {

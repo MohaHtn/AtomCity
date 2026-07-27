@@ -120,7 +120,6 @@ object DifficultyRepository {
 
                 val levelEntity =
                     dao.getLevelByDifficulty(songId, difficultyValue) ?: return@withContext null
-                Log.d(" ", "Level for songId=$songId, difficultyValue=$difficultyValue: $levelEntity")
 
                 levelEntity.let {
                     LevelInfo(

@@ -5,6 +5,7 @@ import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Respons
 import org.arcade.atomcity.model.maitea.BestPerPlayerResponse
 import retrofit2.http.Path
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
+import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -66,4 +67,10 @@ interface ScorefetcherService {
         @Query("keyHash") hashKey: String,
         @Query("songName") songName: String
     ): List<BestPerPlayerResponse>
+
+    @GET("scores/{id}")
+    suspend fun getPlayById(
+        @Path("id") id: Int,
+        @Query("keyHash") keyHash: String
+    ): MaiteaApiData
 }

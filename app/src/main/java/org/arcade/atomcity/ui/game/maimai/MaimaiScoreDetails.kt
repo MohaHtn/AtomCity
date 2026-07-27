@@ -1,7 +1,5 @@
 package org.arcade.atomcity.ui.game.maimai
 
-import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -31,6 +29,7 @@ import coil.request.ImageRequest
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -38,10 +37,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.IntOffset
-import kotlin.math.hypot
+import kotlin.math.*
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.LevelInfo
 import org.arcade.atomcity.model.maitea.ChartHistoryResponse
@@ -52,13 +50,20 @@ import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.formatPlayDate
+import org.arcade.atomcity.utils.ApiKeyManager
+
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLocale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiScoresDetails(
     scoreEntry: MaiteaApiData? = null,
     maiteaViewModel: MaiteaViewModel? = null,
-    onBackClick: () -> Unit
+    apiKeyManager: ApiKeyManager? = null,
+    onBackClick: () -> Unit,
+    onHistoryClick: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
     val difficultyColor = getJacketBorderColor(scoreEntry?.difficultyLevel?.value)
@@ -342,10 +347,6 @@ fun MaimaiScoresDetails(
 
                     val detail = scoreEntry?.scoreDetail
 
-                    detail?.hits?.let {
-                        DetailRow("Total", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
-                    }
-
                     detail?.tap?.let {
                         DetailRow("Taps", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
@@ -358,10 +359,14 @@ fun MaimaiScoresDetails(
                     detail?.breakk?.let {
                         DetailRow("Breaks", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
+
+                    detail?.hits?.let {
+                        DetailRow("Total", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
+                    }
                 }
             }
 
-            // SCOREFETCHER: best-per-player results
+            // Best results per player
             if (bestPerPlayer.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -385,6 +390,20 @@ fun MaimaiScoresDetails(
 
             if (chartHistory.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(24.dp))
+
+                ScoreHistoryGraph(
+                    chartHistory = chartHistory,
+                    difficultyColor = difficultyColor
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                RatingVsScoreGraph(
+                    chartHistory = chartHistory,
+                    difficultyColor = difficultyColor
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
                 
                 Text(
                     text = "HISTORIQUE DES SCORES • ${chartHistory.size} ESSAI(S)",
@@ -399,7 +418,7 @@ fun MaimaiScoresDetails(
                 )
 
                 chartHistory.forEach { historyEntry ->
-                    ChartHistoryItem(historyEntry)
+                    ChartHistoryItem(historyEntry, onClick = { historyEntry.playId?.let { onHistoryClick(it) } })
                     Spacer(modifier = Modifier.height(12.dp))
                 }
             }
@@ -408,10 +427,11 @@ fun MaimaiScoresDetails(
 }
 
 @Composable
-fun ChartHistoryItem(historyEntry: ChartHistoryResponse) {
-    val difficultyColor = getJacketBorderColor(historyEntry.difficulty?.lowercase())
+fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {}) {
+    val difficultyColor = getJacketBorderColor(historyEntry.difficultyLevelJson?.value?.lowercase())
     
     ElevatedCard(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.elevatedCardColors(
@@ -441,7 +461,7 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "${historyEntry.difficulty} ${historyEntry.difficultyLevel ?: ""}",
+                        text = ((historyEntry.difficultyLevelJson?.label + " " + historyEntry.difficultyLevel) ?: ""),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -456,7 +476,7 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse) {
                     )
                 )
                 Text(
-                    text = String.format("%.2f%%", (historyEntry.achievement ?: 0.0) / 100.0),
+                    text = String.format(LocalLocale.current.platformLocale, "%.2f%%", (historyEntry.achievement ?: 0.0) / 100.0),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
                 )
             }
@@ -466,7 +486,7 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse) {
 
 @Composable
 fun BestPerPlayerItem(b: BestPerPlayerResponse) {
-    val difficultyColor = getJacketBorderColor(b.difficulty?.lowercase())
+    val difficultyColor = getJacketBorderColor(b.difficultyLevelJson?.value?.lowercase())
     
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -503,10 +523,15 @@ fun BestPerPlayerItem(b: BestPerPlayerResponse) {
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = "${b.difficulty ?: ""} ${b.difficultyLevel ?: ""}",
+                            text = "${b.difficultyLevelJson?.label ?: ""} ${b.difficultyLevel ?: ""}",
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.alpha(0.8f)
                         )
+                        Text(
+                            text = b.rating?.toString() ?: "",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.alpha(0.6f)
+                            )
                     }
                 }
             }
@@ -520,7 +545,7 @@ fun BestPerPlayerItem(b: BestPerPlayerResponse) {
                     )
                 )
                 Text(
-                    text = String.format("%.2f%%", (b.achievement ?: 0.0) / 100.0),
+                    text = String.format(LocalLocale.current.platformLocale, "%.2f%%", (b.achievement ?: 0.0) / 100.0),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
                 )
             }
@@ -602,7 +627,331 @@ fun DetailRow(label: String, p: Int, gr: Int, gd: Int, m: Int) {
     }
 }
 
+@Composable
+fun ScoreHistoryGraph(
+    chartHistory: List<ChartHistoryResponse>,
+    difficultyColor: Color
+) {
+    if (chartHistory.isEmpty()) return
+
+    val haptic = LocalHapticFeedback.current
+    val sortedHistory = remember(chartHistory) {
+        chartHistory.sortedBy { it.playDate }
+    }
+
+    val maxAchievement = remember(sortedHistory) {
+        val maxVal = sortedHistory.maxOfOrNull { it.achievement ?: 0.0 } ?: 10000.0
+        val minVal = sortedHistory.minOfOrNull { it.achievement ?: 0.0 } ?: 0.0
+        val padding = if (maxVal == minVal) 1000.0 else (maxVal - minVal) * 0.1
+        maxVal + padding
+    }
+    val minAchievement = remember(sortedHistory) {
+        val maxVal = sortedHistory.maxOfOrNull { it.achievement ?: 0.0 } ?: 10000.0
+        val minVal = sortedHistory.minOfOrNull { it.achievement ?: 0.0 } ?: 0.0
+        val padding = if (maxVal == minVal) 1000.0 else (maxVal - minVal) * 0.1
+        (minVal - padding).coerceAtLeast(0.0)
+    }
+
+    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+    var tooltipData by remember { mutableStateOf<Pair<ChartHistoryResponse, Offset>?>(null) }
+
+
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(260.dp)
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            Text(
+                text = "PROGRESSION DU SCORE SUR LE TEMPS",
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 2.sp,
+                    color = difficultyColor
+                ),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .onGloballyPositioned { canvasSize = it.size }
+                        .pointerInput(sortedHistory) {
+                            detectTapGestures { offset ->
+                                val stepX = if (sortedHistory.size > 1) size.width.toFloat() / (sortedHistory.size - 1) else size.width.toFloat()
+                                val index = (offset.x / stepX).roundToInt().coerceIn(0, sortedHistory.size - 1)
+                                val entry = sortedHistory[index]
+                                val x = index.toFloat() * stepX
+                                val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
+                                tooltipData = entry to Offset(x, y)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                        }
+                        .pointerInput(sortedHistory) {
+                            detectHorizontalDragGestures { change, _ ->
+                                val stepX = if (sortedHistory.size > 1) size.width.toFloat() / (sortedHistory.size - 1) else size.width.toFloat()
+                                val index = (change.position.x / stepX).roundToInt().coerceIn(0, sortedHistory.size - 1)
+                                val entry = sortedHistory[index]
+                                val x = index.toFloat() * stepX
+                                val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
+                                
+                                if (tooltipData?.first != entry) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    tooltipData = entry to Offset(x, y)
+                                }
+                            }
+                        }
+                ) {
+                    val width = size.width
+                    val height = size.height
+                    val stepX = if (sortedHistory.size > 1) width / (sortedHistory.size - 1) else width
+
+                    val path = Path()
+                    val points = mutableListOf<Offset>()
+
+                    sortedHistory.forEachIndexed { index, entry ->
+                        val x = index.toFloat() * stepX
+                        val achievement = entry.achievement ?: 0.0
+                        val y = height - ((achievement - minAchievement) / (maxAchievement - minAchievement) * height).toFloat()
+
+                        val point = Offset(x, y)
+                        points.add(point)
+
+                        if (index == 0) path.moveTo(point.x, point.y)
+                        else path.lineTo(point.x, point.y)
+                    }
+
+                    // Draw background grid lines
+                    val gridLines = 5
+                    for (i in 0..gridLines) {
+                        val y = height * i / gridLines
+                        drawLine(
+                            color = Color.Gray.copy(alpha = 0.1f),
+                            start = Offset(0f, y),
+                            end = Offset(width, y),
+                            strokeWidth = 1.dp.toPx()
+                        )
+                    }
+
+                    // Draw Path
+                    drawPath(
+                        path = path,
+                        color = difficultyColor,
+                        style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+                    )
+
+                    // Draw Points
+                    points.forEachIndexed { index, point ->
+                        drawCircle(
+                            color = Color.White,
+                            center = point,
+                            radius = 10.dp.toPx()
+                        )
+                        drawCircle(
+                            color = difficultyColor,
+                            center = point,
+                            radius = 7.dp.toPx()
+                        )
+                    }
+                }
+
+                // Tooltip / Overlay for selected point (optional, since we navigate)
+                tooltipData?.let { (entry, offset) ->
+                    Surface(
+                        modifier = Modifier.offset {
+                            IntOffset(
+                                (offset.x - 50.dp.toPx()).toInt().coerceIn(0, (canvasSize.width - 100.dp.toPx()).toInt()),
+                                (offset.y - 75.dp.toPx()).toInt().coerceAtLeast(0)
+                            )
+                        },
+                        color = difficultyColor,
+                        shape = RoundedCornerShape(8.dp),
+                        shadowElevation = 4.dp
+                    ) {
+                        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                            Text(
+                                text = String.format(LocalLocale.current.platformLocale, "%.2f%%", (entry.achievement ?: 0.0) / 100.0),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White
+                            )
+                            Text(
+                                text = formatPlayDate(entry.playDate),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun RatingVsScoreGraph(
+    chartHistory: List<ChartHistoryResponse>,
+    difficultyColor: Color
+) {
+    val haptic = LocalHapticFeedback.current
+    val dataPoints = remember(chartHistory) {
+        chartHistory
+            .filter { it.achievement != null && it.rating != null }
+            .sortedBy { it.achievement }
+    }
+
+    if (dataPoints.isEmpty()) return
+
+    val minAchievement = dataPoints.first().achievement!!
+    val maxAchievement = dataPoints.last().achievement!!
+    val minRating = dataPoints.minOf { it.rating!! }
+    val maxRating = dataPoints.maxOf { it.rating!! }
+
+    val xRange = (maxAchievement - minAchievement).coerceAtLeast(100.0)
+    val yRange = (maxRating - minRating).coerceAtLeast(1.0)
+
+    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+    var tooltipData by remember { mutableStateOf<Pair<ChartHistoryResponse, Offset>?>(null) }
+
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(260.dp)
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            Text(
+                text = "PROGRESSION DU SCORE PARMI LES ESSAIS",
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 2.sp,
+                    color = difficultyColor
+                ),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .onGloballyPositioned { canvasSize = it.size }
+                        .pointerInput(dataPoints) {
+                            detectTapGestures { offset ->
+                                val entry = dataPoints.minByOrNull { e ->
+                                    val x = ((e.achievement!! - minAchievement) / xRange * size.width).toFloat()
+                                    abs(offset.x - x)
+                                } ?: return@detectTapGestures
+                                val x = ((entry.achievement!! - minAchievement) / xRange * size.width).toFloat()
+                                val y = (size.height - ((entry.rating!! - minRating) / yRange * size.height)).toFloat()
+                                
+                                tooltipData = entry to Offset(x, y)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                        }
+                        .pointerInput(dataPoints) {
+                            detectHorizontalDragGestures { change, _ ->
+                                val entry = dataPoints.minByOrNull { e ->
+                                    val x = ((e.achievement!! - minAchievement) / xRange * size.width).toFloat()
+                                    abs(change.position.x - x)
+                                } ?: return@detectHorizontalDragGestures
+                                val x = ((entry.achievement!! - minAchievement) / xRange * size.width).toFloat()
+                                val y = (size.height - ((entry.rating!! - minRating) / yRange * size.height)).toFloat()
+                                
+                                if (tooltipData?.first != entry) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    tooltipData = entry to Offset(x, y)
+                                }
+                            }
+                        }
+                ) {
+                    val width = size.width
+                    val height = size.height
+
+                    // Draw grid
+                    val gridLines = 5
+                    for (i in 0..gridLines) {
+                        val x = width * i / gridLines
+                        val y = height * i / gridLines
+                        drawLine(Color.Gray.copy(0.1f), Offset(x, 0f), Offset(x, height), 1.dp.toPx())
+                        drawLine(Color.Gray.copy(0.1f), Offset(0f, y), Offset(width, y), 1.dp.toPx())
+                    }
+
+                    val points = dataPoints.map { entry ->
+                        val x = ((entry.achievement!! - minAchievement) / xRange * width).toFloat()
+                        val y = (height - ((entry.rating!! - minRating) / yRange * height)).toFloat()
+                        Offset(x, y)
+                    }
+
+                    if (points.size > 1) {
+                        val path = Path().apply {
+                            moveTo(points.first().x, points.first().y)
+                            for (i in 1 until points.size) {
+                                lineTo(points[i].x, points[i].y)
+                            }
+                        }
+                        drawPath(
+                            path = path,
+                            color = difficultyColor,
+                            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+                        )
+                    }
+
+                    points.forEach { point ->
+                        drawCircle(Color.White, radius = 10.dp.toPx(), center = point)
+                        drawCircle(difficultyColor, radius = 7.dp.toPx(), center = point)
+                    }
+                }
+
+                // Tooltip
+                tooltipData?.let { (entry, offset) ->
+                    Surface(
+                        modifier = Modifier.offset {
+                            IntOffset(
+                                (offset.x - 50.dp.toPx()).toInt().coerceIn(0, (canvasSize.width - 100.dp.toPx()).toInt()),
+                                (offset.y - 60.dp.toPx()).toInt().coerceAtLeast(0)
+                            )
+                        },
+                        color = difficultyColor,
+                        shape = RoundedCornerShape(8.dp),
+                        shadowElevation = 4.dp
+                    ) {
+                        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                            Text(
+                                text = String.format(LocalLocale.current.platformLocale, "%.2f%%", (entry.achievement ?: 0.0) / 100.0),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "Rating: ${entry.rating}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true, device = "id:pixel_9_pro")
+
 @Composable
 fun MaimaiScoresDetailsPreview() {
     val sampleScore = MaiteaApiData(

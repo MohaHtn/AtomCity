@@ -109,11 +109,11 @@ fun MaimaiBest30Charts(
 
                             // Mapping PlayerBest30Response to MaiteaApiData to reuse MaimaiScoreItem
                             val play = MaiteaApiData(
-                                song = Song(name = Name(jp = score.songName)),
+                                id = score.playId,
+                                song = score.songJson,
                                 achievementFormatted = String.format(LocalLocale.current.platformLocale, "%.2f%%", (score.achievement ?: 0.0) / 100.0),
                                 rank = score.rank,
-                                difficultyLevel = DifficultyLevel(
-                                    value = score.difficulty?.lowercase()?.replace(":", ""), label = "$i • ${score.difficulty}"),
+                                difficultyLevel = score.difficultyLevelJson,
                                 rating = score.rating?.let { String.format(LocalLocale.current.platformLocale, "%.2f", it) },
                                 playDate = score.playDate,
                                 jacketImageUrl = jacketUrl,
@@ -124,8 +124,7 @@ fun MaimaiBest30Charts(
                             MaimaiScoreItem(
                                 play = play,
                                 onClick = {
-                                    // Since we don't have the internal ID here, we might not be able to navigate to details
-                                    // unless we find a way to match it or if we don't need it for best 30.
+                                    navController.navigate("maimaiScoresDetails/${play.id}")
                                 }
                             )
                             i += 1

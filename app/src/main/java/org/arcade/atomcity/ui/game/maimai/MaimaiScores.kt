@@ -6,6 +6,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -204,8 +205,7 @@ fun MaimaiScores(
                     ),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(count = maiteaViewModel.playsDataSize) { index ->
-                        val play = data?.data?.get(index) ?: return@items
+                    items(data?.data ?: emptyList()) { play ->
                         MaimaiScoreItem(
                             play = play,
                             onClick = { navController.navigate("maimaiScoresDetails/${play.id}") }

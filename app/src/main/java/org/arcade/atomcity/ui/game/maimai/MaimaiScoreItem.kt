@@ -29,8 +29,6 @@ import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.formatPlayDate
 
-
- //TODO: répondre correctement à ce composant en modifiant la réponse de PlayerBest30Response.
 @Composable
 fun MaimaiScoreItem(
     play: MaiteaApiData,
@@ -92,7 +90,7 @@ fun MaimaiScoreItem(
                                 .data(play.jacketImageUrl)
                                 .crossfade(true)
                                 .build(),
-                            contentDescription = null,
+                            contentDescription = "${play.song?.name} artwork",
                             modifier = Modifier
                                 .size(54.dp)
                                 .clip(CircleShape)
