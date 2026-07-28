@@ -124,7 +124,7 @@ fun AppNavigation(
 
             LaunchedEffect(scoreId, scoreEntry) {
                 if (scoreEntry == null) {
-                    val keyHash = apiKeyManager.getKeyHash()
+                    val keyHash = apiKeyManager.getKeyHash("maimai")
                     if (!keyHash.isNullOrBlank()) {
                         maiteaViewModel.getPlayById(scoreId, keyHash)
                     }
@@ -135,7 +135,6 @@ fun AppNavigation(
             MaimaiScoresDetails(
                 scoreEntry = scoreEntry,
                 maiteaViewModel = maiteaViewModel,
-                apiKeyManager = apiKeyManager,
                 onBackClick = { navController.popBackStack() },
                 onHistoryClick = { historyId ->
                     navController.navigate("maimaiScoresDetails/$historyId")

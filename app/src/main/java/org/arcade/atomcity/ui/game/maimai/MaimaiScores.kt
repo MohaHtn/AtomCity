@@ -2,6 +2,7 @@ package org.arcade.atomcity.ui.game.maimai
 
 import android.app.Activity
 import android.graphics.drawable.BitmapDrawable
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

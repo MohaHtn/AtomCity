@@ -194,8 +194,6 @@ internal fun ApiItem(
                 }
             
         )
-        // TODO: DEBUG ONLY
-        apiKeyManager?.logAllApiKeys()
     }
 
     if (GlobalUIState.openSaveKeyDialog.value && GlobalUIState.selectedGameForGuide.value == name) {

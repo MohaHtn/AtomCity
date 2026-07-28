@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.game.maimai
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -50,7 +51,6 @@ import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.formatPlayDate
-import org.arcade.atomcity.utils.ApiKeyManager
 
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -61,7 +61,6 @@ import androidx.compose.ui.platform.LocalLocale
 fun MaimaiScoresDetails(
     scoreEntry: MaiteaApiData? = null,
     maiteaViewModel: MaiteaViewModel? = null,
-    apiKeyManager: ApiKeyManager? = null,
     onBackClick: () -> Unit,
     onHistoryClick: (Int) -> Unit = {}
 ) {
@@ -73,6 +72,7 @@ fun MaimaiScoresDetails(
 
     val chartHistory by maiteaViewModel?.chartHistory?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
     val bestPerPlayer by maiteaViewModel?.bestPerPlayer?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+    val isLoading by maiteaViewModel?.isLoadingDetails?.collectAsState() ?: remember { mutableStateOf(false) }
 
     LaunchedEffect(scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
         if (scoreEntry?.song?.id != null && scoreEntry.difficultyLevel?.key != null) {
@@ -112,14 +112,26 @@ fun MaimaiScoresDetails(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        if (isLoading && scoreEntry == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             ElevatedCard(
                 colors = getDifficultyColorBackground(scoreEntry?.difficultyLevel?.value),
                 modifier = Modifier.fillMaxWidth(),
@@ -359,7 +371,6 @@ fun MaimaiScoresDetails(
                     detail?.breakk?.let {
                         DetailRow("Breaks", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
-
                     detail?.hits?.let {
                         DetailRow("Total", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
@@ -424,6 +435,7 @@ fun MaimaiScoresDetails(
             }
         }
     }
+}
 }
 
 @Composable

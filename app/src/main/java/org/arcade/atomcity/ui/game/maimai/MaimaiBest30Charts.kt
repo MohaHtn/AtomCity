@@ -105,7 +105,7 @@ fun MaimaiBest30Charts(
                     ) {
 
                         items(maimaiBestScores) { score ->
-                            val jacketUrl = maiteaViewModel.findJacketUrlBySongName(score.songName)
+                            val jacketUrl = maiteaViewModel.findJacketUrlBySongName(score.songJson?.name?.jp)
 
                             // Mapping PlayerBest30Response to MaiteaApiData to reuse MaimaiScoreItem
                             val play = MaiteaApiData(

@@ -30,7 +30,7 @@ val maiteaNetworkModule = module {
                     .build()
                 chain.proceed(request)
             }
-            .addInterceptor(loggingInterceptor)
+            //.addInterceptor(loggingInterceptor)
             .build()
 
         Retrofit.Builder()

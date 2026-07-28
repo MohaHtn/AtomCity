@@ -66,15 +66,27 @@ class MaiteaViewModel(
     private val _isLoadingProfiles = MutableStateFlow(false)
     private val _isLoading30BestScores = MutableStateFlow(false)
     private val _isLoadingChartHistory = MutableStateFlow(false)
+    private val _isLoadingPlayById = MutableStateFlow(false)
+    private val _isLoadingBestPerPlayer = MutableStateFlow(false)
 
     val isLoading: StateFlow<Boolean> = combine(
         _isLoadingPlays,
         _isLoadingPlayer,
         _isLoadingProfiles,
         _isLoading30BestScores,
-        _isLoadingChartHistory
-    ) { playsLoading, playerLoading, profilesLoading, bestScoresLoading, chartHistoryLoading ->
-        playsLoading || playerLoading || profilesLoading || bestScoresLoading || chartHistoryLoading
+        _isLoadingChartHistory,
+        _isLoadingPlayById,
+        _isLoadingBestPerPlayer
+    ) { loadings ->
+        loadings.any { it }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val isLoadingDetails: StateFlow<Boolean> = combine(
+        _isLoadingChartHistory,
+        _isLoadingPlayById,
+        _isLoadingBestPerPlayer
+    ) { loadings ->
+        loadings.any { it }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun fetchMaimaiPaginatedData(page: Int) {
@@ -84,6 +96,10 @@ class MaiteaViewModel(
                 repository.getMaiTeaPaginatedData(page).collect { response ->
                     response?.data?.forEach { entry ->
                         entry.jacketImageUrl = findJacketUrlBySongName(entry.song?.name?.jp)
+                        // Fallback
+                        if (entry.jacketImageUrl == null) {
+                            entry.jacketImageUrl = findJacketUrlBySongName(entry.song?.name?.en)
+                        }
                     }
                     _playsData.value = response
                     _isLoadingPlays.value = false
@@ -162,34 +178,44 @@ class MaiteaViewModel(
     fun fetchBestPerPlayer(songName: String) {
         viewModelScope.launch {
             try {
+                _isLoadingBestPerPlayer.value = true
                 repository.getBestPerPlayer(songName).collect {
                     _bestPerPlayer.value = it
+                    _isLoadingBestPerPlayer.value = false
                 }
             } catch (e: Exception) {
                 Log.e("MaiteaViewModel", "Error fetching best-per-player: ${e.message}")
+                _isLoadingBestPerPlayer.value = false
             }
         }
     }
 
     fun getPlayById(id: Int, keyHash: String) {
         viewModelScope.launch {
-            repository.getPlayById(id, keyHash).collect { response ->
-                response?.let { entry ->
-                    entry.jacketImageUrl = findJacketUrlBySongName(entry.song?.name?.jp)
-                    val currentData = _playsData.value
-                    if (currentData != null) {
-                        val updatedList = currentData.data.toMutableList()
-                        val existingIndex = updatedList.indexOfFirst { it.id == entry.id }
-                        if (existingIndex != -1) {
-                            updatedList[existingIndex] = entry
+            try {
+                _isLoadingPlayById.value = true
+                repository.getPlayById(id, keyHash).collect { response ->
+                    response?.let { entry ->
+                        entry.jacketImageUrl = findJacketUrlBySongName(entry.song?.name?.jp)
+                        val currentData = _playsData.value
+                        if (currentData != null) {
+                            val updatedList = currentData.data.toMutableList()
+                            val existingIndex = updatedList.indexOfFirst { it.id == entry.id }
+                            if (existingIndex != -1) {
+                                updatedList[existingIndex] = entry
+                            } else {
+                                updatedList.add(entry)
+                            }
+                            _playsData.value = currentData.copy(data = updatedList)
                         } else {
-                            updatedList.add(entry)
+                            _playsData.value = MaiteaPlaysResponse(data = listOf(entry))
                         }
-                        _playsData.value = currentData.copy(data = updatedList)
-                    } else {
-                        _playsData.value = MaiteaPlaysResponse(data = listOf(entry))
                     }
+                    _isLoadingPlayById.value = false
                 }
+            } catch (e: Exception) {
+                Log.e("MaiteaViewModel", "Error fetching play by id: ${e.message}")
+                _isLoadingPlayById.value = false
             }
         }
     }

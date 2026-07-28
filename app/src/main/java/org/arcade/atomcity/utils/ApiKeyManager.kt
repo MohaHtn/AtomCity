@@ -86,7 +86,8 @@ class ApiKeyManager(private val context: Context) {
      * @param gameName The name of the game for which to retrieve the API key.
      * @return The registered API key, or null if no key is found.
      */
-    fun getApiKey(gameName: String): String? {
+    fun getApiKey(gameName: String?): String? {
+        if (gameName == null) return null
         val key = stringPreferencesKey(gameName)
         return runBlocking {
             context.apiKeysDataStore.data.map { preferences ->
@@ -121,8 +122,8 @@ class ApiKeyManager(private val context: Context) {
     /**
      * Returns the SHA-256 hash of the 'maimai' API key.
      */
-    fun getKeyHash(): String? {
-        val apiKey = getApiKey("maimai") ?: return null
+    fun getKeyHash(game: String?): String? {
+        val apiKey = getApiKey(game) ?: return null
         return sha256Hex(apiKey)
     }
 
@@ -137,23 +138,6 @@ class ApiKeyManager(private val context: Context) {
         return sb.toString()
     }
 
-    /**
-     * Logs all stored API keys for debugging purposes.
-     */
-    fun logAllApiKeys() {
-        runBlocking {
-            try {
-                val preferences = context.apiKeysDataStore.data.firstOrNull() ?: return@runBlocking
-
-                Log.d("DataStore", "--- Contenu du DataStore api_keys ---")
-                preferences.asMap().forEach { (key, value) ->
-                    Log.d("DataStore", "${key.name}: $value")
-                }
-            } catch (e: Exception) {
-                Log.e("DataStore", "Erreur lors de la lecture des clés API", e)
-            }
-        }
-    }
 
     /**
      * Gets a list of all available API keys.
@@ -171,8 +155,6 @@ class ApiKeyManager(private val context: Context) {
                         keys.add(key.name)
                     }
                 }
-                Log.d("DataStore", "Liste des clés API disponibles : $keys")
-
             } catch (e: Exception) {
                 Log.e("DataStore", "Erreur lors de la lecture des clés API", e)
             }
