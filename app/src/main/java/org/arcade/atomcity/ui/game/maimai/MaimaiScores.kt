@@ -151,9 +151,6 @@ fun MaimaiScores(
                             MaimaiPlayerDetails(
                                 maiteaViewModel = maiteaViewModel,
                                 collapsedFraction = collapsedFraction,
-                                onBackClick = { },
-                                topAppBarWidth = 0.dp,
-                                topAppBarHeight = 0.dp,
                                 textColor = appBarTextColor
                             )
                         }
