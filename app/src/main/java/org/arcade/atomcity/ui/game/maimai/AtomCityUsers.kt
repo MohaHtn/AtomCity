@@ -32,6 +32,19 @@ import androidx.navigation.NavHostController
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 
+internal fun extractAtomCityUserDisplay(entryKey: String, entryValue: String): Pair<String, String?> {
+    val key = entryKey.trim()
+    val value = entryValue.trim()
+    val keyIsRating = key.toDoubleOrNull() != null
+    val valueIsRating = value.toDoubleOrNull() != null
+
+    return when {
+        valueIsRating && !keyIsRating -> key to value
+        keyIsRating && !valueIsRating -> value to key
+        else -> value to null
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AtomCityUsers(
@@ -94,7 +107,8 @@ fun AtomCityUsers(
                             modifier = Modifier.padding(vertical = 16.dp)
                         )
                     }
-                    items(profiles.toList()) { (_, username) ->
+                    items(profiles.toList()) { (entryKey, entryValue) ->
+                        val (username, rating) = extractAtomCityUserDisplay(entryKey, entryValue)
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -108,6 +122,12 @@ fun AtomCityUsers(
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.Bold
                                 )
+                                rating?.let {
+                                    Text(
+                                        text = "Rating : $it",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
                             }
                         }
                     }
