@@ -188,8 +188,8 @@ internal fun ApiItem(
             maskKey = ::maskKey,
             text = 
                 when (GlobalUIState.selectedGameForGuide.value) {
-                    "maimai" -> "Votre clé API pour maimai est affichée ci-dessous."
-                    "Taiko no Tatsujin" -> "Votre ID utilisateur pour Taiko no Tatsujin est affiché ci-dessous."
+                    "maimai" -> "Votre clé API pour maimai est affichée ci-dessous.\n"
+                    "Taiko no Tatsujin" -> "Votre ID utilisateur pour Taiko no Tatsujin est affiché ci-dessous.\n"
                     else -> ""
                 }
             

@@ -9,14 +9,11 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import org.arcade.atomcity.network.ErrorInterceptor
 import java.util.concurrent.TimeUnit
 
 val taikoNetworkModule = module {
     single<Retrofit>(named("taiko")) {
-        val context = androidContext()
-//        val apiKeyManager = ApiKeyManager(context)
-//        val apiKey = runBlocking { apiKeyManager.getApiKey("taiko") }
-
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -26,6 +23,7 @@ val taikoNetworkModule = module {
             .build()
 
         val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(ErrorInterceptor())
             .addInterceptor(loggingInterceptor)
             .build()
 

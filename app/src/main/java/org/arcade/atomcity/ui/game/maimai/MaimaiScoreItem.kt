@@ -55,12 +55,14 @@ fun MaimaiScoreItem(
         colors = getDifficultyColorBackground(play.difficultyLevel?.value),
         shape = RoundedCornerShape(24.dp)
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val isNarrow = maxWidth < 340.dp
+            
             Text(
                 text = play.difficultyLevel?.label?.uppercase() ?: "",
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontWeight = FontWeight.Black,
-                    fontSize = 60.sp
+                    fontSize = if (isNarrow) 48.sp else 60.sp
                 ),
                 color = difficultyColor.copy(alpha = 0.08f),
                 modifier = Modifier
@@ -71,17 +73,17 @@ fun MaimaiScoreItem(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(if (isNarrow) 8.dp else 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
-                    modifier = Modifier.width(72.dp),
+                    modifier = Modifier.width(if (isNarrow) 60.dp else 72.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Box(
                             modifier = Modifier
-                                .size(64.dp)
+                                .size(if (isNarrow) 56.dp else 64.dp)
                                 .background(difficultyColor.copy(alpha = 0.15f), CircleShape)
                         )
                         
@@ -92,7 +94,7 @@ fun MaimaiScoreItem(
                                 .build(),
                             contentDescription = "${play.song?.name} artwork",
                             modifier = Modifier
-                                .size(54.dp)
+                                .size(if (isNarrow) 48.dp else 54.dp)
                                 .clip(CircleShape)
                                 .border(2.dp, difficultyColor, CircleShape),
                             contentScale = ContentScale.Crop
@@ -106,7 +108,7 @@ fun MaimaiScoreItem(
                             shape = RoundedCornerShape(6.dp),
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
-                                .offset(y = (-5).dp), // Position it above the jacket halo
+                                .offset(y = if (isNarrow) (-2).dp else (-5).dp), // Position it above the jacket halo
                             shadowElevation = 1.dp
                         ) {
                             Text(
@@ -114,7 +116,7 @@ fun MaimaiScoreItem(
                                 text = "Meilleur score",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Black,
-                                    fontSize = 8.6.sp,
+                                    fontSize = if (isNarrow) 7.sp else 8.6.sp,
                                     letterSpacing = 0.5.sp,
                                     color = Color(0xFFFBC02D)
                                 ),
@@ -124,7 +126,7 @@ fun MaimaiScoreItem(
                     }
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(if (isNarrow) 10.dp else 16.dp))
 
                 // Song & Artist Info
                 Column(modifier = Modifier.weight(1f)) {
@@ -135,8 +137,8 @@ fun MaimaiScoreItem(
                         text = songNameJp ?: songNameEn ?: "Unknown",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Black,
-                            fontSize = 17.sp,
-                            lineHeight = 20.sp
+                            fontSize = if (isNarrow) 15.sp else 17.sp,
+                            lineHeight = if (isNarrow) 18.sp else 20.sp
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -145,7 +147,7 @@ fun MaimaiScoreItem(
                     if (songNameEn != null && songNameEn != songNameJp) {
                         Text(
                             text = songNameEn,
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = if (isNarrow) 9.sp else 11.sp),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.alpha(0.5f)
@@ -165,24 +167,25 @@ fun MaimaiScoreItem(
                         text = displayArtist,
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = FontWeight.Medium,
-                            fontSize = 13.sp
+                            fontSize = if (isNarrow) 11.sp else 13.sp
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(top = 2.dp).alpha(0.7f)
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(if (isNarrow) 4.dp else 6.dp))
 
                     // Difficulty / Level info chip.
                     MaimaiDifficultyBadge(
                         difficultyValue = play.difficultyLevel?.value,
                         levelInfo = levelInfo,
                         rating = play.rating,
+                        isCompact = isNarrow,
                         textStyle = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White,
-                            fontSize = 12.sp
+                            fontSize = if (isNarrow) 10.sp else 12.sp
                         )
                     )
 
@@ -198,7 +201,7 @@ fun MaimaiScoreItem(
                             text = play.rank!!,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Black,
-                                fontSize = 24.sp,
+                                fontSize = if (isNarrow) 18.sp else 24.sp,
                                 letterSpacing = 0.5.sp
                             ),
                             color = difficultyColor,
@@ -211,7 +214,7 @@ fun MaimaiScoreItem(
                             text = play.achievementFormatted?.replace("%", "") ?: "0.00",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Black,
-                                fontSize = 24.sp,
+                                fontSize = if (isNarrow) 18.sp else 24.sp,
                                 letterSpacing = (-0.5).sp
                             ),
                             color = MaterialTheme.colorScheme.onSurface
@@ -222,7 +225,7 @@ fun MaimaiScoreItem(
                             text = "%",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp
+                                fontSize = if (isNarrow) 10.sp else 12.sp
                             ),
                             color = difficultyColor,
                             modifier = Modifier.padding(bottom = 2.dp, start = 1.dp)
@@ -234,7 +237,7 @@ fun MaimaiScoreItem(
                             text = it,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Black,
-                                fontSize = 18.sp,
+                                fontSize = if (isNarrow) 14.sp else 18.sp,
                                 letterSpacing = (-0.5).sp
                             ),
                             color = MaterialTheme.colorScheme.onSurface
@@ -243,7 +246,7 @@ fun MaimaiScoreItem(
                     
                     Text(
                         text = formatPlayDate(play.playDate),
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = if (isNarrow) 9.sp else 11.sp),
                         modifier = Modifier.alpha(0.5f).padding(top = 4.dp)
                     )
                 }

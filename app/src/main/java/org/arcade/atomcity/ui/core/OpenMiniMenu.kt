@@ -20,19 +20,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.runtime.getValue
+
 @Composable
 fun OpenMiniMenu(
     showMiniMenu: Boolean,
     onDismiss: () -> Unit,
     onItemClick: (String) -> Unit,
-    items: List<Pair<String, String>> = listOf(
-        "maimai" to "les gros cerles là",
-        "beatmania IIDX" to "DJ ???? woa",
-        "pop n' music" to "miamme les burgers en forme de boutons",
-        "taiko no tatsujin" to "hit me in the fucking face da-don",
-    ),
     modifier: Modifier = Modifier
 ) {
+    val availableKeys by GlobalUIState.availableApiKeys
+
+    val allItems = listOf(
+        Triple("maimai", "maimai", "les gros cerles là"),
+        Triple("iidx", "beatmania IIDX", "DJ ???? woa"),
+        Triple("popn", "pop'n music", "miamme les burgers en forme de boutons"),
+        Triple("taiko", "Taiko no Tatsujin", "hit me in the fucking face da-don"),
+        Triple("sdvx", "SOUND VOLTEX", "vroum vroum les boutons"),
+        Triple("itg", "In The Groove 2", "dance dance revolution but better")
+    )
+
+    val filteredItems = allItems.filter { it.first in availableKeys }
+
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         AnimatedVisibility(
             visible = showMiniMenu,
@@ -43,7 +52,7 @@ fun OpenMiniMenu(
                 modifier = Modifier.width(512.dp).clickable(onClick = onDismiss).padding(16.dp),
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    items.forEach { (headline, supporting) ->
+                    filteredItems.forEach { (_, headline, supporting) ->
                         ListItem(
                             headlineContent = { Text(headline) },
                             supportingContent = { Text(supporting) },

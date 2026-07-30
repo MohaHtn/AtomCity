@@ -12,6 +12,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import org.arcade.atomcity.network.ErrorInterceptor
 import java.util.concurrent.TimeUnit
 
 val maiteaProfileDataModule =  module {
@@ -28,6 +29,7 @@ val maiteaProfileDataModule =  module {
             .build()
 
         val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(ErrorInterceptor())
             //.addInterceptor(loggingInterceptor)
             .addInterceptor { chain: Interceptor.Chain ->
                 val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }

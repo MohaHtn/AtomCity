@@ -13,10 +13,12 @@ import androidx.work.workDataOf
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.delay
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.arcade.atomcity.BuildConfig
 import java.security.MessageDigest
+import java.util.concurrent.TimeUnit
 
 class MaimaiImportWorker(
     context: Context,
@@ -41,19 +43,27 @@ class MaimaiImportWorker(
         return createForegroundInfo(0, "Initialisation de l'import ...")
     }
 
+    private suspend fun updateProgress(progress: Int, message: String) {
+        setProgress(workDataOf(
+            "progress" to progress,
+            "message" to message
+        ))
+        setForeground(createForegroundInfo(progress, message))
+    }
+
     override suspend fun doWork(): Result {
         val apiKey = inputData.getString(KEY_API_KEY) ?: return Result.failure()
         val keyHash = sha256(apiKey)
 
         createNotificationChannel()
-        setForeground(createForegroundInfo(0, "Lancement de l'import ..."))
+        updateProgress(0, "Lancement de l'import ...")
 
         val client = OkHttpClient.Builder()
-            .readTimeout(0, java.util.concurrent.TimeUnit.MILLISECONDS)
+            .readTimeout(0, TimeUnit.MILLISECONDS)
             .build()
 
         val request = Request.Builder()
-            .url("https://scorefetcher.mohahtn.xyz/apikeys/imports/$keyHash/events")
+            .url("https://scorefetcher.mohahtn.xyz/imports/$keyHash/events")
             .addHeader("X-API-KEY", BuildConfig.SCOREFETCHER_API_KEY)
             .addHeader("Accept", "text/event-stream")
             .build()
@@ -61,49 +71,89 @@ class MaimaiImportWorker(
         val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
         val adapter = moshi.adapter(MaimaiImportEvent::class.java)
 
-        return try {
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return Result.failure()
+        val maxReconnectAttempts = 5
+        repeat(maxReconnectAttempts) { attempt ->
+            val shouldRetry = try {
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        false
+                    } else {
+                        val body = response.body ?: return@use false
+                        val source = body.source()
+                        var completed = false
+                        var sawPageEvent = false
+                        while (!source.exhausted()) {
+                            val line = source.readUtf8Line() ?: break
+                            if (line.startsWith("data:")) {
+                                val jsonData = line.removePrefix("data:").trim()
+                                val event = try {
+                                    adapter.fromJson(jsonData)
+                                } catch (_: Exception) {
+                                    null
+                                }
 
-                val source = response.body.source()
-                while (!source.exhausted()) {
-                    val line = source.readUtf8Line() ?: break
-                    if (line.startsWith("data:")) {
-                        val jsonData = line.removePrefix("data:").trim()
-                        val event = try {
-                            adapter.fromJson(jsonData)
-                        } catch (_: Exception) {
-                            null
+                                if (event != null) {
+                                    if (event.type == "page") {
+                                        sawPageEvent = true
+                                        val progress = if ((event.totalPages ?: 0) > 0) {
+                                            (((event.page ?: 0).toFloat() / (event.totalPages ?: 1)) * 100)
+                                                .toInt()
+                                                .coerceIn(0, 100)
+                                        } else {
+                                            0
+                                        }
+                                        updateProgress(
+                                            progress,
+                                            "Importation en cours : ${progress}% (Page ${event.page} / ${event.totalPages})"
+                                        )
+
+                                        if ((event.page ?: 0) >= (event.totalPages ?: 0)) {
+                                            completed = true
+                                            return@use true
+                                        }
+                                    } else if (event.type == "completed") {
+                                        completed = true
+                                        return@use true
+                                    } else if (event.type == "failed") {
+                                        return@use false
+                                    }
+                                }
+                            }
                         }
 
-                        if (event != null && event.type == "page") {
-                            val progress = if (event.totalPages > 0) {
-                                ((event.page.toFloat() / event.totalPages) * 100)
-                                    .toInt()
-                                    .coerceIn(0, 100)
-                            } else {
-                                0
-                            }
-                            setForeground(
-                                createForegroundInfo(
-                                    progress,
-                                    "Importation en cours : ${progress}% (Page ${event.page} / ${event.totalPages})"
-                                )
-                            )
+                        // The SSE stream can simply close when the backend import is done.
+                        // Treat a clean EOF after receiving page events as completion too.
+                        if (sawPageEvent && !completed) {
+                            completed = true
+                        }
 
-                            if (event.page >= event.totalPages) {
-                                break
-                            }
+                        if (completed) {
+                            true
+                        } else {
+                            false
                         }
                     }
                 }
-                showFinalNotification("L'importation s'est bien déroulé.")
-                Result.success()
+            } catch (e: Exception) {
+                updateProgress(
+                    0,
+                    "Connexion perdue, reconnexion ${attempt + 1}/$maxReconnectAttempts..."
+                )
+                false
             }
-        } catch (e: Exception) {
-            showFinalNotification("Import failed: ${e.message}")
-            Result.retry()
+
+            if (shouldRetry) {
+                showFinalNotification("L'importation s'est bien déroulé.")
+                return Result.success()
+            }
+
+            if (attempt < maxReconnectAttempts - 1) {
+                delay(5_000L)
+            }
         }
+
+        showFinalNotification("Import failed: impossible de maintenir la connexion à l'endpoint d'import.")
+        return Result.retry()
     }
 
     private fun showFinalNotification(message: String) {
@@ -157,7 +207,7 @@ class MaimaiImportWorker(
 data class MaimaiImportEvent(
     val type: String,
     val keyHash: String,
-    val page: Int,
-    val totalPages: Int,
-    val message: String
+    val page: Int? = null,
+    val totalPages: Int? = null,
+    val message: String? = null
 )

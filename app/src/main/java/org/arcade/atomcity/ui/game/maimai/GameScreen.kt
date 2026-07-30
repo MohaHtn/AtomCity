@@ -15,18 +15,22 @@ fun GameScreen(
     taikoViewModel: TaikoViewModel,
     navController: NavHostController
 ) {
-    when (gameId) {
-        "maimai" -> {
+    val normalizedGameId = gameId.lowercase()
+    when {
+        normalizedGameId == "maimai" -> {
             MaimaiScores(
                 maiteaViewModel = maiteaViewModel,
-                navController = navController
+                navController = navController,
             )
         }
-        "taiko no tatsujin" -> {
+        normalizedGameId == "taiko no tatsujin" || normalizedGameId == "taiko" -> {
             TaikoScores(
                 taikoViewModel = taikoViewModel,
                 navController = navController
             )
+        }
+        else -> {
+            Log.e("GameScreen", "Unknown gameId: $gameId")
         }
     }
 }

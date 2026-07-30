@@ -21,6 +21,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.arcade.atomcity.di.apiKeyManagerModule
 import org.arcade.atomcity.di.appModule
 import org.arcade.atomcity.di.jacketImagesModule
@@ -31,17 +35,22 @@ import org.arcade.atomcity.di.viewmodel.maiTeaViewModelModule
 import org.arcade.atomcity.di.viewmodel.taikoServerViewModelModule
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.navigation.AppNavigation
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 
 class AtomCityApplication : Application() {
+    private val startupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override fun onCreate() {
         super.onCreate()
+        GlobalUIState.isMaimaiImportStateReady.value = false
         startKoin {
             androidContext(this@AtomCityApplication)
 
@@ -64,6 +73,16 @@ class AtomCityApplication : Application() {
 
             modules(maiteaModules + taikoModules + utilityModules)
         }
+        preloadMaimaiImportState()
+    }
+
+    private fun preloadMaimaiImportState() {
+        startupScope.launch {
+            val repository = GlobalContext.get().get<org.arcade.atomcity.data.MaiteaRepository>()
+            val isImporting = repository.isImportWorkerActive()
+            GlobalUIState.isImportingMaimaiScores.value = isImporting
+            GlobalUIState.isMaimaiImportStateReady.value = true
+        }
     }
 }
 
@@ -74,7 +93,9 @@ class MainActivity : ComponentActivity() {
     private val apiKeyManager: ApiKeyManager by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        installSplashScreen().setKeepOnScreenCondition {
+            !GlobalUIState.isMaimaiImportStateReady.value
+        }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
@@ -109,8 +130,15 @@ fun MainActivityContent(maiteaViewModel: MaiteaViewModel, apiKeyManager: ApiKeyM
         }
     }
 
+    LaunchedEffect(Unit) {
+        apiKeyManager.getApiChecklistStateFlow().collect { keys ->
+            GlobalUIState.availableApiKeys.value = keys
+        }
+    }
+
     AtomCityTheme {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            org.arcade.atomcity.ui.core.GlobalErrorDialog()
             AppNavigation(
                 maiteaViewModel = maiteaViewModel,
                 apiKeyManager = apiKeyManager,

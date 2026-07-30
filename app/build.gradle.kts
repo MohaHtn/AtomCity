@@ -31,6 +31,7 @@ android {
             "SCOREFETCHER_API_KEY",
             "\"$scorefetcherApiKey\""
         )
+        versionNameSuffix = "pre-alpha-2"
     }
 
     buildTypes {

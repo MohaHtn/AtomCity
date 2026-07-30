@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
-import org.arcade.atomcity.ui.core.BottomBarPill
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

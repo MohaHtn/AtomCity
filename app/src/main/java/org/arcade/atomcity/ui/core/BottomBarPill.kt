@@ -3,6 +3,7 @@ package org.arcade.atomcity.ui.core
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -16,6 +17,7 @@ import org.arcade.atomcity.R
 fun BottomBarPill(
     currentPage: Int,
     isLoading: Boolean = false,
+    isMaimaiBestScoresEnabled: Boolean = true,
     onPageChange: (Int) -> Unit,
     onHomeClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -41,25 +43,27 @@ fun BottomBarPill(
         )
         NavigationBarItem(
             selected = false,
+            enabled = isMaimaiBestScoresEnabled,
             onClick = onMaimaiBestScoreClick,
             icon = {
                 Icon(
-                    painter = painterResource(R.drawable.star),
-                    contentDescription = "Groups"
+                    imageVector = Icons.AutoMirrored.Filled.List,
+                    contentDescription = "Page précédente"
                 )
             },
             label = { Text(
-                text = "Meilleurs Scores",
+                text = "Meill. Scores",
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             ) }
         )
         NavigationBarItem(
             selected = false,
             onClick = onMaimaiUsersClick,
+            enabled = isMaimaiBestScoresEnabled,
             icon = {
                 Icon(
                     painter = painterResource(R.drawable.groups_24px),
-                    contentDescription = "Groups"
+                    contentDescription = "Users"
                 )
             },
             label = { Text("Utilsateurs") }

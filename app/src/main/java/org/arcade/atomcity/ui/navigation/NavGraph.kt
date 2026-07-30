@@ -6,6 +6,8 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -29,6 +31,8 @@ import org.arcade.atomcity.ui.game.maimai.MaimaiBest30Charts
 import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.guide.MaimaiApiGuide
 import org.arcade.atomcity.utils.ApiKeyManager
+
+private const val MAIMAI_IMPORT_FROM_WELCOME_KEY = "maimai_import_from_welcome"
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -89,6 +93,9 @@ fun AppNavigation(
                 navController = navController,
                 apiKeyManager = apiKeyManager,
                 onContinueClick = { firstGameId ->
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(MAIMAI_IMPORT_FROM_WELCOME_KEY, true)
                     navController.navigate(Screen.Game.createRoute(firstGameId))
                 }
             )
@@ -119,11 +126,17 @@ fun AppNavigation(
             arguments = listOf(navArgument("scoreId") { type = NavType.IntType })
         ) { backStackEntry ->
             val scoreId = backStackEntry.arguments?.getInt("scoreId") ?: 0
-            val dataState = maiteaViewModel.data.collectAsState()
-            val scoreEntry = dataState.value?.data?.find { it.id == scoreId }
+            val dataState by maiteaViewModel.data.collectAsState()
+            val selectedPlayDetail by maiteaViewModel.selectedPlayDetail.collectAsState()
+            
+            // Search in main list first
+            val scoreEntryFromList = dataState?.data?.find { it.id == scoreId }
+            
+            // Use the one from list if found, otherwise use the specifically fetched one
+            val scoreEntry = scoreEntryFromList ?: selectedPlayDetail?.takeIf { it.id == scoreId }
 
-            LaunchedEffect(scoreId, scoreEntry) {
-                if (scoreEntry == null) {
+            LaunchedEffect(scoreId, scoreEntryFromList) {
+                if (scoreEntryFromList == null) {
                     val keyHash = apiKeyManager.getKeyHash("maimai")
                     if (!keyHash.isNullOrBlank()) {
                         maiteaViewModel.getPlayById(scoreId, keyHash)
@@ -131,6 +144,11 @@ fun AppNavigation(
                 }
             }
 
+            DisposableEffect(scoreId) {
+                onDispose {
+                    maiteaViewModel.clearSelectedPlayDetail()
+                }
+            }
 
             MaimaiScoresDetails(
                 scoreEntry = scoreEntry,
@@ -178,5 +196,3 @@ fun AppNavigation(
 
     }
 }
-
-

@@ -11,13 +11,13 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.core.qualifier.named
 import org.arcade.atomcity.BuildConfig
 
+import org.arcade.atomcity.network.ErrorInterceptor
+
 val maiteaNetworkModule = module {
     single<Retrofit>(named("maitea_scores")) {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
-
-
 
         val moshi = Moshi.Builder()
             .add(com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory())
@@ -30,6 +30,7 @@ val maiteaNetworkModule = module {
                     .build()
                 chain.proceed(request)
             }
+            .addInterceptor(ErrorInterceptor())
             //.addInterceptor(loggingInterceptor)
             .build()
 

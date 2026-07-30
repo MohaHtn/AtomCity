@@ -6,6 +6,7 @@ import org.arcade.atomcity.model.maitea.playsResponse.Song
 
 @JsonClass(generateAdapter = true)
 data class BestPerPlayerResponse(
+    val playId: Int?,
     val keyHash: String?,
     val songName: String?,
     val achievement: Double?,

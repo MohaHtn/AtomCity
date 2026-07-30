@@ -62,6 +62,7 @@ fun MaimaiDifficultyBadge(
     levelInfo: LevelInfo? = null,
     rating: String? = "",
     modifier: Modifier = Modifier,
+    isCompact: Boolean = false,
     textStyle: TextStyle = MaterialTheme.typography.labelSmall.copy(
         fontWeight = FontWeight.ExtraBold,
         color = Color.White
@@ -91,7 +92,10 @@ fun MaimaiDifficultyBadge(
             Text(
                 text = displayText,
                 style = textStyle,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                modifier = Modifier.padding(
+                    horizontal = if (isCompact) 8.dp else 12.dp,
+                    vertical = if (isCompact) 2.dp else 4.dp
+                )
             )
         }
     }

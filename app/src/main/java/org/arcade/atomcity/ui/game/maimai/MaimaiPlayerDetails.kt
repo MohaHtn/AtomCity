@@ -163,86 +163,85 @@ fun MaimaiPlayerDetailsContent(
 
     val shouldShowCompactInfo = collapsedFraction > 0.5f
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        val imageUrl = playerData?.options?.iconDeka?.png ?: playerData?.options?.icon?.png
-        
-        if (imageUrl != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Profile Avatar",
-                contentScale = ContentScale.Crop,
-                modifier =
-                    if (collapsedFraction < 0.5f) {
-                        Modifier
-                            .absoluteOffset(y = (-8).dp)
-                            .size(lerp(70.dp, 46.dp, collapsedFraction))
-                            .clip(MaterialTheme.shapes.small)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                    } else {
-                        Modifier
-                            .size(lerp(70.dp, 46.dp, collapsedFraction))
-                            .clip(MaterialTheme.shapes.small)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                    }
-
-            )
-            Spacer(modifier = Modifier.width(12.dp))
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val isNarrow = maxWidth < 260.dp
+        val avatarSize = if (isNarrow) {
+            lerp(56.dp, 40.dp, collapsedFraction)
+        } else {
+            lerp(64.dp, 46.dp, collapsedFraction)
         }
 
-        Column(
-            verticalArrangement = Arrangement.Center,
-            modifier = if (collapsedFraction < 0.5f) {
-                Modifier.weight(1f).absoluteOffset(y = (-12).dp)
-            } else {
-                Modifier.weight(1f)
-            }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
         ) {
-            Text(
-                text = playerData?.name ?: "",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontSize = lerp(22.sp, 17.sp, collapsedFraction),
-                    fontWeight = FontWeight.Black
-                ),
-                color = textColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            if (!shouldShowCompactInfo) {
-                ScrollingTitleText(
-                    text = playerData?.options?.title?.value ?: "",
-                    collapsedFraction = collapsedFraction,
-                    textColor = textColor,
-                    modifier = Modifier.padding(top = 2.dp)
+            val imageUrl = playerData?.options?.iconDeka?.png ?: playerData?.options?.icon?.png
+            
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Profile Avatar",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(avatarSize)
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                 )
+                Spacer(modifier = Modifier.width(if (isNarrow) 8.dp else 12.dp))
             }
 
-            Surface(
-                shape = RoundedCornerShape(4.dp),
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .background(ratingBackground, RoundedCornerShape(4.dp)),
-                color = Color.Transparent,
-                tonalElevation = 4.dp
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = computeRating(playerData?.rating),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 13.sp,
-                        letterSpacing = 0.sp
+                    text = playerData?.name ?: "",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = if (isNarrow) {
+                            lerp(18.sp, 15.sp, collapsedFraction)
+                        } else {
+                            lerp(20.sp, 17.sp, collapsedFraction)
+                        },
+                        fontWeight = FontWeight.Black
                     ),
-                    color = ratingTextColor,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
+                    color = textColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+
+                /*if (!shouldShowCompactInfo) {
+                    ScrollingTitleText(
+                        text = playerData?.options?.title?.value ?: "",
+                        collapsedFraction = collapsedFraction,
+                        textColor = textColor,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }*/
+
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .background(ratingBackground, RoundedCornerShape(4.dp)),
+                    color = Color.Transparent,
+                    tonalElevation = 4.dp
+                ) {
+                    Text(
+                        text = computeRating(playerData?.rating),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = if (isNarrow) 11.sp else 13.sp,
+                            letterSpacing = 0.sp
+                        ),
+                        color = ratingTextColor,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
+                    )
+                }
             }
         }
     }

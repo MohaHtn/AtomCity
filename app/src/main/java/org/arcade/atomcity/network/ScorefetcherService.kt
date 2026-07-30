@@ -64,8 +64,8 @@ interface ScorefetcherService {
 
     @GET("scores/best-per-player")
     suspend fun getBestPerPlayer(
-        @Query("keyHash") hashKey: String,
-        @Query("songName") songName: String
+        @Query("songName") songName: String,
+        @Query("difficulty") difficulty: String? = null
     ): List<BestPerPlayerResponse>
 
     @GET("scores/{id}")
@@ -73,4 +73,10 @@ interface ScorefetcherService {
         @Path("id") id: Int,
         @Query("keyHash") keyHash: String
     ): MaiteaApiData
+
+    @GET("scores/search")
+    suspend fun searchCharts(
+        @Query("query") query: String,
+        @Query("keyHash") keyHash: String? = null
+    ): List<BestPerPlayerResponse>
 }

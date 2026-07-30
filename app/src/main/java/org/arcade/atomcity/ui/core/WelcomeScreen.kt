@@ -226,10 +226,6 @@ fun SetupCard(
     val apiKeyManager = ApiKeyManager(context)
 
 
-    fun hasApiKey(game: String): Boolean {
-        return apiKeyManager.hasApiKey(game)
-    }
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

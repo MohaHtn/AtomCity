@@ -2,7 +2,6 @@ package org.arcade.atomcity.di.viewmodel
 
 import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.domain.usecase.GetMaiteaDataUseCase
-import org.arcade.atomcity.presentation.viewmodel.JacketUrl
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -14,7 +13,7 @@ val maiTeaViewModelModule = module {
     viewModel {
         MaiteaViewModel(
             repository = get(),
-            jacketImages = get<List<JacketUrl>>(named("jacketImages"))
+            jacketImages = get<Map<String, String>>(named("jacketImages"))
         )
     }
 }
