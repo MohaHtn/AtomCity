@@ -22,6 +22,12 @@ data class ApiKeyCheckResponse(
     val isKeyProvidedInDatabase: Boolean,
 )
 
+data class AddApiKeyResponse(
+    val message: String,
+    val keyHash: String,
+    val importStream: String
+)
+
 data class DeleteApiKeyResponse(
     val message: String,
 )
@@ -30,7 +36,7 @@ interface ScorefetcherService {
     @POST("apikeys")
     suspend fun addApiKey(
         @Body request: ApiKeyRequest
-    )
+    ): AddApiKeyResponse
     @GET("scores")
     suspend fun getScores(
         @Header("Authorization") token: String,
@@ -43,11 +49,11 @@ interface ScorefetcherService {
     ): ApiKeyCheckResponse
 
     @GET("apikeys/profiles")
-    suspend fun getProfiles(): Map<String, List<String>>
+    suspend fun getProfiles(): Map<String, String>
 
-    @DELETE("apikeys/{apikey}")
+    @DELETE("apikeys/{keyHash}")
     suspend fun deleteApiKey(
-        @Path("apikey") apikey: String
+        @Path("keyHash") keyHash: String
     ): DeleteApiKeyResponse
 
     @GET("scores/top")

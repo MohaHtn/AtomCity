@@ -22,5 +22,7 @@ data class MaiteaApiData (
   @Json(name = "player") var player: Player? = Player(),
   @Json(name = "jacket_image_url") var jacketImageUrl: String? = null,
   @Json(name = "rank") var rank: String? = null,
-  @Json(name ="rating") var rating: String? =null
-)
+  @Json(name ="rating") var rating: Double? = null
+) {
+    val ratingFormatted: String? get() = rating?.let { String.format(java.util.Locale.US, "%.2f", it) }
+}

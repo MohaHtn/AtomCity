@@ -566,7 +566,7 @@ fun BestPerPlayerItem(b: BestPerPlayerResponse) {
                         )
                         if (label != "宴") {
                             Text(
-                                text = b.rating?.toString() ?: "",
+                                text = b.ratingFormatted ?: "",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                 modifier = Modifier.alpha(0.6f)
                             )
@@ -1025,7 +1025,7 @@ fun RatingVsScoreGraph(
                             )
                             if (entry.difficultyLevel != "宴" && entry.difficultyLevelJson?.value?.lowercase() != "utage") {
                                 Text(
-                                    text = "Rating : ${entry.rating}",
+                                    text = "Rating : ${entry.ratingFormatted}",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = Color.White.copy(alpha = 0.8f)
                                 )
@@ -1210,7 +1210,7 @@ fun PersonalBestProgressionGraph(
                             )
                             if (entry.difficultyLevel != "宴" && entry.difficultyLevelJson?.value?.lowercase() != "utage") {
                                 Text(
-                                    text = "Rating : ${entry.rating}",
+                                    text = "Rating : ${entry.ratingFormatted}",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = Color.White.copy(alpha = 0.8f)
                                 )

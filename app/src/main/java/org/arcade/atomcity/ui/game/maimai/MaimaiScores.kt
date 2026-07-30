@@ -2,13 +2,13 @@ package org.arcade.atomcity.ui.game.maimai
 
 import android.app.Activity
 import android.graphics.drawable.BitmapDrawable
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,13 +36,11 @@ import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 
-private const val MAIMAI_IMPORT_FROM_WELCOME_KEY = "maimai_import_from_welcome"
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiScores(
     maiteaViewModel: MaiteaViewModel,
-    navController: NavHostController
+    navController: NavHostController,
 ) {
     val isLoading by maiteaViewModel.isLoading.collectAsState()
     val data by maiteaViewModel.data.collectAsState()
@@ -52,29 +50,20 @@ fun MaimaiScores(
     val importMessage by maiteaViewModel.importWorkerMessage.collectAsState()
     val playerDataState by maiteaViewModel.playerData.collectAsState()
     val playerData = playerDataState?.data?.firstOrNull()
+    val hasNextPage by maiteaViewModel.hasNextPage.collectAsState()
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val collapsedFraction = scrollBehavior.state.collapsedFraction
 
     var frameColor by remember { mutableStateOf<Color?>(null) }
-    var showMiniMenu by remember { mutableStateOf(false) }
+    var showMiniMenu by remember { mutableStateOf(value = false) }
     var lastClickTime by remember { mutableLongStateOf(0L) }
     val currentPage by maiteaViewModel._currentPage.collectAsState()
-    val importRequestedFromWelcome = remember(navController) {
-        navController.previousBackStackEntry
-            ?.savedStateHandle
-            ?.remove<Boolean>(MAIMAI_IMPORT_FROM_WELCOME_KEY) == true
-    }
-    var hasHandledInitialLoad by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentPage) {
         maiteaViewModel.fetchMaimaiPaginatedData(
-            page = currentPage,
-            startImport = !hasHandledInitialLoad && importRequestedFromWelcome && currentPage == 1
+            page = currentPage
         )
-        if (!hasHandledInitialLoad) {
-            hasHandledInitialLoad = true
-        }
     }
 
     val isBackgroundDark = remember(frameColor) {
@@ -122,8 +111,7 @@ fun MaimaiScores(
                             .crossfade(true)
                             .build(),
                         onSuccess = { result ->
-                            val bitmap = (result.result.drawable as? BitmapDrawable)?.bitmap
-                            if (bitmap != null) {
+                            (result.result.drawable as? BitmapDrawable)?.bitmap?.let { bitmap ->
                                 Palette.from(bitmap).generate { palette ->
                                     palette?.dominantSwatch?.rgb?.let { rgb ->
                                         frameColor = Color(rgb)
@@ -167,7 +155,7 @@ fun MaimaiScores(
                                     .padding(start = 8.dp, end = 24.dp) // More padding on end
                                     .background(
                                         color = backgroundColor,
-                                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                                        shape = RoundedCornerShape(16.dp)
                                     )
                                     .padding(horizontal = 12.dp, vertical = 4.dp) // Reduced vertical padding
                             ) {
@@ -210,8 +198,11 @@ fun MaimaiScores(
                         navController = navController,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface) // Ensure no gap color bleed
-                            .padding(bottom = 12.dp)
+                            .padding(vertical = 8.dp, horizontal = 12.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = RoundedCornerShape(999.dp)
+                            )
                     )
                 }
             }
@@ -221,6 +212,7 @@ fun MaimaiScores(
                 currentPage = currentPage,
                 isLoading = isLoading,
                 isMaimaiBestScoresEnabled = !isImportingScores,
+                hasNextPage = hasNextPage,
                 onPageChange = { newPage ->
                     maiteaViewModel.onPageChange(newPage)
                 },
@@ -253,7 +245,7 @@ fun MaimaiScores(
                         .fillMaxSize()
                         .padding(top = paddingValues.calculateTopPadding())
                 ) {
-                    if (isLoading && data == null) {
+                    if (isLoading && (data == null)) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -271,7 +263,6 @@ fun MaimaiScores(
                         ),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Log.d("data", "data: $data")
                         items(data?.data ?: emptyList()) { play ->
                             MaimaiScoreItem(
                                 play = play,

@@ -89,12 +89,12 @@ fun AtomCityUsers(
                 ) {
                     item {
                         Text(
-                            text = "Les utlisateurs listés ici se sont enregistrés sur l'application. Ils peuvent être utilisés pour les fonctionnalités de partage de données ou de classement.",
+                            text = "Les utilisateurs listés ici se sont enregistrés sur l'application. Ils peuvent être utilisés pour les fonctionnalités de partage de données ou de classement.",
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(vertical = 16.dp)
                         )
                     }
-                    items(profiles.toList()) { (_, names) ->
+                    items(profiles.toList()) { (_, username) ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -103,13 +103,11 @@ fun AtomCityUsers(
                             Column(
                                 modifier = Modifier.padding(16.dp)
                             ) {
-                                names.forEach { name ->
-                                    Text(
-                                        text = name,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                Text(
+                                    text = username,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }

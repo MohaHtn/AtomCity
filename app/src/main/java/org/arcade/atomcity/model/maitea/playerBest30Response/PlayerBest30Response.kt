@@ -16,4 +16,6 @@ data class PlayerBest30Response(
     @Json(name = "rating"                   ) var rating:           Double? = null,
     @Json(name = "playerName"               ) var playerName:       String? = null,
     @Json(name = "songJson"                 ) var songJson:         Song? = null
-)
+) {
+    val ratingFormatted: String? get() = rating?.let { String.format(java.util.Locale.US, "%.2f", it) }
+}

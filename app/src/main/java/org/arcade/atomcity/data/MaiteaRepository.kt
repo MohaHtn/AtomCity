@@ -72,24 +72,26 @@ class MaiteaRepository(
     }
 
     suspend fun startMaiTeaImport(): Boolean = withContext(Dispatchers.IO) {
+        if (localImportWorkerActive) return@withContext true
+        
         val apiKey = apiKeyManager.getApiKey("maimai") ?: ""
+        if (apiKey.isBlank()) return@withContext false
 
-        if (apiKey.isBlank()) {
-            Log.w("MaiteaRepository", "Cannot start MaiTea import without an API key")
-            return@withContext false
+        try {
+            val keyCheck = scorefetcherService.checkApiKey(apiKey)
+            if (!keyCheck.isKeyProvidedInDatabase) {
+                scorefetcherService.addApiKey(
+                    ApiKeyRequest(key = apiKey, description = "MaiTea Key (App)")
+                )
+            }
+            
+            localImportWorkerActive = true
+            startImportWorker(apiKey)
+            true
+        } catch (e: Exception) {
+            Log.e("MaiteaRepository", "Error starting MaiTea import: ${e.message}")
+            false
         }
-
-        val keyCheck = scorefetcherService.checkApiKey(apiKey)
-        if (keyCheck.isKeyProvidedInDatabase) {
-            return@withContext false
-        }
-
-        scorefetcherService.addApiKey(
-            ApiKeyRequest(key = apiKey, description = "MaiTea Key")
-        )
-        localImportWorkerActive = true
-        startImportWorker(apiKey)
-        true
     }
 
     fun getMaiTeaPaginatedData(page: Int): Flow<MaiteaPlaysResponse?> = flow {
@@ -138,13 +140,11 @@ class MaiteaRepository(
 
     suspend fun refreshImportWorkerStatus(): ImportWorkerStatus = withContext(Dispatchers.IO) {
         if (localImportWorkerActive) {
-            return@withContext ImportWorkerStatus(true, "queued", 0, "Importation en cours...")
+            return@withContext ImportWorkerStatus(true, "running", 0, "Initialisation de l'importation...")
         }
 
         val apiKey = apiKeyManager.getApiKey("maimai") ?: ""
-        if (apiKey.isBlank()) {
-            return@withContext ImportWorkerStatus(false, "idle", 0, null)
-        }
+        if (apiKey.isBlank()) return@withContext ImportWorkerStatus(false, "idle", 0, null)
 
         val keyHash = sha256Hex(apiKey)
         val request = Request.Builder()
@@ -154,45 +154,37 @@ class MaiteaRepository(
             .build()
 
         try {
-            importStreamClient.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    return@withContext ImportWorkerStatus(false, "idle", 0, null)
-                }
+            // Short timeout for status check to avoid blocking
+            importStreamClient.newBuilder()
+                .readTimeout(3, TimeUnit.SECONDS)
+                .build()
+                .newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext ImportWorkerStatus(false, "idle", 0, null)
 
                 val body = response.body ?: return@withContext ImportWorkerStatus(false, "idle", 0, null)
                 val source = body.source()
-                var progress = 0
-                var message: String? = null
 
+                // Look for current progress in the stream
                 while (!source.exhausted()) {
                     val line = source.readUtf8Line() ?: break
                     if (line.startsWith("data:")) {
                         val jsonData = line.removePrefix("data:").trim()
-                        val event = try {
-                            importEventAdapter.fromJson(jsonData)
-                        } catch (_: Exception) {
-                            null
-                        }
+                        val event = try { importEventAdapter.fromJson(jsonData) } catch (_: Exception) { null }
 
                         if (event != null) {
-                            if (event.type == "page") {
-                                progress = if ((event.totalPages ?: 0) > 0) {
-                                    (((event.page ?: 0).toFloat() / (event.totalPages ?: 1)) * 100)
-                                        .toInt()
-                                        .coerceIn(0, 100)
-                                } else {
-                                    0
+                            when (event.type) {
+                                "page" -> {
+                                    val progress = if ((event.totalPages ?: 0) > 0) {
+                                        (((event.page ?: 0).toFloat() / (event.totalPages ?: 1)) * 100).toInt().coerceIn(0, 100)
+                                    } else 0
+                                    return@withContext ImportWorkerStatus(true, "running", progress, "Importation en cours : $progress%")
                                 }
-                                message = "Importation en cours : ${progress}% (Page ${event.page} / ${event.totalPages})"
-                                // On a trouvé un événement actif, on peut s'arrêter là pour un check de statut
-                                return@withContext ImportWorkerStatus(true, "running", progress, message)
-                            } else if (event.type == "completed") {
-                                return@withContext ImportWorkerStatus(false, "idle", 100, "Importation terminée")
+                                "completed" -> return@withContext ImportWorkerStatus(false, "idle", 100, "Importation terminée")
+                                "failed" -> return@withContext ImportWorkerStatus(false, "failed", 0, "Échec de l'importation")
                             }
                         }
                     }
                 }
-
                 ImportWorkerStatus(false, "idle", 0, null)
             }
         } catch (_: Exception) {
@@ -255,9 +247,10 @@ class MaiteaRepository(
 
 
     fun removeApiKey(apiKey: String):Flow <DeleteApiKeyResponse> = flow {
+        val keyHash = sha256Hex(apiKey)
         val response = try {
             scorefetcherService.deleteApiKey(
-                apikey = apiKey
+                keyHash = keyHash
             )
         } catch (e: HttpException) {
             throw e
@@ -282,7 +275,7 @@ class MaiteaRepository(
         emit(response)
     }
 
-    fun getProfiles(): Flow<Map<String, List<String>>> = flow {
+    fun getProfiles(): Flow<Map<String, String>> = flow {
         emit(scorefetcherService.getProfiles())
     }
 

@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.arcade.atomcity.data.ImportWorkerStatus
@@ -43,13 +42,16 @@ class MaiteaViewModel(
     private val _playsData = MutableStateFlow<MaiteaPlaysResponse?>(null)
     val data: StateFlow<MaiteaPlaysResponse?> = _playsData
 
+    private val _hasNextPage = MutableStateFlow(true)
+    val hasNextPage: StateFlow<Boolean> = _hasNextPage
+
     // StateFlow to hold the player details data
     private val _playerData = MutableStateFlow<MaiteaPlayerDetailsResponse?>(null)
     val playerData: StateFlow<MaiteaPlayerDetailsResponse?> = _playerData
 
     // StateFlow to hold the profiles data
-    private val _profiles = MutableStateFlow<Map<String, List<String>>>(emptyMap())
-    val profiles: StateFlow<Map<String, List<String>>> = _profiles
+    private val _profiles = MutableStateFlow<Map<String, String>>(emptyMap())
+    val profiles: StateFlow<Map<String, String>> = _profiles
 
     // StateFlow to hold the 30 maimai best scores
     private val _maimaiBestScores = MutableStateFlow<List<PlayerBest30Response>>(emptyList())
@@ -70,6 +72,7 @@ class MaiteaViewModel(
 
     // Expose the current page
     internal val _currentPage = MutableStateFlow(1)
+    private var lastPageReached: Int? = null
     @Volatile
     private var playsRequestGeneration = 0
 
@@ -93,8 +96,14 @@ class MaiteaViewModel(
     private val _isLoadingPlayById = MutableStateFlow(false)
     private val _isLoadingBestPerPlayer = MutableStateFlow(false)
 
+    private val _isSearching = MutableStateFlow(false)
+    val isSearching: StateFlow<Boolean> = _isSearching
+
+    private val _searchQuery = MutableStateFlow("")
+
     init {
         observeImportWorkerStatus()
+        observeSearchQuery()
     }
 
     val isLoading: StateFlow<Boolean> = combine(
@@ -127,47 +136,57 @@ class MaiteaViewModel(
                     latestWork?.state == WorkInfo.State.BLOCKED
 
                 if (workActive) {
-                    val progress = latestWork?.progress?.getInt("progress", 0) ?: 0
-                    val message = latestWork?.progress?.getString("message") ?: "Importation en cours..."
+                    val progress = latestWork.progress.getInt("progress", 0)
+                    val message = latestWork.progress.getString("message") ?: "Importation en cours..."
                     applyImportWorkerStatus(
                         ImportWorkerStatus(
                             isActive = true,
-                            state = latestWork?.state?.name?.lowercase() ?: "running",
+                            state = latestWork.state.name.lowercase(),
                             progress = progress,
                             message = message
                         )
                     )
-                } else {
-                    // Si pas de worker local, on check le statut distant
-                    val remoteStatus = repository.refreshImportWorkerStatus()
-                    
-                    // On ne repasse à false que si le check remote confirme que c'est inactif
-                    // Cela évite le glitch si WorkManager met du temps à indexer le job au boot
-                    if (remoteStatus.isActive || !GlobalUIState.isImportingMaimaiScores.value || latestWork?.state?.isFinished == true) {
-                        applyImportWorkerStatus(remoteStatus)
-                    }
-                }
-
-                // Une fois le premier check (local ou remote) terminé, on est prêt
-                GlobalUIState.isMaimaiImportStateReady.value = true
-
-                if (latestWork?.state?.isFinished == true) {
+                } else if (latestWork?.state?.isFinished == true) {
+                    // Worker just finished
                     repository.setImportWorkerActive(false)
+                    
+                    // We only show the "finished" status for a moment or just hide it
+                    applyImportWorkerStatus(
+                        ImportWorkerStatus(
+                            isActive = false,
+                            state = latestWork.state.name.lowercase(),
+                            progress = 100,
+                            message = if (latestWork.state == WorkInfo.State.SUCCEEDED) "Importation terminée" else "Échec de l'importation"
+                        )
+                    )
+                    
                     if (latestWork.state == WorkInfo.State.SUCCEEDED) {
                         repository.clearMaiTeaPaginatedCache()
+                        lastPageReached = null
                         viewModelScope.launch {
-                            loadMaimaiPaginatedData(_currentPage.value, startImport = false)
+                            loadMaimaiPaginatedData(_currentPage.value)
                         }
                     } else {
                         _isLoadingPlays.value = false
                     }
+                } else {
+                    // No local worker, check if there's an ongoing import on the server
+                    val remoteStatus = repository.refreshImportWorkerStatus()
+                    
+                    if (remoteStatus.isActive) {
+                        // There is an ongoing import on the server, let's start the local worker to track it
+                        applyImportWorkerStatus(remoteStatus)
+                        repository.startMaiTeaImport()
+                    } else {
+                        // No import active anywhere
+                        applyImportWorkerStatus(remoteStatus)
+                    }
                 }
+
+                // Initial state check is done
+                GlobalUIState.isMaimaiImportStateReady.value = true
             }
         }
-    }
-
-    fun getImportWorkerActive(): Boolean {
-        return repository.getImportWorkerActive()
     }
 
     private fun applyImportWorkerStatus(status: ImportWorkerStatus) {
@@ -178,53 +197,40 @@ class MaiteaViewModel(
         _importWorkerMessage.value = status.message
     }
 
-    fun fetchMaimaiPaginatedData(page: Int, startImport: Boolean = false) {
+    fun fetchMaimaiPaginatedData(page: Int) {
         viewModelScope.launch {
-            loadMaimaiPaginatedData(page, startImport)
+            loadMaimaiPaginatedData(page)
         }
     }
 
-    private suspend fun loadMaimaiPaginatedData(page: Int, startImport: Boolean) {
+    private suspend fun loadMaimaiPaginatedData(page: Int) {
         val generation = ++playsRequestGeneration
         try {
             _isLoadingPlays.value = true
-
-            // Only check or start import if explicitly requested (e.g., coming from WelcomeScreen)
-            if (startImport) {
-                if (repository.isImportWorkerActive()) {
-                    applyImportWorkerStatus(
-                        ImportWorkerStatus(
-                            isActive = true,
-                            state = "running",
-                            progress = 0,
-                            message = "Importation en cours..."
-                        )
-                    )
-                    _playsData.value = null
-                    _isLoadingPlays.value = false
-                    return
-                }
-
-                if (repository.startMaiTeaImport()) {
-                    _playsData.value = null
-                    _isLoadingPlays.value = false
-                    return
-                }
-            }
 
             // For normal fetching (pagination or direct access to GameScreen), we don't force _isImportingScores here.
             // The observer in observeImportWorkerStatus handles the global state.
             repository.getMaiTeaPaginatedData(page).collect { response ->
                 if (generation != playsRequestGeneration) return@collect
-                response?.let { plays ->
-                    plays.data.forEach { entry ->
+
+                val hasData = response?.data?.isNotEmpty() == true
+                if (hasData) {
+                    response.data.forEach { entry ->
                         entry.jacketImageUrl =
                             findJacketUrlBySongName(entry.song?.name?.jp)
                                 ?: findJacketUrlBySongName(entry.song?.name?.en)
                     }
-                    _playsData.value = plays
-                } ?: run {
-                    _playsData.value = null
+                    _playsData.value = response
+                    _hasNextPage.value = lastPageReached == null || page < lastPageReached!!
+                } else {
+                    _hasNextPage.value = false
+                    if (page > 1) {
+                        lastPageReached = page - 1
+                        _currentPage.value = page - 1
+                    } else {
+                        _playsData.value = response ?: MaiteaPlaysResponse(emptyList())
+                        lastPageReached = 1
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -339,16 +345,6 @@ class MaiteaViewModel(
 
     fun clearSelectedPlayDetail() {
         _selectedPlayDetail.value = null
-    }
-
-    private val _isSearching = MutableStateFlow(false)
-    val isSearching: StateFlow<Boolean> = _isSearching
-
-    private val _searchQuery = MutableStateFlow("")
-
-    init {
-        observeImportWorkerStatus()
-        observeSearchQuery()
     }
 
     @OptIn(FlowPreview::class)

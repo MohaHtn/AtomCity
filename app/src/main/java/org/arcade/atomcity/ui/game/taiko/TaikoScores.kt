@@ -140,6 +140,7 @@ fun TaikoScores(
             BottomBarPill(
                 currentPage = taikoViewModel._currentPage.collectAsState().value,
                 isLoading = isLoading,
+                hasNextPage = false,
                 onPageChange = { newPage ->
                     taikoViewModel.onPageChange(newPage)
                 },

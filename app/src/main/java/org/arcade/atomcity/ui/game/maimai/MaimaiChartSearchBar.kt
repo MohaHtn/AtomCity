@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,9 +49,7 @@ fun MaimaiChartSearchBar(
     val searchResults by viewModel.searchResults.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
 
-    Log.d("SearchBar", "Searching $query, found $searchResults, isSearching: $isSearching")
-
-    SearchBar(
+    DockedSearchBar(
         inputField = {
             SearchBarDefaults.InputField(
                 query = query,
@@ -79,23 +78,20 @@ fun MaimaiChartSearchBar(
                         }
                     }
                 },
+                modifier = modifier.fillMaxWidth()
             )
         },
         expanded = active,
         onExpandedChange = { active = it },
         colors = SearchBarDefaults.colors(
-            containerColor = if (active) MaterialTheme.colorScheme.surface.copy(alpha = 0.7f) else MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 7f)
         ),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = if (active) 0.dp else 24.dp)
+        modifier = modifier.fillMaxWidth()
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Background Blur Effect for the results area
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .blur(20.dp)
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f))
             )
 
@@ -122,7 +118,7 @@ fun MaimaiChartSearchBar(
                             achievementFormatted = String.format(LocalLocale.current.platformLocale, "%.2f%%", (result.achievement ?: 0.0) / 100.0),
                             rank = result.rank,
                             difficultyLevel = result.difficultyLevelJson,
-                            rating = result.rating?.let { String.format(LocalLocale.current.platformLocale, "%.2f", it) },
+                            rating = result.rating,
                             playDate = result.playDate,
                             jacketImageUrl = jacketUrl,
                             isHighScore = false

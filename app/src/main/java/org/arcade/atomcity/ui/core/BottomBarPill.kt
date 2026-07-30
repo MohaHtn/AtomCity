@@ -18,6 +18,7 @@ fun BottomBarPill(
     currentPage: Int,
     isLoading: Boolean = false,
     isMaimaiBestScoresEnabled: Boolean = true,
+    hasNextPage: Boolean = true,
     onPageChange: (Int) -> Unit,
     onHomeClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -27,7 +28,7 @@ fun BottomBarPill(
     NavigationBar {
         NavigationBarItem(
             selected = false,
-            enabled = !isLoading,
+            enabled = !isLoading && currentPage != 1,
             onClick = {
                 if (currentPage > 1) {
                     onPageChange(currentPage - 1)
@@ -91,7 +92,7 @@ fun BottomBarPill(
         )
         NavigationBarItem(
             selected = false,
-            enabled = !isLoading,
+            enabled = !isLoading && hasNextPage,
             onClick = { onPageChange(currentPage + 1) },
             icon = {
                 Icon(

@@ -17,4 +17,6 @@ data class ChartHistoryResponse(
     val rating: Double?,
     val playerName: String?,
     val songJson: Song?
-)
+) {
+    val ratingFormatted: String? get() = rating?.let { String.format(java.util.Locale.US, "%.2f", it) }
+}

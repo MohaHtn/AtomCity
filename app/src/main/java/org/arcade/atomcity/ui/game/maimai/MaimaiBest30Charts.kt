@@ -114,7 +114,7 @@ fun MaimaiBest30Charts(
                                 achievementFormatted = String.format(LocalLocale.current.platformLocale, "%.2f%%", (score.achievement ?: 0.0) / 100.0),
                                 rank = score.rank,
                                 difficultyLevel = score.difficultyLevelJson,
-                                rating = score.rating?.let { String.format(LocalLocale.current.platformLocale, "%.2f", it) },
+                                rating = score.rating,
                                 playDate = score.playDate,
                                 jacketImageUrl = jacketUrl,
                                 isHighScore = false

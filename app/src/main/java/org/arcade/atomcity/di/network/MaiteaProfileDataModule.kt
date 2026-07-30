@@ -21,7 +21,7 @@ val maiteaProfileDataModule =  module {
         val apiKeyManager = ApiKeyManager(context)
 
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = HttpLoggingInterceptor.Level.HEADERS
         }
 
         val moshi = Moshi.Builder()
@@ -30,7 +30,7 @@ val maiteaProfileDataModule =  module {
 
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(ErrorInterceptor())
-            //.addInterceptor(loggingInterceptor)
+            .addInterceptor(loggingInterceptor)
             .addInterceptor { chain: Interceptor.Chain ->
                 val apiKey = runBlocking { apiKeyManager.getApiKey("maimai") }
                 val request = chain.request().newBuilder()

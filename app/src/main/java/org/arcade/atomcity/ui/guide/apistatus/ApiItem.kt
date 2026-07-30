@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.guide.apistatus
 
+import android.app.Activity
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,6 +69,7 @@ internal fun ApiItem(
     val hasKeyActual = apiKey != null
     val dialogVisible = remember { mutableStateOf(false) }
     val revealed = remember { mutableStateOf(false) }
+    val successDialogVisible = remember { mutableStateOf(false) }
     
     // Actual supported games (for now!)
     val isGameSupported = name == "maimai" || name == "Taiko no Tatsujin"
@@ -171,10 +173,14 @@ internal fun ApiItem(
             },
             onDeleteClick = {
                 scope.launch {
+                    var isDeletedOnServer = false
                     if (name == "maimai" && apiKey != null) {
                         try {
-                            maiteaRepository?.removeApiKey(apiKey!!)?.collect {
-                                Log.d("ApiItem", "Clé API supprimée du serveur : ${it.message}")
+                            maiteaRepository?.removeApiKey(apiKey!!)?.collect { response ->
+                                Log.d("ApiItem", "Clé API supprimée du serveur : ${response.message}")
+                                if (response.message == "API Key and associated data deleted.") {
+                                    isDeletedOnServer = true
+                                }
                             }
                         } catch (e: Exception) {
                             Log.e("ApiItem", "Erreur lors de la suppression de la clé sur le serveur", e)
@@ -183,6 +189,10 @@ internal fun ApiItem(
                     apiKeyManager?.removeApiKey(key)
                     dialogVisible.value = false
                     revealed.value = false
+                    
+                    if (isDeletedOnServer) {
+                        successDialogVisible.value = true
+                    }
                 }
             },
             maskKey = ::maskKey,
@@ -193,6 +203,27 @@ internal fun ApiItem(
                     else -> ""
                 }
             
+        )
+    }
+
+    if (successDialogVisible.value) {
+        AlertDialog(
+            onDismissRequest = { /* Empêcher la fermeture en cliquant à côté */ },
+            title = {
+                Text(text = "Clé supprimée")
+            },
+            text = {
+                Text(text = "La clé API a été supprimée. L'application va se fermer.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        (context as? Activity)?.finishAffinity()
+                    }
+                ) {
+                    Text("Valider")
+                }
+            }
         )
     }
 
@@ -209,6 +240,11 @@ internal fun ApiItem(
                 scope.launch {
                     apiKeyManager?.saveApiKey(key, newKey)
                     GlobalUIState.openSaveKeyDialog.value = false
+                    
+                    // Trigger import if we just added/modified the maimai key
+                    if (key == "maimai") {
+                        maiteaRepository?.startMaiTeaImport()
+                    }
                 }
             },
             textBoxLabel = when (GlobalUIState.selectedGameForGuide.value) {

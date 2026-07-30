@@ -32,8 +32,6 @@ import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.guide.MaimaiApiGuide
 import org.arcade.atomcity.utils.ApiKeyManager
 
-private const val MAIMAI_IMPORT_FROM_WELCOME_KEY = "maimai_import_from_welcome"
-
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Game : Screen("game/{gameId}") {
@@ -93,9 +91,6 @@ fun AppNavigation(
                 navController = navController,
                 apiKeyManager = apiKeyManager,
                 onContinueClick = { firstGameId ->
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.set(MAIMAI_IMPORT_FROM_WELCOME_KEY, true)
                     navController.navigate(Screen.Game.createRoute(firstGameId))
                 }
             )
