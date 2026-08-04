@@ -3,7 +3,6 @@ package org.arcade.atomcity.presentation.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkInfo
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +19,7 @@ import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
-import com.squareup.moshi.JsonClass
+import org.arcade.atomcity.model.utils.JacketUrl
 import org.arcade.atomcity.model.maitea.ChartHistoryResponse
 import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
 import org.arcade.atomcity.ui.core.GlobalUIState
@@ -29,9 +28,6 @@ import org.arcade.atomcity.ui.core.GlobalUIState
 // Wait, PlayerBest30Response does not have jacketImageUrl. 
 // I should probably check if I can add it or if I should use a wrapper.
 // Actually, I can just use findJacketUrlBySongName in the UI.
-
-@JsonClass(generateAdapter = true)
-data class JacketUrl(val title: String, val imageUrl: String)
 
 class MaiteaViewModel(
    private val repository: MaiteaRepository,
@@ -129,38 +125,34 @@ class MaiteaViewModel(
 
     private fun observeImportWorkerStatus() {
         viewModelScope.launch {
-            repository.observeImportWorkerStatus().collect { workInfos ->
-                val latestWork = workInfos.lastOrNull()
-                val workActive = latestWork?.state == WorkInfo.State.ENQUEUED ||
-                    latestWork?.state == WorkInfo.State.RUNNING ||
-                    latestWork?.state == WorkInfo.State.BLOCKED
+            repository.observeImportWorkerStatus().collect { progressInfo ->
+                val workActive = progressInfo?.state == "enqueued" ||
+                        progressInfo?.state == "running" ||
+                        progressInfo?.state == "blocked"
 
-                if (workActive) {
-                    val progress = latestWork.progress.getInt("progress", 0)
-                    val message = latestWork.progress.getString("message") ?: "Importation en cours..."
+                if (workActive && progressInfo != null) {
                     applyImportWorkerStatus(
                         ImportWorkerStatus(
                             isActive = true,
-                            state = latestWork.state.name.lowercase(),
-                            progress = progress,
-                            message = message
+                            state = progressInfo.state,
+                            progress = progressInfo.progress,
+                            message = progressInfo.message ?: "Importation en cours..."
                         )
                     )
-                } else if (latestWork?.state?.isFinished == true) {
+                } else if (progressInfo != null && (progressInfo.state == "succeeded" || progressInfo.state == "failed")) {
                     // Worker just finished
                     repository.setImportWorkerActive(false)
                     
-                    // We only show the "finished" status for a moment or just hide it
                     applyImportWorkerStatus(
                         ImportWorkerStatus(
                             isActive = false,
-                            state = latestWork.state.name.lowercase(),
+                            state = progressInfo.state,
                             progress = 100,
-                            message = if (latestWork.state == WorkInfo.State.SUCCEEDED) "Importation terminée" else "Échec de l'importation"
+                            message = if (progressInfo.state == "succeeded") "Importation terminée" else "Échec de l'importation"
                         )
                     )
                     
-                    if (latestWork.state == WorkInfo.State.SUCCEEDED) {
+                    if (progressInfo.state == "succeeded") {
                         repository.clearMaiTeaPaginatedCache()
                         lastPageReached = null
                         viewModelScope.launch {
@@ -174,16 +166,13 @@ class MaiteaViewModel(
                     val remoteStatus = repository.refreshImportWorkerStatus()
                     
                     if (remoteStatus.isActive) {
-                        // There is an ongoing import on the server, let's start the local worker to track it
                         applyImportWorkerStatus(remoteStatus)
                         repository.startMaiTeaImport()
                     } else {
-                        // No import active anywhere
                         applyImportWorkerStatus(remoteStatus)
                     }
                 }
 
-                // Initial state check is done
                 GlobalUIState.isMaimaiImportStateReady.value = true
             }
         }

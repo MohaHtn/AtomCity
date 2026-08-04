@@ -23,11 +23,13 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import android.util.Log
 import kotlinx.coroutines.launch
+import org.arcade.atomcity.data.DifficultyRepository
 import org.arcade.atomcity.data.LevelInfo
 import org.arcade.atomcity.model.maitea.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.formatPlayDate
+import org.koin.core.context.GlobalContext
 
 @Composable
 fun MaimaiScoreItem(
@@ -36,6 +38,7 @@ fun MaimaiScoreItem(
 ) {
     val context = LocalContext.current
     val difficultyColor = getJacketBorderColor(play.difficultyLevel?.value)
+    val difficultyRepository: DifficultyRepository = remember { GlobalContext.get().get() }
     
     var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
     val scope = rememberCoroutineScope()
@@ -44,7 +47,7 @@ fun MaimaiScoreItem(
     LaunchedEffect(play.song?.id, play.difficultyLevel?.key) {
         if (play.song?.id != null && play.difficultyLevel?.key != null) {
             scope.launch {
-                levelInfo = getMaimaiLevelInfo(context, play.song!!.id!!, play.difficultyLevel!!.key!!)
+                levelInfo = difficultyRepository.getLevelByDifficulty(play.song!!.id!!, play.difficultyLevel!!.key!!)
             }
         }
     }

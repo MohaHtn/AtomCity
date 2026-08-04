@@ -31,8 +31,10 @@ import org.arcade.atomcity.di.jacketImagesModule
 import org.arcade.atomcity.di.network.maiteaNetworkModule
 import org.arcade.atomcity.di.network.maiteaProfileDataModule
 import org.arcade.atomcity.di.network.taikoNetworkModule
+import org.arcade.atomcity.di.sharedModule
 import org.arcade.atomcity.di.viewmodel.maiTeaViewModelModule
 import org.arcade.atomcity.di.viewmodel.taikoServerViewModelModule
+import org.arcade.atomcity.di.workerModule
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.GlobalUIState
@@ -68,10 +70,11 @@ class AtomCityApplication : Application() {
 
             val utilityModules = listOf(
                 apiKeyManagerModule,
-                appModule
+                appModule,
+                workerModule
             )
 
-            modules(maiteaModules + taikoModules + utilityModules)
+            modules(maiteaModules + taikoModules + utilityModules + sharedModule)
         }
         preloadMaimaiImportState()
     }

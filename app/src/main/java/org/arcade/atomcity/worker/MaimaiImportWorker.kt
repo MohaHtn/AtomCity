@@ -10,14 +10,12 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.squareup.moshi.JsonClass
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.delay
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.arcade.atomcity.BuildConfig
-import java.security.MessageDigest
+import org.arcade.atomcity.utils.PlatformUtils
 import java.util.concurrent.TimeUnit
 
 class MaimaiImportWorker(
@@ -53,7 +51,7 @@ class MaimaiImportWorker(
 
     override suspend fun doWork(): Result {
         val apiKey = inputData.getString(KEY_API_KEY) ?: return Result.failure()
-        val keyHash = sha256(apiKey)
+        val keyHash = PlatformUtils.sha256(apiKey)
 
         createNotificationChannel()
         updateProgress(0, "Lancement de l'import ...")
@@ -68,8 +66,7 @@ class MaimaiImportWorker(
             .addHeader("Accept", "text/event-stream")
             .build()
 
-        val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-        val adapter = moshi.adapter(MaimaiImportEvent::class.java)
+        val json = Json { ignoreUnknownKeys = true }
 
         val maxReconnectAttempts = 5
         repeat(maxReconnectAttempts) { attempt ->
@@ -87,7 +84,7 @@ class MaimaiImportWorker(
                             if (line.startsWith("data:")) {
                                 val jsonData = line.removePrefix("data:").trim()
                                 val event = try {
-                                    adapter.fromJson(jsonData)
+                                    json.decodeFromString<MaimaiImportEvent>(jsonData)
                                 } catch (_: Exception) {
                                     null
                                 }
@@ -121,17 +118,11 @@ class MaimaiImportWorker(
                             }
                         }
 
-                        // The SSE stream can simply close when the backend import is done.
-                        // Treat a clean EOF after receiving page events as completion too.
                         if (sawPageEvent && !completed) {
                             completed = true
                         }
 
-                        if (completed) {
-                            true
-                        } else {
-                            false
-                        }
+                        completed
                     }
                 }
             } catch (e: Exception) {
@@ -158,7 +149,6 @@ class MaimaiImportWorker(
 
     private fun showFinalNotification(message: String) {
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
-            //TODO: i18n
             .setContentTitle("Importation terminé !")
             .setContentText(message)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
@@ -167,19 +157,13 @@ class MaimaiImportWorker(
         notificationManager.notify(NOTIFICATION_ID + 1, notification)
     }
 
-    private fun sha256(input: String): String {
-        val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
-        return bytes.joinToString("") { "%02x".format(it) }
-    }
-
     private fun createForegroundInfo(progress: Int, message: String): ForegroundInfo {
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
-            //TODO: i18n
             .setContentTitle("Préparation • Importation de tous les scores maimai FiNALE ...")
             .setContentText(message)
             .setSmallIcon(android.R.drawable.stat_notify_sync)
             .setOngoing(true)
-            .setSilent(true) // Don't make sound for every progress update
+            .setSilent(true) 
             .setProgress(100, progress, false)
             .build()
 
@@ -194,20 +178,10 @@ class MaimaiImportWorker(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                //TODO:i18n
                 "Import de tous les scores maimai FiNALE",
-                NotificationManager.IMPORTANCE_DEFAULT // Default importance to show in status bar
+                NotificationManager.IMPORTANCE_DEFAULT 
             )
             notificationManager.createNotificationChannel(channel)
         }
     }
 }
-
-@JsonClass(generateAdapter = true)
-data class MaimaiImportEvent(
-    val type: String,
-    val keyHash: String,
-    val page: Int? = null,
-    val totalPages: Int? = null,
-    val message: String? = null
-)

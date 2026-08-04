@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "AtomCity"
 include(":app")
+include(":shared")
  

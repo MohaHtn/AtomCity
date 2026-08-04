@@ -2,26 +2,21 @@ package org.arcade.atomcity.di
 
 import android.content.Context
 import android.util.Log
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import okio.buffer
-import okio.source
-import org.arcade.atomcity.presentation.viewmodel.JacketUrl
+import kotlinx.serialization.json.Json
+import org.arcade.atomcity.model.utils.JacketUrl
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val jacketImagesModule = module {
-    single { Moshi.Builder().build() }
     single<Map<String, String>>(named("jacketImages")) { loadJacketImages(androidContext(), get()) }
 }
 
-private fun loadJacketImages(context: Context, moshi: Moshi): Map<String, String> {
+private fun loadJacketImages(context: Context, json: Json): Map<String, String> {
     return try {
-        context.assets.open("maimai/images.json").source().buffer().use { source ->
-            val type = Types.newParameterizedType(List::class.java, JacketUrl::class.java)
-            val adapter = moshi.adapter<List<JacketUrl>>(type)
-            adapter.fromJson(source)?.associate { it.title to it.imageUrl } ?: emptyMap()
+        context.assets.open("maimai/images.json").bufferedReader().use { reader ->
+            val content = reader.readText()
+            json.decodeFromString<List<JacketUrl>>(content).associate { it.title to it.imageUrl }
         }
     } catch (e: Exception) {
         Log.e("JacketImagesModule", "images.json for maimai song jackets not found: ${e.message}")

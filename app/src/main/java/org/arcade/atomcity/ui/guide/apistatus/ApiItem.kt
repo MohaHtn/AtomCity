@@ -55,8 +55,8 @@ internal fun ApiItem(
     val inspectionMode = LocalInspectionMode.current
     
     // In preview mode, we don't use Koin or ApiKeyManager
-    val apiKeyManager = if (inspectionMode) null else ApiKeyManager(context)
-    val maiteaRepository = if (inspectionMode) null else GlobalContext.get().get<MaiteaRepository>()
+    val apiKeyManager = if (inspectionMode) null else remember { GlobalContext.get().get<ApiKeyManager>() }
+    val maiteaRepository = if (inspectionMode) null else remember { GlobalContext.get().get<MaiteaRepository>() }
     
     val scope = rememberCoroutineScope()
     

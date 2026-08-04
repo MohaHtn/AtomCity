@@ -222,8 +222,7 @@ fun SetupCard(
     apiChecklist: List<String>,
     onContinueClick: (String) -> Unit
 ) {
-    val context = LocalContext.current
-    val apiKeyManager = ApiKeyManager(context)
+    val apiKeyManager: ApiKeyManager = remember { org.koin.core.context.GlobalContext.get().get() }
 
 
     Column(

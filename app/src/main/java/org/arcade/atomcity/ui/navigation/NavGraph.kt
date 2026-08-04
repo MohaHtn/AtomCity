@@ -59,15 +59,15 @@ fun AppNavigation(
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) }
     ) {
         composable(Screen.Home.route) {
-            val apiChecklistState = apiKeyManager.getApiChecklistState()
+            val apiChecklistState by apiKeyManager.getApiChecklistStateFlow().collectAsState(initial = emptyList())
 
-            LaunchedEffect(apiChecklistState.value) {
-                if (apiChecklistState.value.isEmpty()) {
+            LaunchedEffect(apiChecklistState) {
+                if (apiChecklistState.isEmpty()) {
                     navController.navigate("welcome") {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
                 } else {
-                    navController.navigate(Screen.Game.createRoute(apiChecklistState.value.first()))
+                    navController.navigate(Screen.Game.createRoute(apiChecklistState.first()))
                 }
             }
         }

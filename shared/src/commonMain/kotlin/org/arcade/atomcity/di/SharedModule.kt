@@ -1,0 +1,49 @@
+package org.arcade.atomcity.di
+
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
+import org.arcade.atomcity.network.ScorefetcherClient
+import org.arcade.atomcity.network.TaikoServerClient
+import org.arcade.atomcity.network.MaiteaProfileClient
+import org.arcade.atomcity.network.NetworkErrorHandler
+import org.arcade.atomcity.network.installErrorValidator
+import com.atomcity.maimai.db.AppDatabase
+import com.atomcity.maimai.db.getAppDatabase
+import com.atomcity.maimai.db.getDatabaseBuilder
+import org.koin.dsl.module
+import org.arcade.atomcity.data.MaiteaRepository
+import org.arcade.atomcity.data.TaikoServerRepository
+import org.arcade.atomcity.data.DifficultyRepository
+import org.arcade.atomcity.utils.ApiKeyManager
+import org.arcade.atomcity.worker.ImportWorkManager
+import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
+import org.koin.core.qualifier.named
+
+val sharedModule = module {
+    single {
+        val errorHandler: NetworkErrorHandler = get()
+        HttpClient {
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                    coerceInputValues = true
+                })
+            }
+            installErrorValidator(errorHandler)
+        }
+    }
+
+    single { ScorefetcherClient(get(), get(named("scorefetcher_api_key")), "https://scorefetcher.mohahtn.xyz/") }
+    single { TaikoServerClient(get(), "https://taiko.farewell.dev/api/") }
+    single { MaiteaProfileClient(get(), "https://maitea.app/api/v1/") }
+
+    single<AppDatabase> { getAppDatabase(getDatabaseBuilder()) }
+
+    single { GetTaikoServerDataUseCase(get()) }
+    single { TaikoServerRepository(get()) }
+    single { DifficultyRepository(get()) }
+    single { ApiKeyManager(get()) }
+    single { MaiteaRepository(get(), get(), get(), get(), get(), get(named("scorefetcher_api_key"))) }
+}

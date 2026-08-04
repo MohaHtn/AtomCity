@@ -2,6 +2,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
+    id("org.jetbrains.kotlin.android")
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
 }
@@ -60,6 +61,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":shared"))
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
@@ -79,9 +81,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.palette)
     implementation(libs.insert.koin.koin.android)
-    implementation(libs.retrofit)
-    implementation(libs.gson)
-    implementation(libs.converter.moshi)
     implementation(libs.androidx.datastore.preferences)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -90,10 +89,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.moshi.kotlin)
-    implementation(libs.okhttp3.logging.interceptor)
-    ksp(libs.moshi.kotlin.codegen)
     implementation(libs.coil)
     implementation(libs.coil.compose)
-    implementation(libs.moshi)
 }

@@ -40,22 +40,6 @@ fun getDifficultyText(difficultyValue: String?): String {
     }
 }
 
-
-/**
- * Retrieves level information (level and internal_level) for a given song and difficulty.
- * @param context Android context
- * @param songId The song ID
- * @param difficultyValue The difficulty index (1=easy, 2=basic, 3=advanced, 4=expert, 5=master, 6=remaster)
- * @return A LevelInfo object containing the level and internal level, or null if not found
- */
-suspend fun getMaimaiLevelInfo(
-    context: Context,
-    songId: Int,
-    difficultyValue: Int
-): LevelInfo? {
-    return DifficultyRepository.getLevelByDifficulty(context, songId, difficultyValue)
-}
-
 @Composable
 fun MaimaiDifficultyBadge(
     difficultyValue: String?,

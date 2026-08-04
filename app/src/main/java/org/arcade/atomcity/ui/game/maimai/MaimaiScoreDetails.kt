@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.*
 import kotlinx.coroutines.launch
+import org.arcade.atomcity.data.DifficultyRepository
 import org.arcade.atomcity.data.LevelInfo
 import org.arcade.atomcity.model.maitea.ChartHistoryResponse
 import org.arcade.atomcity.model.maitea.BestPerPlayerResponse
@@ -50,6 +51,7 @@ import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.ui.theme.AtomCityTheme
+import org.koin.core.context.GlobalContext
 import org.arcade.atomcity.utils.formatPlayDate
 
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -67,6 +69,7 @@ fun MaimaiScoresDetails(
     val context = LocalContext.current
     val difficultyColor = getJacketBorderColor(scoreEntry?.difficultyLevel?.value)
     
+    val difficultyRepository: DifficultyRepository = remember { GlobalContext.get().get() }
     var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
     val scope = rememberCoroutineScope()
 
@@ -77,7 +80,7 @@ fun MaimaiScoresDetails(
     LaunchedEffect(scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
         if (scoreEntry?.song?.id != null && scoreEntry.difficultyLevel?.key != null) {
             scope.launch {
-                levelInfo = getMaimaiLevelInfo(context, scoreEntry.song!!.id!!, scoreEntry.difficultyLevel!!.key!!)
+                levelInfo = difficultyRepository.getLevelByDifficulty(scoreEntry.song!!.id!!, scoreEntry.difficultyLevel!!.key!!)
             }
         }
         
@@ -489,11 +492,12 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
                             .background(difficultyColor, CircleShape)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
+                    val diffJson = historyEntry.difficultyLevelJson
                     Text(
                         text = if (label == "宴") {
-                            (historyEntry.difficultyLevelJson.label + " (Utage)") ?: ""
+                            (diffJson?.label + " (Utage)") ?: ""
                         } else {
-                            "${historyEntry.difficultyLevelJson?.label ?: ""} ${historyEntry.difficultyLevel ?: ""}"
+                            "${diffJson?.label ?: ""} ${historyEntry.difficultyLevel ?: ""}"
                         },
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                     )
@@ -556,11 +560,12 @@ fun BestPerPlayerItem(b: BestPerPlayerResponse) {
                             text = b.playerName ?: "",
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                         )
+                        val bDiffJson = b.difficultyLevelJson
                         Text(
                             text = if (label == "宴") {
-                                (b.difficultyLevelJson.label + " (Utage)") ?: ""
+                                (bDiffJson?.label + " (Utage)") ?: ""
                             } else {
-                                "${b.difficultyLevelJson?.label ?: ""} ${b.difficultyLevel ?: ""}"
+                                "${bDiffJson?.label ?: ""} ${b.difficultyLevel ?: ""}"
                             },
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                         )
