@@ -2,6 +2,9 @@ package org.arcade.atomcity.di
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.arcade.atomcity.network.ScorefetcherClient
@@ -17,19 +20,32 @@ import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.data.TaikoServerRepository
 import org.arcade.atomcity.data.DifficultyRepository
 import org.arcade.atomcity.utils.ApiKeyManager
+import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.worker.ImportWorkManager
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
 import org.koin.core.qualifier.named
 
 val sharedModule = module {
     single {
+        Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+        }
+    }
+
+    single {
         val errorHandler: NetworkErrorHandler = get()
         HttpClient {
             install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                    coerceInputValues = true
-                })
+                json(get<Json>())
+            }
+            install(Logging) {
+                logger = object : Logger {
+                    override fun log(message: String) {
+                        PlatformUtils.log("HTTP Client", message)
+                    }
+                }
+                level = LogLevel.ALL
             }
             installErrorValidator(errorHandler)
         }
