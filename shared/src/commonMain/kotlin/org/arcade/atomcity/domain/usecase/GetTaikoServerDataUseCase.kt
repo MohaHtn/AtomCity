@@ -1,41 +1,18 @@
 package org.arcade.atomcity.domain.usecase
 
-import org.arcade.atomcity.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
-import org.arcade.atomcity.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
+import org.arcade.atomcity.data.TaikoServerRepository
 import org.arcade.atomcity.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
-import org.arcade.atomcity.network.TaikoServerClient
+import org.arcade.atomcity.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
+import org.arcade.atomcity.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 
-class GetTaikoServerDataUseCase(private val taikoServerClient: TaikoServerClient) {
+class GetTaikoServerDataUseCase(private val repository: TaikoServerRepository) {
+    fun getPlayHistoryFlow(userNumber: String): Flow<TaikoServerPlayHistoryResponse?> =
+        repository.getPlayHistoryFlow(userNumber)
 
-    suspend fun getPlayHistoryFlow(userNumber: String): Flow<TaikoServerPlayHistoryResponse?> {
-        return withContext(Dispatchers.IO) {
-            flow {
-                val response = taikoServerClient.getPlayHistory(userNumber)
-                emit(response)
-            }
-        }
-    }
+    fun getMusicDetailsFlow(): Flow<TaikoServerMusicDetailsResponse?> =
+        repository.getMusicDetailsFlow()
 
-    suspend fun getMusicDetailsFlow(): Flow<TaikoServerMusicDetailsResponse?> {
-        return withContext(Dispatchers.IO) {
-            flow {
-                val response = taikoServerClient.getMusicDetails()
-                emit(response)
-            }
-        }
-    }
-
-    suspend fun getUserSettingsFlow(userNumber: String): Flow<TaikoServerUserSettingsResponse?> {
-        return withContext(Dispatchers.IO) {
-            flow {
-                val response = taikoServerClient.getUserSettings(userNumber)
-                emit(response)
-            }
-        }
-    }
+    fun getUserSettingsFlow(userNumber: String): Flow<TaikoServerUserSettingsResponse?> =
+        repository.getUserSettingsFlow(userNumber)
 }

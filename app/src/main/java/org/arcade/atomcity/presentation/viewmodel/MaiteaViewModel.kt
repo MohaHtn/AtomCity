@@ -284,7 +284,7 @@ class MaiteaViewModel(
         viewModelScope.launch {
             try {
                 _isLoadingChartHistory.value = true
-                    repository.getChartHistory(songName, difficulty).collect {
+                repository.getChartHistory(songName, difficulty).collect {
                     _chartHistory.value = it
                     _isLoadingChartHistory.value = false
                 }

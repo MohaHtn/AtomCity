@@ -12,9 +12,9 @@ import org.arcade.atomcity.network.TaikoServerClient
 import org.arcade.atomcity.network.MaiteaProfileClient
 import org.arcade.atomcity.network.NetworkErrorHandler
 import org.arcade.atomcity.network.installErrorValidator
-import com.atomcity.maimai.db.AppDatabase
-import com.atomcity.maimai.db.getAppDatabase
-import com.atomcity.maimai.db.getDatabaseBuilder
+import org.arcade.atomcity.db.AppDatabase
+import org.arcade.atomcity.db.getAppDatabase
+import org.arcade.atomcity.db.getDatabaseBuilder
 import org.koin.dsl.module
 import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.data.TaikoServerRepository
@@ -23,6 +23,7 @@ import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.worker.ImportWorkManager
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
+import org.arcade.atomcity.domain.usecase.GetMaiteaDataUseCase
 import org.koin.core.qualifier.named
 
 val sharedModule = module {
@@ -58,6 +59,7 @@ val sharedModule = module {
     single<AppDatabase> { getAppDatabase(getDatabaseBuilder()) }
 
     single { GetTaikoServerDataUseCase(get()) }
+    single { GetMaiteaDataUseCase(get()) }
     single { TaikoServerRepository(get()) }
     single { DifficultyRepository(get()) }
     single { ApiKeyManager(get()) }

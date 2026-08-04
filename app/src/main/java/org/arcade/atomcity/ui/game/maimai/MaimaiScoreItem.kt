@@ -383,7 +383,7 @@ fun MaimaiScoreItemUtagePreview() {
         achievementFormatted = "100.00%",
         rank = "SSS",
         playDate = "2023-10-23T18:45:00Z",
-        difficultyLevel = DifficultyLevel(key = 0, value = "utage" , label = "Utage"),
+        difficultyLevel = DifficultyLevel(key = "0", value = "utage" , label = "Utage"),
         song = Song(
             name = Name(jp = "Flower", en = "Flower"),
             artist = Artist(jp = "DJ YOSHITAKA", en = "DJ YOSHITAKA")

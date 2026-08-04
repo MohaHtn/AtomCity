@@ -1,38 +1,22 @@
 package org.arcade.atomcity.data
 
-import org.arcade.atomcity.data.cache.DataCache
-import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
-import org.arcade.atomcity.model.taikoserver.musicDetails.TaikoServerMusicDetails
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import org.arcade.atomcity.network.TaikoServerClient
 import org.arcade.atomcity.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
+import org.arcade.atomcity.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
+import org.arcade.atomcity.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 
-class TaikoServerRepository(private val getTaikoServerDataUseCase: GetTaikoServerDataUseCase) {
+class TaikoServerRepository(private val client: TaikoServerClient) {
+    fun getPlayHistoryFlow(userNumber: String): Flow<TaikoServerPlayHistoryResponse?> = flow {
+        emit(client.getPlayHistory(userNumber))
+    }
 
-    // Cache for paginated music details
-    private val taikoServerCache = mutableMapOf<Int, DataCache<TaikoServerPlayHistoryResponse>>()
+    fun getMusicDetailsFlow(): Flow<TaikoServerMusicDetailsResponse?> = flow {
+        emit(client.getMusicDetails())
+    }
 
-    // Cache for music details
-    private val musicDetailsCache = DataCache<TaikoServerMusicDetails>()
-
-    // TODO : for now, the taiko server music details are not paginated,
-    //  but if they become paginated in the future, we can implement caching for that as well.
-    suspend fun getTaikoServerPaginatedData(page: Int): TaikoServerPlayHistoryResponse? {
-        // Get or create cache for this page
-        val pageCache = taikoServerCache.getOrPut(page) { DataCache() }
-
-        // Check if data is in cache
-        pageCache.get()?.let {
-            return it
-        }
-
-        // If not, make API call
-        var response: TaikoServerPlayHistoryResponse? = null
-        getTaikoServerDataUseCase.getPlayHistoryFlow(1.toString()).collect { data ->
-            data?.let {
-                // Store data in cache
-                pageCache.put(it)
-                response = it
-            }
-        }
-        return response
+    fun getUserSettingsFlow(userNumber: String): Flow<TaikoServerUserSettingsResponse?> = flow {
+        emit(client.getUserSettings(userNumber))
     }
 }
