@@ -189,5 +189,13 @@ fun AppNavigation(
             )
         }
 
+        composable(route = "maimaiMostPlayed") {
+            org.arcade.atomcity.ui.game.maimai.MaimaiMostPlayedChart(
+                onBackClick = { navController.popBackStack() },
+                navController = navController,
+                maiteaViewModel = maiteaViewModel
+            )
+        }
+
     }
 }

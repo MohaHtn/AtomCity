@@ -3,7 +3,7 @@ package org.arcade.atomcity.ui.core
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -17,13 +17,11 @@ import org.arcade.atomcity.R
 fun BottomBarPill(
     currentPage: Int,
     isLoading: Boolean = false,
-    isMaimaiBestScoresEnabled: Boolean = true,
     hasNextPage: Boolean = true,
     onPageChange: (Int) -> Unit,
-    onHomeClick: () -> Unit,
+    onMenuClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onMaimaiUsersClick: () -> Unit,
-    onMaimaiBestScoreClick: () -> Unit
+    onHomeClick: () -> Unit
 ) {
     NavigationBar {
         NavigationBarItem(
@@ -42,44 +40,31 @@ fun BottomBarPill(
             },
             label = { Text("") }
         )
+        
         NavigationBarItem(
             selected = false,
-            enabled = isMaimaiBestScoresEnabled,
-            onClick = onMaimaiBestScoreClick,
+            onClick = onMenuClick,
             icon = {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.List,
-                    contentDescription = "Page précédente"
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = "Actions"
                 )
             },
-            label = { Text(
-                text = "Meill. Scores",
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            ) }
+            label = { Text("Actions") }
         )
-        NavigationBarItem(
-            selected = false,
-            onClick = onMaimaiUsersClick,
-            enabled = isMaimaiBestScoresEnabled,
-            icon = {
-                Icon(
-                    painter = painterResource(R.drawable.groups_24px),
-                    contentDescription = "Users"
-                )
-            },
-            label = { Text("Utilsateurs") }
-        )
+
         NavigationBarItem(
             selected = false,
             onClick = onHomeClick,
             icon = {
                 Icon(
                     painter = painterResource(R.drawable.stadia_controller_24px),
-                    contentDescription = "Accueil"
+                    contentDescription = "Jeux"
                 )
             },
             label = { Text("Jeux") }
         )
+        
         NavigationBarItem(
             selected = false,
             onClick = onSettingsClick,
@@ -90,6 +75,7 @@ fun BottomBarPill(
             )},
             label = { Text("Paramètres") }
         )
+        
         NavigationBarItem(
             selected = false,
             enabled = !isLoading && hasNextPage,

@@ -144,16 +144,15 @@ fun TaikoScores(
                 onPageChange = { newPage ->
                     taikoViewModel.onPageChange(newPage)
                 },
+                onMenuClick = {
+                    showMiniMenu = !showMiniMenu
+                },
                 onHomeClick = {
                     showMiniMenu = !showMiniMenu
                 },
                 onSettingsClick = {
                     navController.navigate("settings")
-                },
-                onMaimaiUsersClick = {
-                    navController.navigate("maimai-users")
-                },
-                onMaimaiBestScoreClick = TODO(),
+                }
             )
         },
     ) { paddingValues ->
@@ -248,24 +247,21 @@ fun TaikoScores(
                 }
             }
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 96.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
             OpenMiniMenu(
                 showMiniMenu = showMiniMenu,
                 onDismiss = {
                     if (System.currentTimeMillis() - lastClickTime > 300) {
-                        showMiniMenu = !showMiniMenu
+                        showMiniMenu = false
                         lastClickTime = System.currentTimeMillis()
                     }
                 },
-                onItemClick = { gameId: String ->
-                    Log.d("MaimaiScores", "onItemClick $gameId")
-                    navController.navigate("game/$gameId")
+                onItemClick = { route ->
+                    navController.navigate(route)
                     showMiniMenu = false
                 },
-                modifier = Modifier.align(Alignment.BottomCenter)
+                modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
             )
         }
         }

@@ -211,22 +211,15 @@ fun MaimaiScores(
             BottomBarPill(
                 currentPage = currentPage,
                 isLoading = isLoading,
-                isMaimaiBestScoresEnabled = !isImportingScores,
                 hasNextPage = hasNextPage,
                 onPageChange = { newPage ->
                     maiteaViewModel.onPageChange(newPage)
                 },
                 onHomeClick = { showMiniMenu = !showMiniMenu },
+                onMenuClick = { showMiniMenu = !showMiniMenu },
                 onSettingsClick = {
                     navController.navigate("settings")
                     showMiniMenu = false
-                },
-                onMaimaiUsersClick = {
-                    navController.navigate("maimaiUsers")
-                    showMiniMenu = false
-                },
-                onMaimaiBestScoreClick = {
-                    navController.navigate("maimaiBest30Scores")
                 }
             )
         }
@@ -273,21 +266,28 @@ fun MaimaiScores(
                 }
 
                 // Floating Mini Menu
+                val extraItems = listOf(
+                    Triple("maimaiBest30Scores", "Meilleurs Scores", "Top 30 des meilleures performances"),
+                    Triple("maimaiMostPlayed", "Charts les plus jouées", "Statistiques de jeu par période"),
+                    Triple("maimaiUsers", "Utilisateurs", "Liste des joueurs AtomCity")
+                )
+
                 OpenMiniMenu(
                     showMiniMenu = showMiniMenu,
                     onDismiss = {
                         if (System.currentTimeMillis() - lastClickTime > 300) {
-                            showMiniMenu = !showMiniMenu
+                            showMiniMenu = false
                             lastClickTime = System.currentTimeMillis()
                         }
                     },
-                    onItemClick = { gameId ->
-                        navController.navigate("game/$gameId")
+                    extraItems = extraItems,
+                    onItemClick = { route ->
+                        navController.navigate(route)
                         showMiniMenu = false
                     },
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 96.dp)
+                        .fillMaxSize()
+                        .padding(bottom = 80.dp)
                 )
 
                 // Import Progress Overlay

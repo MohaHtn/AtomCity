@@ -23,6 +23,7 @@ import org.arcade.atomcity.model.utils.JacketUrl
 import org.arcade.atomcity.model.maitea.ChartHistoryResponse
 import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
 import org.arcade.atomcity.ui.core.GlobalUIState
+import kotlin.time.Duration.Companion.milliseconds
 
 // We can add a field to PlayerBest30Response via extension or just use it as is if it has it.
 // Wait, PlayerBest30Response does not have jacketImageUrl. 
@@ -65,6 +66,10 @@ class MaiteaViewModel(
     private val _searchResults = MutableStateFlow<List<org.arcade.atomcity.model.maitea.BestPerPlayerResponse>>(emptyList())
     val searchResults: StateFlow<List<org.arcade.atomcity.model.maitea.BestPerPlayerResponse>> = _searchResults
 
+    // StateFlow to hold most played charts
+    private val _mostPlayedCharts = MutableStateFlow<List<org.arcade.atomcity.model.maitea.MaimaiMostPlayedEntry>>(emptyList())
+    val mostPlayedCharts: StateFlow<List<org.arcade.atomcity.model.maitea.MaimaiMostPlayedEntry>> = _mostPlayedCharts
+
 
     // Expose the current page
     internal val _currentPage = MutableStateFlow(1)
@@ -92,6 +97,9 @@ class MaiteaViewModel(
     private val _isLoadingPlayById = MutableStateFlow(false)
     private val _isLoadingBestPerPlayer = MutableStateFlow(false)
 
+    private val _isLoadingMostPlayed = MutableStateFlow(false)
+    val isLoadingMostPlayed: StateFlow<Boolean> = _isLoadingMostPlayed
+
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching
 
@@ -110,7 +118,8 @@ class MaiteaViewModel(
         _isLoading30BestScores,
         _isLoadingChartHistory,
         _isLoadingPlayById,
-        _isLoadingBestPerPlayer
+        _isLoadingBestPerPlayer,
+        _isLoadingMostPlayed
     ) { loadings ->
         loadings.any { it }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -118,7 +127,8 @@ class MaiteaViewModel(
     val isLoadingDetails: StateFlow<Boolean> = combine(
         _isLoadingChartHistory,
         _isLoadingPlayById,
-        _isLoadingBestPerPlayer
+        _isLoadingBestPerPlayer,
+        _isLoadingMostPlayed
     ) { loadings ->
         loadings.any { it }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -339,7 +349,7 @@ class MaiteaViewModel(
     @OptIn(FlowPreview::class)
     private fun observeSearchQuery() {
         _searchQuery
-            .debounce(300)
+            .debounce(300.milliseconds)
             .distinctUntilChanged()
             .onEach { query ->
                 if (query.isBlank()) {
@@ -364,5 +374,31 @@ class MaiteaViewModel(
 
     fun searchCharts(query: String) {
         _searchQuery.value = query
+    }
+
+    fun fetchMostPlayedCharts(isGlobal: Boolean, period: String, date: String? = null) {
+        viewModelScope.launch {
+            try {
+                _isLoadingMostPlayed.value = true
+                val flow = if (isGlobal) {
+                    repository.getMostPlayed(period = period, date = date)
+                } else {
+                    repository.getMostPlayedByHash(period = period, date = date)
+                }
+
+                flow.collect { entries ->
+                    entries.forEach { entry ->
+                        entry.jacketImageUrl = entry.songJson?.name?.jp?.let { findJacketUrlBySongName(it) }
+                            ?: entry.songJson?.name?.en?.let { findJacketUrlBySongName(it) }
+                            ?: entry.songName?.let { findJacketUrlBySongName(it) }
+                    }
+                    _mostPlayedCharts.value = entries
+                    _isLoadingMostPlayed.value = false
+                }
+            } catch (e: Exception) {
+                Log.e("MaiteaViewModel", "Error fetching most played charts: ${e.message}")
+                _isLoadingMostPlayed.value = false
+            }
+        }
     }
 }
