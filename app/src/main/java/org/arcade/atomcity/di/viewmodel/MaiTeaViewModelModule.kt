@@ -11,8 +11,7 @@ val maiTeaViewModelModule = module {
     single { GetMaiteaDataUseCase(get()) }
     viewModel {
         MaiteaViewModel(
-            repository = get(),
-            jacketImages = get<Map<String, String>>(named("jacketImages"))
+            repository = get()
         )
     }
 }

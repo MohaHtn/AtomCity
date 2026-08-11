@@ -15,5 +15,6 @@ data class BestPerPlayerResponse(
     val rank: String? = null,
     val rating: Double? = null,
     val ratingFormatted: String? = null,
-    val playDate: String? = null
+    val playDate: String? = null,
+    var jacketImageUrl: String? = null
 )

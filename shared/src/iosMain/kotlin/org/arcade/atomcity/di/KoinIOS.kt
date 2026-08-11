@@ -7,6 +7,8 @@ import org.koin.core.qualifier.named
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.arcade.atomcity.data.MaiteaRepository
+import org.arcade.atomcity.utils.ApiKeyManager
+import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
 
 // Helper to start Koin from iOS (Swift)
 fun initKoin(
@@ -16,6 +18,7 @@ fun initKoin(
     startKoin {
         modules(
             sharedModule,
+            viewModelModule,
             iosModule,
             module {
                 single(named("scorefetcher_api_key")) { scorefetcherApiKey }
@@ -27,4 +30,6 @@ fun initKoin(
 
 object KoinProxy : KoinComponent {
     fun getMaiteaRepository(): MaiteaRepository = get()
+    fun getApiKeyManager(): ApiKeyManager = get()
+    fun getTaikoUseCase(): GetTaikoServerDataUseCase = get()
 }

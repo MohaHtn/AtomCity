@@ -9,10 +9,13 @@ import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 import org.koin.dsl.module
+import org.arcade.atomcity.worker.ImportWorkManager
+import org.arcade.atomcity.worker.IosImportWorkManager
 import okio.Path.Companion.toPath
 
 @OptIn(ExperimentalForeignApi::class)
 val iosModule = module {
+    single<ImportWorkManager> { IosImportWorkManager(get()) }
     single<DataStore<Preferences>> {
         PreferenceDataStoreFactory.create(
             storage = androidx.datastore.core.okio.OkioStorage(

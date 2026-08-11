@@ -16,6 +16,7 @@ import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Respons
 import org.arcade.atomcity.model.maitea.BestPerPlayerResponse
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
+import org.arcade.atomcity.model.maitea.MaimaiMostPlayedEntry
 
 @Serializable
 data class ApiKeyRequest(
@@ -118,5 +119,43 @@ class ScorefetcherClient(
             addApiKey()
             parameter("query", query)
             parameter("keyHash", keyHash)
+        }.body()
+
+    suspend fun getMostPlayed(
+        limit: Int? = 30,
+        period: String? = null,
+        date: String? = null,
+        day: String? = null,
+        week: String? = null,
+        month: String? = null
+    ): List<MaimaiMostPlayedEntry> =
+        client.get("${baseUrl}scores/most-played") {
+            addApiKey()
+            parameter("limit", limit)
+            parameter("period", period)
+            parameter("date", date)
+            parameter("day", day)
+            parameter("week", week)
+            parameter("month", month)
+        }.body()
+
+    suspend fun getMostPlayedByHash(
+        keyHash: String,
+        limit: Int? = 30,
+        period: String? = null,
+        date: String? = null,
+        day: String? = null,
+        week: String? = null,
+        month: String? = null
+    ): List<MaimaiMostPlayedEntry> =
+        client.get("${baseUrl}scores/most-played/by-keyhash") {
+            addApiKey()
+            parameter("keyHash", keyHash)
+            parameter("limit", limit)
+            parameter("period", period)
+            parameter("date", date)
+            parameter("day", day)
+            parameter("week", week)
+            parameter("month", month)
         }.body()
 }

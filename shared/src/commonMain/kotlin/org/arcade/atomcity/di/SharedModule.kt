@@ -10,6 +10,7 @@ import kotlinx.serialization.json.Json
 import org.arcade.atomcity.network.ScorefetcherClient
 import org.arcade.atomcity.network.TaikoServerClient
 import org.arcade.atomcity.network.MaiteaProfileClient
+import org.arcade.atomcity.network.ImportService
 import org.arcade.atomcity.network.NetworkErrorHandler
 import org.arcade.atomcity.network.installErrorValidator
 import org.arcade.atomcity.db.AppDatabase
@@ -25,6 +26,8 @@ import org.arcade.atomcity.worker.ImportWorkManager
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
 import org.arcade.atomcity.domain.usecase.GetMaiteaDataUseCase
 import org.koin.core.qualifier.named
+import org.arcade.atomcity.model.utils.JacketUrl
+import org.arcade.atomcity.model.utils.MAIMAI_IMAGES_JSON
 
 val sharedModule = module {
     single {
@@ -55,6 +58,17 @@ val sharedModule = module {
     single { ScorefetcherClient(get(), get(named("scorefetcher_api_key")), "https://scorefetcher.mohahtn.xyz/") }
     single { TaikoServerClient(get(), "https://taiko.farewell.dev/api/") }
     single { MaiteaProfileClient(get(), "https://maitea.app/api/v1/") }
+    single { ImportService(get(), get(named("scorefetcher_api_key"))) }
+
+    single<Map<String, String>>(named("jacketImages")) {
+        try {
+            get<Json>().decodeFromString<List<JacketUrl>>(MAIMAI_IMAGES_JSON)
+                .associate { it.title to it.imageUrl }
+        } catch (e: Exception) {
+            PlatformUtils.log("SharedModule", "Error parsing jacket images: ${e.message}", true)
+            emptyMap()
+        }
+    }
 
     single<AppDatabase> { getAppDatabase(getDatabaseBuilder()) }
 
@@ -63,5 +77,5 @@ val sharedModule = module {
     single { TaikoServerRepository(get()) }
     single { DifficultyRepository(get()) }
     single { ApiKeyManager(get()) }
-    single { MaiteaRepository(get(), get(), get(), get(), get(), get(named("scorefetcher_api_key"))) }
+    single { MaiteaRepository(get(), get(), get(), get(), get(), get(), get(named("jacketImages")), get(named("scorefetcher_api_key"))) }
 }

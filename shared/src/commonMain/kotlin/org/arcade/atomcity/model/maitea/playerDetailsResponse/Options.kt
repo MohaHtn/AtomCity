@@ -7,7 +7,7 @@ import kotlinx.serialization.SerialName
   data class Options (
     @SerialName( "icon"      ) var icon      : Icon?      = Icon(),
     @SerialName( "icon_deka" ) var iconDeka  : IconDeka?    = null,
-    @SerialName( "nameplate" ) var nameplate : Nameplate? = Nameplate(),
+    @SerialName("nameplate") var nameplate: Nameplate? = Nameplate(),
     @SerialName( "frame"     ) var frame     : Frame?     = Frame(),
     @SerialName( "title"     ) var title     : Title?    = null
   )

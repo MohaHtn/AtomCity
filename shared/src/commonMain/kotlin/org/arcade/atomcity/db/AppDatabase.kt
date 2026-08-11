@@ -6,11 +6,13 @@ import androidx.room.Database
 import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 
 expect fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase>
 
 fun getAppDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {
     return builder
+        .setDriver(BundledSQLiteDriver())
         .fallbackToDestructiveMigration(true)
         .build()
 }

@@ -19,20 +19,13 @@ import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
-import org.arcade.atomcity.model.utils.JacketUrl
 import org.arcade.atomcity.model.maitea.ChartHistoryResponse
 import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
 import org.arcade.atomcity.ui.core.GlobalUIState
 import kotlin.time.Duration.Companion.milliseconds
 
-// We can add a field to PlayerBest30Response via extension or just use it as is if it has it.
-// Wait, PlayerBest30Response does not have jacketImageUrl. 
-// I should probably check if I can add it or if I should use a wrapper.
-// Actually, I can just use findJacketUrlBySongName in the UI.
-
 class MaiteaViewModel(
-   private val repository: MaiteaRepository,
-   private val jacketImages: Map<String, String>
+   private val repository: MaiteaRepository
 ) : ViewModel() {
 
    // StateFlow to hold the plays data
@@ -214,11 +207,6 @@ class MaiteaViewModel(
 
                 val hasData = response?.data?.isNotEmpty() == true
                 if (hasData) {
-                    response.data.forEach { entry ->
-                        entry.jacketImageUrl =
-                            findJacketUrlBySongName(entry.song?.name?.jp)
-                                ?: findJacketUrlBySongName(entry.song?.name?.en)
-                    }
                     _playsData.value = response
                     _hasNextPage.value = lastPageReached == null || page < lastPageReached!!
                 } else {
@@ -241,9 +229,7 @@ class MaiteaViewModel(
         }
     }
 
-    fun findJacketUrlBySongName(songName: String?): String? {
-        return jacketImages[songName]
-    }
+
 
     fun fetchMaimaiPlayerDetails() {
         try {
@@ -330,7 +316,6 @@ class MaiteaViewModel(
                 _isLoadingPlayById.value = true
                 repository.getPlayById(id, keyHash).collect { response ->
                     response?.let { entry ->
-                        entry.jacketImageUrl = findJacketUrlBySongName(entry.song?.name?.jp)
                         _selectedPlayDetail.value = entry
                     }
                     _isLoadingPlayById.value = false
@@ -387,11 +372,6 @@ class MaiteaViewModel(
                 }
 
                 flow.collect { entries ->
-                    entries.forEach { entry ->
-                        entry.jacketImageUrl = entry.songJson?.name?.jp?.let { findJacketUrlBySongName(it) }
-                            ?: entry.songJson?.name?.en?.let { findJacketUrlBySongName(it) }
-                            ?: entry.songName?.let { findJacketUrlBySongName(it) }
-                    }
                     _mostPlayedCharts.value = entries
                     _isLoadingMostPlayed.value = false
                 }
@@ -400,5 +380,9 @@ class MaiteaViewModel(
                 _isLoadingMostPlayed.value = false
             }
         }
+    }
+
+    fun findJacketUrlBySongName(songName: String?): String? {
+        return repository.findJacketUrlBySongName(songName)
     }
 }

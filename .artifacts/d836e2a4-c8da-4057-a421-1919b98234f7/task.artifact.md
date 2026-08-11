@@ -1,0 +1,5 @@
+- [ ] Update `MaimaiViewModel.swift` with search and profiles
+- [ ] Update `MaimaiScoreView.swift` with search bar and new menu items
+- [ ] Create `AtomCityUsersView.swift`
+- [ ] Create `TaikoViewModel.swift`
+- [ ] Create `TaikoScoresView.swift`

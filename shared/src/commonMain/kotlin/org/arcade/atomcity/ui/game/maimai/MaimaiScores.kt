@@ -1,0 +1,212 @@
+package org.arcade.atomcity.ui.game.maimai
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+// ...existing code...
+import androidx.compose.ui.unit.dp
+// ...existing code...
+
+import coil3.compose.AsyncImage
+import androidx.compose.ui.graphics.Brush
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.ui.core.BottomBarPill
+import org.arcade.atomcity.ui.core.GlobalUIState
+import org.arcade.atomcity.ui.navigation.Screen
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MaimaiScores(
+    maiteaViewModel: MaiteaViewModel,
+    navController: androidx.navigation.NavHostController,
+) {
+    val isLoading by maiteaViewModel.isLoading.collectAsState()
+    val data by maiteaViewModel.data.collectAsState()
+    val isMaimaiImportStateReady by GlobalUIState.isMaimaiImportStateReady
+    val hasNextPage by maiteaViewModel.hasNextPage.collectAsState()
+
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    
+    var showMiniMenu by remember { mutableStateOf(false) }
+    val currentPage by maiteaViewModel._currentPage.collectAsState()
+    
+    val playerDataState by maiteaViewModel.playerData.collectAsState()
+    val playerData = playerDataState?.data?.firstOrNull()
+    val frameUrl = playerData?.options?.frame?.png ?: playerData?.options?.frame?.webp
+
+    // extra items removed (unused)
+
+    LaunchedEffect(currentPage) {
+        maiteaViewModel.fetchMaimaiPaginatedData(page = currentPage)
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                Column(modifier = Modifier.fillMaxWidth().background(Color.Transparent)) {
+                    // Keep the frame image in its original place as a background
+                    // behind the top area, and draw the title/content on top of
+                    // it. This preserves the visual framing while limiting the
+                    // decorative box to the title contents.
+                    // compute collapsedFraction and luminance up-front so we can
+                    // use those values for both the edge shadows and the title
+                    // foreground/background decision.
+                    val collapsedFraction = scrollBehavior.state.collapsedFraction
+                    val surface = MaterialTheme.colorScheme.surface
+                    val luminance = 0.299f * surface.red + 0.587f * surface.green + 0.114f * surface.blue
+                    val isFrameLight = luminance > 0.5f
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        if (frameUrl != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalPlatformContext.current)
+                                    .data(frameUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.matchParentSize()
+                            )
+
+                            // top and bottom edge shadows (gradients) over the frame
+                            val edgeShadowAlpha = 0.45f
+                            val edgeColor = if (isFrameLight) Color.Black.copy(alpha = edgeShadowAlpha) else Color.White.copy(alpha = edgeShadowAlpha)
+
+                            // Bottom shadow: fades from Transparent -> edgeColor upward
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                                    .align(Alignment.BottomStart)
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(Color.Transparent, edgeColor)
+                                        )
+                                    )
+                            )
+                        }
+
+                        // alpha for the small background that wraps the title; more
+                        // transparent when collapsed
+                        val overlayAlpha = 0.35f * (1f - collapsedFraction) + 0.15f * collapsedFraction
+
+                        // Background for the small rounded box should be white if
+                        // the frame is light, and black if the frame is dark.
+                        val overlayColor = if (isFrameLight) {
+                            Color.White.copy(alpha = overlayAlpha)
+                        } else {
+                            Color.Black.copy(alpha = overlayAlpha)
+                        }
+
+                        // Foreground (text/icon) color should contrast with the
+                        // overlay/frame.
+                        val foregroundColor = if (isFrameLight) Color.Black else Color.White
+
+                        LargeTopAppBar(
+                            title = {
+                                // small rounded background wrapping title content only
+                                Box(
+                                    modifier = Modifier
+                                        .padding(end = 16.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(overlayColor)
+                                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = "maimai |",
+                                                fontWeight = FontWeight.Bold,
+                                                color = foregroundColor,
+                                                modifier = Modifier.padding(end = 8.dp)
+                                            )
+
+                                            MaimaiPlayerDetails(
+                                                maiteaViewModel = maiteaViewModel,
+                                                collapsedFraction = collapsedFraction,
+                                                textColor = foregroundColor
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                            scrollBehavior = scrollBehavior,
+                            colors = TopAppBarDefaults.largeTopAppBarColors(
+                                containerColor = Color.Transparent,
+                                scrolledContainerColor = Color.Transparent,
+                                titleContentColor = foregroundColor,
+                                navigationIconContentColor = foregroundColor,
+                                actionIconContentColor = foregroundColor
+                            )
+                        )
+                    }
+                    if (isMaimaiImportStateReady) {
+                        MaimaiChartSearchBar(
+                            viewModel = maiteaViewModel,
+                            onNavigateToDetails = { id -> navController.navigate("maimaiScoresDetails/$id") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp, horizontal = 12.dp)
+                        )
+                    }
+                }
+            },
+            bottomBar = {
+                BottomBarPill(
+                    currentPage = currentPage,
+                    isLoading = isLoading,
+                    hasNextPage = hasNextPage,
+                    onPageChange = { newPage ->
+                        maiteaViewModel.onPageChange(newPage)
+                    },
+                    onHomeClick = { showMiniMenu = !showMiniMenu },
+                    onMenuClick = { showMiniMenu = !showMiniMenu },
+                    onSettingsClick = {
+                        navController.navigate(Screen.Settings.route)
+                        showMiniMenu = false
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                if (!isMaimaiImportStateReady) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(data?.data ?: emptyList()) { play ->
+                            MaimaiScoreItem(
+                                play = play,
+                                onClick = { navController.navigate("maimaiScoresDetails/${play.id}") }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

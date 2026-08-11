@@ -31,63 +31,63 @@ public class SongDao_Impl(
       try {
         var _argIndex: Int = 1
         _stmt.bindLong(_argIndex, id.toLong())
-        val _cursorIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
-        val _cursorIndexOfCode: Int = getColumnIndexOrThrow(_stmt, "code")
-        val _cursorIndexOfNameEn: Int = getColumnIndexOrThrow(_stmt, "name_en")
-        val _cursorIndexOfNameJp: Int = getColumnIndexOrThrow(_stmt, "name_jp")
-        val _cursorIndexOfArtistEn: Int = getColumnIndexOrThrow(_stmt, "artist_en")
-        val _cursorIndexOfArtistJp: Int = getColumnIndexOrThrow(_stmt, "artist_jp")
-        val _cursorIndexOfMatchedTitle: Int = getColumnIndexOrThrow(_stmt, "matchedTitle")
-        val _cursorIndexOfMatchedBy: Int = getColumnIndexOrThrow(_stmt, "matchedBy")
+        val _columnIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
+        val _columnIndexOfCode: Int = getColumnIndexOrThrow(_stmt, "code")
+        val _columnIndexOfNameEn: Int = getColumnIndexOrThrow(_stmt, "name_en")
+        val _columnIndexOfNameJp: Int = getColumnIndexOrThrow(_stmt, "name_jp")
+        val _columnIndexOfArtistEn: Int = getColumnIndexOrThrow(_stmt, "artist_en")
+        val _columnIndexOfArtistJp: Int = getColumnIndexOrThrow(_stmt, "artist_jp")
+        val _columnIndexOfMatchedTitle: Int = getColumnIndexOrThrow(_stmt, "matchedTitle")
+        val _columnIndexOfMatchedBy: Int = getColumnIndexOrThrow(_stmt, "matchedBy")
         val _result: SongEntity?
         if (_stmt.step()) {
           val _tmpId: Int?
-          if (_stmt.isNull(_cursorIndexOfId)) {
+          if (_stmt.isNull(_columnIndexOfId)) {
             _tmpId = null
           } else {
-            _tmpId = _stmt.getLong(_cursorIndexOfId).toInt()
+            _tmpId = _stmt.getLong(_columnIndexOfId).toInt()
           }
           val _tmpCode: String?
-          if (_stmt.isNull(_cursorIndexOfCode)) {
+          if (_stmt.isNull(_columnIndexOfCode)) {
             _tmpCode = null
           } else {
-            _tmpCode = _stmt.getText(_cursorIndexOfCode)
+            _tmpCode = _stmt.getText(_columnIndexOfCode)
           }
           val _tmpName_en: String?
-          if (_stmt.isNull(_cursorIndexOfNameEn)) {
+          if (_stmt.isNull(_columnIndexOfNameEn)) {
             _tmpName_en = null
           } else {
-            _tmpName_en = _stmt.getText(_cursorIndexOfNameEn)
+            _tmpName_en = _stmt.getText(_columnIndexOfNameEn)
           }
           val _tmpName_jp: String?
-          if (_stmt.isNull(_cursorIndexOfNameJp)) {
+          if (_stmt.isNull(_columnIndexOfNameJp)) {
             _tmpName_jp = null
           } else {
-            _tmpName_jp = _stmt.getText(_cursorIndexOfNameJp)
+            _tmpName_jp = _stmt.getText(_columnIndexOfNameJp)
           }
           val _tmpArtist_en: String?
-          if (_stmt.isNull(_cursorIndexOfArtistEn)) {
+          if (_stmt.isNull(_columnIndexOfArtistEn)) {
             _tmpArtist_en = null
           } else {
-            _tmpArtist_en = _stmt.getText(_cursorIndexOfArtistEn)
+            _tmpArtist_en = _stmt.getText(_columnIndexOfArtistEn)
           }
           val _tmpArtist_jp: String?
-          if (_stmt.isNull(_cursorIndexOfArtistJp)) {
+          if (_stmt.isNull(_columnIndexOfArtistJp)) {
             _tmpArtist_jp = null
           } else {
-            _tmpArtist_jp = _stmt.getText(_cursorIndexOfArtistJp)
+            _tmpArtist_jp = _stmt.getText(_columnIndexOfArtistJp)
           }
           val _tmpMatchedTitle: String?
-          if (_stmt.isNull(_cursorIndexOfMatchedTitle)) {
+          if (_stmt.isNull(_columnIndexOfMatchedTitle)) {
             _tmpMatchedTitle = null
           } else {
-            _tmpMatchedTitle = _stmt.getText(_cursorIndexOfMatchedTitle)
+            _tmpMatchedTitle = _stmt.getText(_columnIndexOfMatchedTitle)
           }
           val _tmpMatchedBy: String?
-          if (_stmt.isNull(_cursorIndexOfMatchedBy)) {
+          if (_stmt.isNull(_columnIndexOfMatchedBy)) {
             _tmpMatchedBy = null
           } else {
-            _tmpMatchedBy = _stmt.getText(_cursorIndexOfMatchedBy)
+            _tmpMatchedBy = _stmt.getText(_columnIndexOfMatchedBy)
           }
           _result =
               SongEntity(_tmpId,_tmpCode,_tmpName_en,_tmpName_jp,_tmpArtist_en,_tmpArtist_jp,_tmpMatchedTitle,_tmpMatchedBy)
@@ -108,63 +108,63 @@ public class SongDao_Impl(
       try {
         var _argIndex: Int = 1
         _stmt.bindText(_argIndex, code)
-        val _cursorIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
-        val _cursorIndexOfCode: Int = getColumnIndexOrThrow(_stmt, "code")
-        val _cursorIndexOfNameEn: Int = getColumnIndexOrThrow(_stmt, "name_en")
-        val _cursorIndexOfNameJp: Int = getColumnIndexOrThrow(_stmt, "name_jp")
-        val _cursorIndexOfArtistEn: Int = getColumnIndexOrThrow(_stmt, "artist_en")
-        val _cursorIndexOfArtistJp: Int = getColumnIndexOrThrow(_stmt, "artist_jp")
-        val _cursorIndexOfMatchedTitle: Int = getColumnIndexOrThrow(_stmt, "matchedTitle")
-        val _cursorIndexOfMatchedBy: Int = getColumnIndexOrThrow(_stmt, "matchedBy")
+        val _columnIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
+        val _columnIndexOfCode: Int = getColumnIndexOrThrow(_stmt, "code")
+        val _columnIndexOfNameEn: Int = getColumnIndexOrThrow(_stmt, "name_en")
+        val _columnIndexOfNameJp: Int = getColumnIndexOrThrow(_stmt, "name_jp")
+        val _columnIndexOfArtistEn: Int = getColumnIndexOrThrow(_stmt, "artist_en")
+        val _columnIndexOfArtistJp: Int = getColumnIndexOrThrow(_stmt, "artist_jp")
+        val _columnIndexOfMatchedTitle: Int = getColumnIndexOrThrow(_stmt, "matchedTitle")
+        val _columnIndexOfMatchedBy: Int = getColumnIndexOrThrow(_stmt, "matchedBy")
         val _result: SongEntity?
         if (_stmt.step()) {
           val _tmpId: Int?
-          if (_stmt.isNull(_cursorIndexOfId)) {
+          if (_stmt.isNull(_columnIndexOfId)) {
             _tmpId = null
           } else {
-            _tmpId = _stmt.getLong(_cursorIndexOfId).toInt()
+            _tmpId = _stmt.getLong(_columnIndexOfId).toInt()
           }
           val _tmpCode: String?
-          if (_stmt.isNull(_cursorIndexOfCode)) {
+          if (_stmt.isNull(_columnIndexOfCode)) {
             _tmpCode = null
           } else {
-            _tmpCode = _stmt.getText(_cursorIndexOfCode)
+            _tmpCode = _stmt.getText(_columnIndexOfCode)
           }
           val _tmpName_en: String?
-          if (_stmt.isNull(_cursorIndexOfNameEn)) {
+          if (_stmt.isNull(_columnIndexOfNameEn)) {
             _tmpName_en = null
           } else {
-            _tmpName_en = _stmt.getText(_cursorIndexOfNameEn)
+            _tmpName_en = _stmt.getText(_columnIndexOfNameEn)
           }
           val _tmpName_jp: String?
-          if (_stmt.isNull(_cursorIndexOfNameJp)) {
+          if (_stmt.isNull(_columnIndexOfNameJp)) {
             _tmpName_jp = null
           } else {
-            _tmpName_jp = _stmt.getText(_cursorIndexOfNameJp)
+            _tmpName_jp = _stmt.getText(_columnIndexOfNameJp)
           }
           val _tmpArtist_en: String?
-          if (_stmt.isNull(_cursorIndexOfArtistEn)) {
+          if (_stmt.isNull(_columnIndexOfArtistEn)) {
             _tmpArtist_en = null
           } else {
-            _tmpArtist_en = _stmt.getText(_cursorIndexOfArtistEn)
+            _tmpArtist_en = _stmt.getText(_columnIndexOfArtistEn)
           }
           val _tmpArtist_jp: String?
-          if (_stmt.isNull(_cursorIndexOfArtistJp)) {
+          if (_stmt.isNull(_columnIndexOfArtistJp)) {
             _tmpArtist_jp = null
           } else {
-            _tmpArtist_jp = _stmt.getText(_cursorIndexOfArtistJp)
+            _tmpArtist_jp = _stmt.getText(_columnIndexOfArtistJp)
           }
           val _tmpMatchedTitle: String?
-          if (_stmt.isNull(_cursorIndexOfMatchedTitle)) {
+          if (_stmt.isNull(_columnIndexOfMatchedTitle)) {
             _tmpMatchedTitle = null
           } else {
-            _tmpMatchedTitle = _stmt.getText(_cursorIndexOfMatchedTitle)
+            _tmpMatchedTitle = _stmt.getText(_columnIndexOfMatchedTitle)
           }
           val _tmpMatchedBy: String?
-          if (_stmt.isNull(_cursorIndexOfMatchedBy)) {
+          if (_stmt.isNull(_columnIndexOfMatchedBy)) {
             _tmpMatchedBy = null
           } else {
-            _tmpMatchedBy = _stmt.getText(_cursorIndexOfMatchedBy)
+            _tmpMatchedBy = _stmt.getText(_columnIndexOfMatchedBy)
           }
           _result =
               SongEntity(_tmpId,_tmpCode,_tmpName_en,_tmpName_jp,_tmpArtist_en,_tmpArtist_jp,_tmpMatchedTitle,_tmpMatchedBy)
@@ -192,64 +192,64 @@ public class SongDao_Impl(
         _stmt.bindText(_argIndex, q)
         _argIndex = 4
         _stmt.bindText(_argIndex, q)
-        val _cursorIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
-        val _cursorIndexOfCode: Int = getColumnIndexOrThrow(_stmt, "code")
-        val _cursorIndexOfNameEn: Int = getColumnIndexOrThrow(_stmt, "name_en")
-        val _cursorIndexOfNameJp: Int = getColumnIndexOrThrow(_stmt, "name_jp")
-        val _cursorIndexOfArtistEn: Int = getColumnIndexOrThrow(_stmt, "artist_en")
-        val _cursorIndexOfArtistJp: Int = getColumnIndexOrThrow(_stmt, "artist_jp")
-        val _cursorIndexOfMatchedTitle: Int = getColumnIndexOrThrow(_stmt, "matchedTitle")
-        val _cursorIndexOfMatchedBy: Int = getColumnIndexOrThrow(_stmt, "matchedBy")
+        val _columnIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
+        val _columnIndexOfCode: Int = getColumnIndexOrThrow(_stmt, "code")
+        val _columnIndexOfNameEn: Int = getColumnIndexOrThrow(_stmt, "name_en")
+        val _columnIndexOfNameJp: Int = getColumnIndexOrThrow(_stmt, "name_jp")
+        val _columnIndexOfArtistEn: Int = getColumnIndexOrThrow(_stmt, "artist_en")
+        val _columnIndexOfArtistJp: Int = getColumnIndexOrThrow(_stmt, "artist_jp")
+        val _columnIndexOfMatchedTitle: Int = getColumnIndexOrThrow(_stmt, "matchedTitle")
+        val _columnIndexOfMatchedBy: Int = getColumnIndexOrThrow(_stmt, "matchedBy")
         val _result: MutableList<SongEntity> = mutableListOf()
         while (_stmt.step()) {
           val _item: SongEntity
           val _tmpId: Int?
-          if (_stmt.isNull(_cursorIndexOfId)) {
+          if (_stmt.isNull(_columnIndexOfId)) {
             _tmpId = null
           } else {
-            _tmpId = _stmt.getLong(_cursorIndexOfId).toInt()
+            _tmpId = _stmt.getLong(_columnIndexOfId).toInt()
           }
           val _tmpCode: String?
-          if (_stmt.isNull(_cursorIndexOfCode)) {
+          if (_stmt.isNull(_columnIndexOfCode)) {
             _tmpCode = null
           } else {
-            _tmpCode = _stmt.getText(_cursorIndexOfCode)
+            _tmpCode = _stmt.getText(_columnIndexOfCode)
           }
           val _tmpName_en: String?
-          if (_stmt.isNull(_cursorIndexOfNameEn)) {
+          if (_stmt.isNull(_columnIndexOfNameEn)) {
             _tmpName_en = null
           } else {
-            _tmpName_en = _stmt.getText(_cursorIndexOfNameEn)
+            _tmpName_en = _stmt.getText(_columnIndexOfNameEn)
           }
           val _tmpName_jp: String?
-          if (_stmt.isNull(_cursorIndexOfNameJp)) {
+          if (_stmt.isNull(_columnIndexOfNameJp)) {
             _tmpName_jp = null
           } else {
-            _tmpName_jp = _stmt.getText(_cursorIndexOfNameJp)
+            _tmpName_jp = _stmt.getText(_columnIndexOfNameJp)
           }
           val _tmpArtist_en: String?
-          if (_stmt.isNull(_cursorIndexOfArtistEn)) {
+          if (_stmt.isNull(_columnIndexOfArtistEn)) {
             _tmpArtist_en = null
           } else {
-            _tmpArtist_en = _stmt.getText(_cursorIndexOfArtistEn)
+            _tmpArtist_en = _stmt.getText(_columnIndexOfArtistEn)
           }
           val _tmpArtist_jp: String?
-          if (_stmt.isNull(_cursorIndexOfArtistJp)) {
+          if (_stmt.isNull(_columnIndexOfArtistJp)) {
             _tmpArtist_jp = null
           } else {
-            _tmpArtist_jp = _stmt.getText(_cursorIndexOfArtistJp)
+            _tmpArtist_jp = _stmt.getText(_columnIndexOfArtistJp)
           }
           val _tmpMatchedTitle: String?
-          if (_stmt.isNull(_cursorIndexOfMatchedTitle)) {
+          if (_stmt.isNull(_columnIndexOfMatchedTitle)) {
             _tmpMatchedTitle = null
           } else {
-            _tmpMatchedTitle = _stmt.getText(_cursorIndexOfMatchedTitle)
+            _tmpMatchedTitle = _stmt.getText(_columnIndexOfMatchedTitle)
           }
           val _tmpMatchedBy: String?
-          if (_stmt.isNull(_cursorIndexOfMatchedBy)) {
+          if (_stmt.isNull(_columnIndexOfMatchedBy)) {
             _tmpMatchedBy = null
           } else {
-            _tmpMatchedBy = _stmt.getText(_cursorIndexOfMatchedBy)
+            _tmpMatchedBy = _stmt.getText(_columnIndexOfMatchedBy)
           }
           _item =
               SongEntity(_tmpId,_tmpCode,_tmpName_en,_tmpName_jp,_tmpArtist_en,_tmpArtist_jp,_tmpMatchedTitle,_tmpMatchedBy)
@@ -273,39 +273,39 @@ public class SongDao_Impl(
         } else {
           _stmt.bindLong(_argIndex, songId.toLong())
         }
-        val _cursorIndexOfUid: Int = getColumnIndexOrThrow(_stmt, "uid")
-        val _cursorIndexOfSongId: Int = getColumnIndexOrThrow(_stmt, "songId")
-        val _cursorIndexOfDiffIndex: Int = getColumnIndexOrThrow(_stmt, "diffIndex")
-        val _cursorIndexOfInternalLevel: Int = getColumnIndexOrThrow(_stmt, "internal_level")
-        val _cursorIndexOfLevel: Int = getColumnIndexOrThrow(_stmt, "level")
+        val _columnIndexOfUid: Int = getColumnIndexOrThrow(_stmt, "uid")
+        val _columnIndexOfSongId: Int = getColumnIndexOrThrow(_stmt, "songId")
+        val _columnIndexOfDiffIndex: Int = getColumnIndexOrThrow(_stmt, "diffIndex")
+        val _columnIndexOfInternalLevel: Int = getColumnIndexOrThrow(_stmt, "internal_level")
+        val _columnIndexOfLevel: Int = getColumnIndexOrThrow(_stmt, "level")
         val _result: MutableList<LevelEntity> = mutableListOf()
         while (_stmt.step()) {
           val _item: LevelEntity
           val _tmpUid: Long?
-          if (_stmt.isNull(_cursorIndexOfUid)) {
+          if (_stmt.isNull(_columnIndexOfUid)) {
             _tmpUid = null
           } else {
-            _tmpUid = _stmt.getLong(_cursorIndexOfUid)
+            _tmpUid = _stmt.getLong(_columnIndexOfUid)
           }
           val _tmpSongId: Int
-          _tmpSongId = _stmt.getLong(_cursorIndexOfSongId).toInt()
+          _tmpSongId = _stmt.getLong(_columnIndexOfSongId).toInt()
           val _tmpDiffIndex: Int?
-          if (_stmt.isNull(_cursorIndexOfDiffIndex)) {
+          if (_stmt.isNull(_columnIndexOfDiffIndex)) {
             _tmpDiffIndex = null
           } else {
-            _tmpDiffIndex = _stmt.getLong(_cursorIndexOfDiffIndex).toInt()
+            _tmpDiffIndex = _stmt.getLong(_columnIndexOfDiffIndex).toInt()
           }
           val _tmpInternal_level: String?
-          if (_stmt.isNull(_cursorIndexOfInternalLevel)) {
+          if (_stmt.isNull(_columnIndexOfInternalLevel)) {
             _tmpInternal_level = null
           } else {
-            _tmpInternal_level = _stmt.getText(_cursorIndexOfInternalLevel)
+            _tmpInternal_level = _stmt.getText(_columnIndexOfInternalLevel)
           }
           val _tmpLevel: String?
-          if (_stmt.isNull(_cursorIndexOfLevel)) {
+          if (_stmt.isNull(_columnIndexOfLevel)) {
             _tmpLevel = null
           } else {
-            _tmpLevel = _stmt.getText(_cursorIndexOfLevel)
+            _tmpLevel = _stmt.getText(_columnIndexOfLevel)
           }
           _item = LevelEntity(_tmpUid,_tmpSongId,_tmpDiffIndex,_tmpInternal_level,_tmpLevel)
           _result.add(_item)
@@ -335,57 +335,57 @@ public class SongDao_Impl(
     return performSuspending(__db, true, false) { _connection ->
       val _stmt: SQLiteStatement = _connection.prepare(_sql)
       try {
-        val _cursorIndexOfMatchedTitle: Int = 0
-        val _cursorIndexOfNameEn: Int = 1
-        val _cursorIndexOfNameJp: Int = 2
-        val _cursorIndexOfCode: Int = 3
-        val _cursorIndexOfDiffIndex: Int = 4
-        val _cursorIndexOfLevel: Int = 5
-        val _cursorIndexOfInternalLevel: Int = 6
+        val _columnIndexOfMatchedTitle: Int = 0
+        val _columnIndexOfNameEn: Int = 1
+        val _columnIndexOfNameJp: Int = 2
+        val _columnIndexOfCode: Int = 3
+        val _columnIndexOfDiffIndex: Int = 4
+        val _columnIndexOfLevel: Int = 5
+        val _columnIndexOfInternalLevel: Int = 6
         val _result: MutableList<SongLevelRow> = mutableListOf()
         while (_stmt.step()) {
           val _item: SongLevelRow
           val _tmpMatchedTitle: String?
-          if (_stmt.isNull(_cursorIndexOfMatchedTitle)) {
+          if (_stmt.isNull(_columnIndexOfMatchedTitle)) {
             _tmpMatchedTitle = null
           } else {
-            _tmpMatchedTitle = _stmt.getText(_cursorIndexOfMatchedTitle)
+            _tmpMatchedTitle = _stmt.getText(_columnIndexOfMatchedTitle)
           }
           val _tmpName_en: String?
-          if (_stmt.isNull(_cursorIndexOfNameEn)) {
+          if (_stmt.isNull(_columnIndexOfNameEn)) {
             _tmpName_en = null
           } else {
-            _tmpName_en = _stmt.getText(_cursorIndexOfNameEn)
+            _tmpName_en = _stmt.getText(_columnIndexOfNameEn)
           }
           val _tmpName_jp: String?
-          if (_stmt.isNull(_cursorIndexOfNameJp)) {
+          if (_stmt.isNull(_columnIndexOfNameJp)) {
             _tmpName_jp = null
           } else {
-            _tmpName_jp = _stmt.getText(_cursorIndexOfNameJp)
+            _tmpName_jp = _stmt.getText(_columnIndexOfNameJp)
           }
           val _tmpCode: String?
-          if (_stmt.isNull(_cursorIndexOfCode)) {
+          if (_stmt.isNull(_columnIndexOfCode)) {
             _tmpCode = null
           } else {
-            _tmpCode = _stmt.getText(_cursorIndexOfCode)
+            _tmpCode = _stmt.getText(_columnIndexOfCode)
           }
           val _tmpDiffIndex: Int?
-          if (_stmt.isNull(_cursorIndexOfDiffIndex)) {
+          if (_stmt.isNull(_columnIndexOfDiffIndex)) {
             _tmpDiffIndex = null
           } else {
-            _tmpDiffIndex = _stmt.getLong(_cursorIndexOfDiffIndex).toInt()
+            _tmpDiffIndex = _stmt.getLong(_columnIndexOfDiffIndex).toInt()
           }
           val _tmpLevel: String?
-          if (_stmt.isNull(_cursorIndexOfLevel)) {
+          if (_stmt.isNull(_columnIndexOfLevel)) {
             _tmpLevel = null
           } else {
-            _tmpLevel = _stmt.getText(_cursorIndexOfLevel)
+            _tmpLevel = _stmt.getText(_columnIndexOfLevel)
           }
           val _tmpInternal_level: String?
-          if (_stmt.isNull(_cursorIndexOfInternalLevel)) {
+          if (_stmt.isNull(_columnIndexOfInternalLevel)) {
             _tmpInternal_level = null
           } else {
-            _tmpInternal_level = _stmt.getText(_cursorIndexOfInternalLevel)
+            _tmpInternal_level = _stmt.getText(_columnIndexOfInternalLevel)
           }
           _item =
               SongLevelRow(_tmpMatchedTitle,_tmpName_en,_tmpName_jp,_tmpCode,_tmpDiffIndex,_tmpLevel,_tmpInternal_level)
@@ -414,38 +414,38 @@ public class SongDao_Impl(
       try {
         var _argIndex: Int = 1
         _stmt.bindText(_argIndex, title)
-        val _cursorIndexOfUid: Int = getColumnIndexOrThrow(_stmt, "uid")
-        val _cursorIndexOfSongId: Int = getColumnIndexOrThrow(_stmt, "songId")
-        val _cursorIndexOfDiffIndex: Int = getColumnIndexOrThrow(_stmt, "diffIndex")
-        val _cursorIndexOfInternalLevel: Int = getColumnIndexOrThrow(_stmt, "internal_level")
-        val _cursorIndexOfLevel: Int = getColumnIndexOrThrow(_stmt, "level")
+        val _columnIndexOfUid: Int = getColumnIndexOrThrow(_stmt, "uid")
+        val _columnIndexOfSongId: Int = getColumnIndexOrThrow(_stmt, "songId")
+        val _columnIndexOfDiffIndex: Int = getColumnIndexOrThrow(_stmt, "diffIndex")
+        val _columnIndexOfInternalLevel: Int = getColumnIndexOrThrow(_stmt, "internal_level")
+        val _columnIndexOfLevel: Int = getColumnIndexOrThrow(_stmt, "level")
         val _result: LevelEntity?
         if (_stmt.step()) {
           val _tmpUid: Long?
-          if (_stmt.isNull(_cursorIndexOfUid)) {
+          if (_stmt.isNull(_columnIndexOfUid)) {
             _tmpUid = null
           } else {
-            _tmpUid = _stmt.getLong(_cursorIndexOfUid)
+            _tmpUid = _stmt.getLong(_columnIndexOfUid)
           }
           val _tmpSongId: Int
-          _tmpSongId = _stmt.getLong(_cursorIndexOfSongId).toInt()
+          _tmpSongId = _stmt.getLong(_columnIndexOfSongId).toInt()
           val _tmpDiffIndex: Int?
-          if (_stmt.isNull(_cursorIndexOfDiffIndex)) {
+          if (_stmt.isNull(_columnIndexOfDiffIndex)) {
             _tmpDiffIndex = null
           } else {
-            _tmpDiffIndex = _stmt.getLong(_cursorIndexOfDiffIndex).toInt()
+            _tmpDiffIndex = _stmt.getLong(_columnIndexOfDiffIndex).toInt()
           }
           val _tmpInternal_level: String?
-          if (_stmt.isNull(_cursorIndexOfInternalLevel)) {
+          if (_stmt.isNull(_columnIndexOfInternalLevel)) {
             _tmpInternal_level = null
           } else {
-            _tmpInternal_level = _stmt.getText(_cursorIndexOfInternalLevel)
+            _tmpInternal_level = _stmt.getText(_columnIndexOfInternalLevel)
           }
           val _tmpLevel: String?
-          if (_stmt.isNull(_cursorIndexOfLevel)) {
+          if (_stmt.isNull(_columnIndexOfLevel)) {
             _tmpLevel = null
           } else {
-            _tmpLevel = _stmt.getText(_cursorIndexOfLevel)
+            _tmpLevel = _stmt.getText(_columnIndexOfLevel)
           }
           _result = LevelEntity(_tmpUid,_tmpSongId,_tmpDiffIndex,_tmpInternal_level,_tmpLevel)
         } else {
@@ -463,64 +463,64 @@ public class SongDao_Impl(
     return performSuspending(__db, true, false) { _connection ->
       val _stmt: SQLiteStatement = _connection.prepare(_sql)
       try {
-        val _cursorIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
-        val _cursorIndexOfCode: Int = getColumnIndexOrThrow(_stmt, "code")
-        val _cursorIndexOfNameEn: Int = getColumnIndexOrThrow(_stmt, "name_en")
-        val _cursorIndexOfNameJp: Int = getColumnIndexOrThrow(_stmt, "name_jp")
-        val _cursorIndexOfArtistEn: Int = getColumnIndexOrThrow(_stmt, "artist_en")
-        val _cursorIndexOfArtistJp: Int = getColumnIndexOrThrow(_stmt, "artist_jp")
-        val _cursorIndexOfMatchedTitle: Int = getColumnIndexOrThrow(_stmt, "matchedTitle")
-        val _cursorIndexOfMatchedBy: Int = getColumnIndexOrThrow(_stmt, "matchedBy")
+        val _columnIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
+        val _columnIndexOfCode: Int = getColumnIndexOrThrow(_stmt, "code")
+        val _columnIndexOfNameEn: Int = getColumnIndexOrThrow(_stmt, "name_en")
+        val _columnIndexOfNameJp: Int = getColumnIndexOrThrow(_stmt, "name_jp")
+        val _columnIndexOfArtistEn: Int = getColumnIndexOrThrow(_stmt, "artist_en")
+        val _columnIndexOfArtistJp: Int = getColumnIndexOrThrow(_stmt, "artist_jp")
+        val _columnIndexOfMatchedTitle: Int = getColumnIndexOrThrow(_stmt, "matchedTitle")
+        val _columnIndexOfMatchedBy: Int = getColumnIndexOrThrow(_stmt, "matchedBy")
         val _result: MutableList<SongEntity> = mutableListOf()
         while (_stmt.step()) {
           val _item: SongEntity
           val _tmpId: Int?
-          if (_stmt.isNull(_cursorIndexOfId)) {
+          if (_stmt.isNull(_columnIndexOfId)) {
             _tmpId = null
           } else {
-            _tmpId = _stmt.getLong(_cursorIndexOfId).toInt()
+            _tmpId = _stmt.getLong(_columnIndexOfId).toInt()
           }
           val _tmpCode: String?
-          if (_stmt.isNull(_cursorIndexOfCode)) {
+          if (_stmt.isNull(_columnIndexOfCode)) {
             _tmpCode = null
           } else {
-            _tmpCode = _stmt.getText(_cursorIndexOfCode)
+            _tmpCode = _stmt.getText(_columnIndexOfCode)
           }
           val _tmpName_en: String?
-          if (_stmt.isNull(_cursorIndexOfNameEn)) {
+          if (_stmt.isNull(_columnIndexOfNameEn)) {
             _tmpName_en = null
           } else {
-            _tmpName_en = _stmt.getText(_cursorIndexOfNameEn)
+            _tmpName_en = _stmt.getText(_columnIndexOfNameEn)
           }
           val _tmpName_jp: String?
-          if (_stmt.isNull(_cursorIndexOfNameJp)) {
+          if (_stmt.isNull(_columnIndexOfNameJp)) {
             _tmpName_jp = null
           } else {
-            _tmpName_jp = _stmt.getText(_cursorIndexOfNameJp)
+            _tmpName_jp = _stmt.getText(_columnIndexOfNameJp)
           }
           val _tmpArtist_en: String?
-          if (_stmt.isNull(_cursorIndexOfArtistEn)) {
+          if (_stmt.isNull(_columnIndexOfArtistEn)) {
             _tmpArtist_en = null
           } else {
-            _tmpArtist_en = _stmt.getText(_cursorIndexOfArtistEn)
+            _tmpArtist_en = _stmt.getText(_columnIndexOfArtistEn)
           }
           val _tmpArtist_jp: String?
-          if (_stmt.isNull(_cursorIndexOfArtistJp)) {
+          if (_stmt.isNull(_columnIndexOfArtistJp)) {
             _tmpArtist_jp = null
           } else {
-            _tmpArtist_jp = _stmt.getText(_cursorIndexOfArtistJp)
+            _tmpArtist_jp = _stmt.getText(_columnIndexOfArtistJp)
           }
           val _tmpMatchedTitle: String?
-          if (_stmt.isNull(_cursorIndexOfMatchedTitle)) {
+          if (_stmt.isNull(_columnIndexOfMatchedTitle)) {
             _tmpMatchedTitle = null
           } else {
-            _tmpMatchedTitle = _stmt.getText(_cursorIndexOfMatchedTitle)
+            _tmpMatchedTitle = _stmt.getText(_columnIndexOfMatchedTitle)
           }
           val _tmpMatchedBy: String?
-          if (_stmt.isNull(_cursorIndexOfMatchedBy)) {
+          if (_stmt.isNull(_columnIndexOfMatchedBy)) {
             _tmpMatchedBy = null
           } else {
-            _tmpMatchedBy = _stmt.getText(_cursorIndexOfMatchedBy)
+            _tmpMatchedBy = _stmt.getText(_columnIndexOfMatchedBy)
           }
           _item =
               SongEntity(_tmpId,_tmpCode,_tmpName_en,_tmpName_jp,_tmpArtist_en,_tmpArtist_jp,_tmpMatchedTitle,_tmpMatchedBy)
@@ -543,38 +543,38 @@ public class SongDao_Impl(
         _stmt.bindLong(_argIndex, songId.toLong())
         _argIndex = 2
         _stmt.bindLong(_argIndex, difficultyValue.toLong())
-        val _cursorIndexOfUid: Int = getColumnIndexOrThrow(_stmt, "uid")
-        val _cursorIndexOfSongId: Int = getColumnIndexOrThrow(_stmt, "songId")
-        val _cursorIndexOfDiffIndex: Int = getColumnIndexOrThrow(_stmt, "diffIndex")
-        val _cursorIndexOfInternalLevel: Int = getColumnIndexOrThrow(_stmt, "internal_level")
-        val _cursorIndexOfLevel: Int = getColumnIndexOrThrow(_stmt, "level")
+        val _columnIndexOfUid: Int = getColumnIndexOrThrow(_stmt, "uid")
+        val _columnIndexOfSongId: Int = getColumnIndexOrThrow(_stmt, "songId")
+        val _columnIndexOfDiffIndex: Int = getColumnIndexOrThrow(_stmt, "diffIndex")
+        val _columnIndexOfInternalLevel: Int = getColumnIndexOrThrow(_stmt, "internal_level")
+        val _columnIndexOfLevel: Int = getColumnIndexOrThrow(_stmt, "level")
         val _result: LevelEntity?
         if (_stmt.step()) {
           val _tmpUid: Long?
-          if (_stmt.isNull(_cursorIndexOfUid)) {
+          if (_stmt.isNull(_columnIndexOfUid)) {
             _tmpUid = null
           } else {
-            _tmpUid = _stmt.getLong(_cursorIndexOfUid)
+            _tmpUid = _stmt.getLong(_columnIndexOfUid)
           }
           val _tmpSongId: Int
-          _tmpSongId = _stmt.getLong(_cursorIndexOfSongId).toInt()
+          _tmpSongId = _stmt.getLong(_columnIndexOfSongId).toInt()
           val _tmpDiffIndex: Int?
-          if (_stmt.isNull(_cursorIndexOfDiffIndex)) {
+          if (_stmt.isNull(_columnIndexOfDiffIndex)) {
             _tmpDiffIndex = null
           } else {
-            _tmpDiffIndex = _stmt.getLong(_cursorIndexOfDiffIndex).toInt()
+            _tmpDiffIndex = _stmt.getLong(_columnIndexOfDiffIndex).toInt()
           }
           val _tmpInternal_level: String?
-          if (_stmt.isNull(_cursorIndexOfInternalLevel)) {
+          if (_stmt.isNull(_columnIndexOfInternalLevel)) {
             _tmpInternal_level = null
           } else {
-            _tmpInternal_level = _stmt.getText(_cursorIndexOfInternalLevel)
+            _tmpInternal_level = _stmt.getText(_columnIndexOfInternalLevel)
           }
           val _tmpLevel: String?
-          if (_stmt.isNull(_cursorIndexOfLevel)) {
+          if (_stmt.isNull(_columnIndexOfLevel)) {
             _tmpLevel = null
           } else {
-            _tmpLevel = _stmt.getText(_cursorIndexOfLevel)
+            _tmpLevel = _stmt.getText(_columnIndexOfLevel)
           }
           _result = LevelEntity(_tmpUid,_tmpSongId,_tmpDiffIndex,_tmpInternal_level,_tmpLevel)
         } else {

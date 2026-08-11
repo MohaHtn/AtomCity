@@ -1,1 +1,1 @@
-/Users/mohahtn/.konan/kotlin-native-prebuilt-macos-x86_64-2.2.10/klib/commonized/2.2.10
+/Users/mohahtn/.konan/kotlin-native-prebuilt-macos-aarch64-2.2.10/klib/commonized/2.2.10

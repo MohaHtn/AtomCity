@@ -17,5 +17,6 @@ data class PlayerBest30Response(
     val isHighScore: Boolean? = null,
     val isAllPerfect: Boolean? = null,
     val isTrackSkip: Boolean? = null,
-    val scoreDetail: ScoreDetail? = null
+    val scoreDetail: ScoreDetail? = null,
+    var jacketImageUrl: String? = null
 )

@@ -7,7 +7,6 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
 
 class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
 
@@ -22,7 +21,7 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
     suspend fun saveApiKey(gameName: String, apiKey: String) {
         val key = stringPreferencesKey(gameName)
         dataStore.edit { preferences ->
-            preferences[key] = apiKey
+            preferences[key] = apiKey.trim()
         }
     }
 
@@ -33,14 +32,12 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    fun getApiKey(gameName: String?): String? {
+    suspend fun getApiKey(gameName: String?): String? {
         if (gameName == null) return null
         val key = stringPreferencesKey(gameName)
-        return runBlocking {
-            dataStore.data.map { preferences ->
-                preferences[key]
-            }.firstOrNull()
-        }
+        return dataStore.data.map { preferences ->
+            preferences[key]
+        }.firstOrNull()
     }
 
     suspend fun removeApiKey(gameName: String) {
@@ -50,26 +47,24 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    fun hasApiKey(gameName: String): Boolean {
+    suspend fun hasApiKey(gameName: String): Boolean {
         return getApiKey(gameName) != null
     }
 
-    fun getKeyHash(game: String?): String? {
+    suspend fun getKeyHash(game: String?): String? {
         val apiKey = getApiKey(game) ?: return null
         return PlatformUtils.sha256(apiKey)
     }
 
-    fun getAvailableApiKeys(): List<String> {
-        return runBlocking {
-            try {
-                val preferences = dataStore.data.firstOrNull() ?: return@runBlocking emptyList()
-                preferences.asMap().mapNotNull { (key, value) ->
-                    if (value is String) key.name else null
-                }
-            } catch (e: Exception) {
-                PlatformUtils.log("DataStore", "Erreur lors de la lecture des clés API: ${e.message}", true)
-                emptyList()
+    suspend fun getAvailableApiKeys(): List<String> {
+        return try {
+            val preferences = dataStore.data.firstOrNull() ?: return emptyList()
+            preferences.asMap().mapNotNull { (key, value) ->
+                if (value is String) key.name else null
             }
+        } catch (e: Exception) {
+            PlatformUtils.log("ApiKeyManager", "Erreur lors de la lecture des clés API: ${e.message}", true)
+            emptyList()
         }
     }
 }

@@ -31,7 +31,6 @@ public class AppDatabase_Impl : AppDatabase() {
     SongDao_Impl(this)
   }
 
-
   protected override fun createOpenDelegate(): RoomOpenDelegate {
     val _openDelegate: RoomOpenDelegate = object : RoomOpenDelegate(2,
         "f4e3840ff35a086b0aa390685acd311c", "b1fa04c5e62e5e7a4a7b2de4d8b74010") {

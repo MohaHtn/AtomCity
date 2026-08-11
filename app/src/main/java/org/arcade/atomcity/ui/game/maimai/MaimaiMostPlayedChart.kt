@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.model.maitea.MaimaiMostPlayedEntry
 import java.text.SimpleDateFormat
@@ -399,9 +399,10 @@ fun MostPlayedItem(entry: MaimaiMostPlayedEntry, maxCount: Int) {
                 )
             }
             
-            if (!entry.difficulty.isNullOrBlank()) {
+            val difficulty = entry.difficulty
+            if (!difficulty.isNullOrBlank()) {
                 Text(
-                    text = entry.difficulty,
+                    text = difficulty,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp)

@@ -27,7 +27,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.di.apiKeyManagerModule
 import org.arcade.atomcity.di.appModule
-import org.arcade.atomcity.di.jacketImagesModule
 import org.arcade.atomcity.di.network.maiteaNetworkModule
 import org.arcade.atomcity.di.network.maiteaProfileDataModule
 import org.arcade.atomcity.di.network.taikoNetworkModule
@@ -47,6 +46,8 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 
+import kotlinx.coroutines.flow.first
+
 class AtomCityApplication : Application() {
     private val startupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -59,8 +60,7 @@ class AtomCityApplication : Application() {
             val maiteaModules = listOf(
                 maiteaNetworkModule,
                 maiteaProfileDataModule,
-                maiTeaViewModelModule,
-                jacketImagesModule
+                maiTeaViewModelModule
             )
 
             val taikoModules = listOf(
@@ -82,7 +82,7 @@ class AtomCityApplication : Application() {
     private fun preloadMaimaiImportState() {
         startupScope.launch {
             val repository = GlobalContext.get().get<org.arcade.atomcity.data.MaiteaRepository>()
-            val isImporting = repository.isImportWorkerActive()
+            val isImporting = repository.isImportWorkerActive().first()
             GlobalUIState.isImportingMaimaiScores.value = isImporting
             GlobalUIState.isMaimaiImportStateReady.value = true
         }
@@ -91,10 +91,6 @@ class AtomCityApplication : Application() {
 
 class MainActivity : ComponentActivity() {
 
-    private val maiteaViewModel: MaiteaViewModel by viewModel()
-    private val taikoViewModel: TaikoViewModel by viewModel()
-    private val apiKeyManager: ApiKeyManager by inject()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setKeepOnScreenCondition {
             !GlobalUIState.isMaimaiImportStateReady.value
@@ -102,58 +98,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MainActivityContent(
-                maiteaViewModel = maiteaViewModel,
-                apiKeyManager = apiKeyManager,
-                taikoViewModel = taikoViewModel
-            )
-        }
-    }
-}
-
-@Composable
-fun MainActivityContent(maiteaViewModel: MaiteaViewModel, apiKeyManager: ApiKeyManager, taikoViewModel: TaikoViewModel) {
-    val context = LocalContext.current
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            // Handle permission result if needed
-        }
-    )
-
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        apiKeyManager.getApiChecklistStateFlow().collect { keys ->
-            GlobalUIState.availableApiKeys.value = keys
-        }
-    }
-
-    AtomCityTheme {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            org.arcade.atomcity.ui.core.GlobalErrorDialog()
-            AppNavigation(
-                maiteaViewModel = maiteaViewModel,
-                apiKeyManager = apiKeyManager,
-                taikoViewModel = taikoViewModel
-            )
-        } else {
-            // Fallback for devices below API 26
-            Scaffold { paddingValues ->
-                Box(modifier = Modifier.padding(paddingValues)) {
-                    Text("This feature requires Android 8.0 or higher")
-                }
-            }
+            App()
         }
     }
 }

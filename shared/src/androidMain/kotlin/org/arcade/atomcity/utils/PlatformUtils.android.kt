@@ -18,4 +18,12 @@ actual object PlatformUtils {
     }
 
     actual fun currentTimeMillis(): Long = System.currentTimeMillis()
+
+    actual fun hapticTick() {
+        // Handled via LocalHapticFeedback in Compose for Android
+    }
+
+    actual fun hapticImpact() {
+        // Handled via LocalHapticFeedback in Compose for Android
+    }
 }
