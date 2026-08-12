@@ -34,6 +34,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
+import org.arcade.atomcity.data.DifficultyRepository
+import org.arcade.atomcity.data.LevelInfo
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
@@ -314,6 +317,26 @@ fun MostPlayedBarChart(topEntries: List<MaimaiMostPlayedEntry>, maxCount: Int) {
 
 @Composable
 fun MostPlayedItem(entry: MaimaiMostPlayedEntry, maxCount: Int) {
+    val difficultyRepository: DifficultyRepository = koinInject()
+    var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
+
+    val difficultyKey = remember(entry.difficulty) {
+        when (entry.difficulty?.lowercase()) {
+            "basic" -> 0
+            "advanced" -> 1
+            "expert" -> 2
+            "master" -> 3
+            "remaster" -> 4
+            else -> null
+        }
+    }
+
+    LaunchedEffect(entry.songJson?.id, difficultyKey) {
+        if (entry.songJson?.id != null && difficultyKey != null) {
+            levelInfo = difficultyRepository.getLevelByDifficulty(entry.songJson.id!!, difficultyKey)
+        }
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -372,10 +395,10 @@ fun MostPlayedItem(entry: MaimaiMostPlayedEntry, maxCount: Int) {
             }
             
             if (!entry.difficulty.isNullOrBlank()) {
-                Text(
-                    text = entry.difficulty,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                MaimaiDifficultyBadge(
+                    difficultyValue = entry.difficulty,
+                    levelInfo = levelInfo,
+                    isCompact = true,
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
