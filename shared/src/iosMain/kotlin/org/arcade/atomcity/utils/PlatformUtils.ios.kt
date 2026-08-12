@@ -14,6 +14,8 @@ import platform.UIKit.UIImpactFeedbackStyle
 import platform.UIKit.UISelectionFeedbackGenerator
 
 actual object PlatformUtils {
+    actual val isIos: Boolean = true
+    actual val isAndroid: Boolean = false
     actual fun log(tag: String, message: String, isError: Boolean) {
         NSLog("[%s] %s", tag, message)
     }

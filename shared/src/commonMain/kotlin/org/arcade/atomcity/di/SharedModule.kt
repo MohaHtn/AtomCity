@@ -21,6 +21,7 @@ import org.arcade.atomcity.data.MaiteaRepository
 import org.arcade.atomcity.data.TaikoServerRepository
 import org.arcade.atomcity.data.DifficultyRepository
 import org.arcade.atomcity.utils.ApiKeyManager
+import org.arcade.atomcity.utils.ThemeSettingsManager
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.worker.ImportWorkManager
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
@@ -78,5 +79,6 @@ val sharedModule = module {
     single { TaikoServerRepository(get()) }
     single { DifficultyRepository(get()) }
     single { ApiKeyManager(get()) }
+    single { ThemeSettingsManager(get()) }
     single { MaiteaRepository(get(), get(), get(), get(), get(), get(), get(named("jacketImages")), get(named("scorefetcher_api_key"))) }
 }

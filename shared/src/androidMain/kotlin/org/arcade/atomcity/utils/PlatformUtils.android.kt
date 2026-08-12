@@ -4,6 +4,8 @@ import android.util.Log
 import java.security.MessageDigest
 
 actual object PlatformUtils {
+    actual val isIos: Boolean = false
+    actual val isAndroid: Boolean = true
     actual fun log(tag: String, message: String, isError: Boolean) {
         if (isError) {
             Log.e(tag, message)
