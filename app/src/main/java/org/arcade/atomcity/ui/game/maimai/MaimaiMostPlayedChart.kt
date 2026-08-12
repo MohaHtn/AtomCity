@@ -88,7 +88,13 @@ fun MaimaiMostPlayedChart(
                 val start = SimpleDateFormat("dd MMM", Locale.getDefault()).format(cal.time)
                 cal.add(Calendar.DAY_OF_WEEK, 6)
                 val end = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(cal.time)
-                "Semaine du $start au $end"
+                
+                val locale = Locale.getDefault()
+                if (locale.language == "fr") {
+                    "Semaine du $start au $end"
+                } else {
+                    "Week from $start to $end"
+                }
             }
             "month" -> SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(calendar.time)
                 .replaceFirstChar { it.uppercase() }

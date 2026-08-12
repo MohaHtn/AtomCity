@@ -45,7 +45,7 @@ struct MaimaiScoreDetailsView: View {
                 // Extra info
                 VStack(alignment: .leading, spacing: 12) {
                     InfoRow(label: "Difficulté", value: play.difficultyLevel?.label ?? "")
-                    InfoRow(label: "Date de jeu", value: play.playDate ?? "")
+                    InfoRow(label: "Date de jeu", value: DateUtilsKt.formatPlayDate(playDate: play.playDate))
                     InfoRow(label: "ID du score", value: "\(play.id ?? 0)")
                 }
                 .padding()

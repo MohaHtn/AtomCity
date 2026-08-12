@@ -121,7 +121,6 @@ struct TaikoScoreCard: View {
     }
     
     func formatDate(_ dateString: String?) -> String {
-        // Simple formatting for now, similar to formatPlayDate in Android if available
-        return dateString ?? ""
+        return DateUtilsKt.formatPlayDate(playDate: dateString)
     }
 }

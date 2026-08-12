@@ -55,16 +55,42 @@ fun MaimaiMostPlayedChart(
     val apiDate = remember(currentDate, selectedPeriod) {
         when (selectedPeriod) {
             "day" -> currentDate.toString() // yyyy-mm-dd
+            "week" -> {
+                val daysToSubtract = currentDate.dayOfWeek.ordinal
+                val startOfWeek = currentDate.minus(DatePeriod(days = daysToSubtract))
+                startOfWeek.toString()
+            }
             "month" -> "${currentDate.year}-${currentDate.month.number.toString().padStart(2, '0')}"
             else -> "${currentDate.year}-${currentDate.month.number.toString().padStart(2, '0')}"
         }
     }
 
     val displayDate = remember(currentDate, selectedPeriod) {
+        fun Month.toFrench(): String = when (this) {
+            Month.JANUARY -> "Janvier"
+            Month.FEBRUARY -> "Février"
+            Month.MARCH -> "Mars"
+            Month.APRIL -> "Avril"
+            Month.MAY -> "Mai"
+            Month.JUNE -> "Juin"
+            Month.JULY -> "Juillet"
+            Month.AUGUST -> "Août"
+            Month.SEPTEMBER -> "Septembre"
+            Month.OCTOBER -> "Octobre"
+            Month.NOVEMBER -> "Novembre"
+            Month.DECEMBER -> "Décembre"
+        }
+
         when (selectedPeriod) {
-            "day" -> "${currentDate.day} ${currentDate.month.name} ${currentDate.year}"
-            "month" -> "${currentDate.month.name} ${currentDate.year}"
-            else -> "${currentDate.month.name} ${currentDate.year}"
+            "day" -> "${currentDate.day} ${currentDate.month.toFrench()} ${currentDate.year}"
+            "week" -> {
+                val daysToSubtract = currentDate.dayOfWeek.ordinal
+                val startOfWeek = currentDate.minus(DatePeriod(days = daysToSubtract))
+                val endOfWeek = startOfWeek.plus(DatePeriod(days = 6))
+                "Semaine du ${startOfWeek.day} ${startOfWeek.month.toFrench()} au ${endOfWeek.day} ${endOfWeek.month.toFrench()}"
+            }
+            "month" -> "${currentDate.month.toFrench()} ${currentDate.year}"
+            else -> "${currentDate.month.toFrench()} ${currentDate.year}"
         }
     }
 
@@ -114,6 +140,7 @@ fun MaimaiMostPlayedChart(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 PeriodChip(label = "Jour", selected = selectedPeriod == "day", onClick = { selectedPeriod = "day" })
+                PeriodChip(label = "Semaine", selected = selectedPeriod == "week", onClick = { selectedPeriod = "week" })
                 PeriodChip(label = "Mois", selected = selectedPeriod == "month", onClick = { selectedPeriod = "month" })
             }
 
@@ -126,6 +153,7 @@ fun MaimaiMostPlayedChart(
                 IconButton(onClick = {
                     currentDate = when (selectedPeriod) {
                         "day" -> currentDate.minus(DatePeriod(days = 1))
+                        "week" -> currentDate.minus(DatePeriod(days = 7))
                         "month" -> currentDate.minus(DatePeriod(months = 1))
                         else -> currentDate.minus(DatePeriod(months = 1))
                     }
@@ -144,6 +172,7 @@ fun MaimaiMostPlayedChart(
                 IconButton(onClick = {
                     currentDate = when (selectedPeriod) {
                         "day" -> currentDate.plus(DatePeriod(days = 1))
+                        "week" -> currentDate.plus(DatePeriod(days = 7))
                         "month" -> currentDate.plus(DatePeriod(months = 1))
                         else -> currentDate.plus(DatePeriod(months = 1))
                     }
@@ -260,13 +289,7 @@ fun MostPlayedBarChart(topEntries: List<MaimaiMostPlayedEntry>, maxCount: Int) {
                                 .fillMaxHeight(fraction.coerceAtLeast(0.1f))
                                 .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
                                 .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = if (isSelected) {
-                                            listOf(MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.primary)
-                                        } else {
-                                            listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
-                                        }
-                                    )
+                                    color = if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
                                 )
                         )
                     }
@@ -344,14 +367,7 @@ fun MostPlayedItem(entry: MaimaiMostPlayedEntry, maxCount: Int) {
                     modifier = Modifier
                         .fillMaxWidth(fraction)
                         .fillMaxHeight()
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.secondary
-                                )
-                            )
-                        )
+                        .background(MaterialTheme.colorScheme.primary)
                 )
             }
             
