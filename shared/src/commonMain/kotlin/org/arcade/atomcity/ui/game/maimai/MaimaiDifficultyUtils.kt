@@ -31,6 +31,7 @@ fun getDifficultyText(difficultyValue: String?): String {
         "advanced" -> "Advanced"
         "remaster" -> "Re:Master"
         "basic" -> "Basic"
+        "easy" -> "Easy"
         "expert" -> "Expert"
         "utage" -> "宴 (Utage)"
         else -> "N/A"

@@ -1,6 +1,7 @@
 package org.arcade.atomcity.ui.game.maimai
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 // no border: use filled surface color (no outline)
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.Alignment
@@ -53,7 +55,6 @@ fun MaimaiChartSearchBar(
     val searchResults by viewModel.searchResults.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
 
-    // Simplified pill-shaped search field: use a regular TextField with rounded shape
     Box(modifier = modifier.fillMaxWidth()) {
         // custom BasicTextField inside a pill-shaped Surface so the background is exactly as desired
         Box(
@@ -61,7 +62,8 @@ fun MaimaiChartSearchBar(
                 .fillMaxWidth()
                 .height(48.dp)
                 .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.onPrimary)
+                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.CenterStart
         ) {
@@ -111,10 +113,10 @@ fun MaimaiChartSearchBar(
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     if (isSearching) {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth().offset(y= -10.dp).padding(horizontal = 16.dp))
                     }
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize().offset(y = 42.dp),
                         contentPadding = PaddingValues(
                             top = 16.dp,
                             start = 16.dp,

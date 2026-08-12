@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -32,7 +33,7 @@ fun MaimaiScoreItem(
     onClick: () -> Unit
 ) {
     val difficultyColor = getJacketBorderColor(play.difficultyLevel?.value)
-    val difficultyRepository: DifficultyRepository = koinInject()
+    val difficultyRepository: DifficultyRepository? = if (LocalInspectionMode.current) null else koinInject()
     
     var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
     val scope = rememberCoroutineScope()
@@ -40,7 +41,7 @@ fun MaimaiScoreItem(
     // Getting level info at the start of the page.
     LaunchedEffect(play.song?.id, play.difficultyLevel?.key) {
         if (play.song?.id != null && play.difficultyLevel?.key != null) {
-            levelInfo = difficultyRepository.getLevelByDifficulty(play.song!!.id!!.toString(), play.difficultyLevel!!.key!!.toString())
+            levelInfo = difficultyRepository?.getLevelByDifficulty(play.song!!.id!!.toString(), play.difficultyLevel!!.key!!.toString())
         }
     }
     
@@ -57,12 +58,12 @@ fun MaimaiScoreItem(
                 text = play.difficultyLevel?.label?.uppercase() ?: "",
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontWeight = FontWeight.Black,
-                    fontSize = if (isNarrow) 48.sp else 60.sp
+                    fontSize = if (isNarrow) 36.sp else 48.sp
                 ),
-                color = difficultyColor.copy(alpha = 0.08f),
+                color = difficultyColor.copy(alpha = 0.05f),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .offset(x = 10.dp, y = 20.dp)
+                    .offset(x = 5.dp, y = 15.dp)
             )
 
             Row(
@@ -100,7 +101,7 @@ fun MaimaiScoreItem(
                             shape = RoundedCornerShape(6.dp),
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
-                                .offset(y = if (isNarrow) (-2).dp else (-5).dp), // Position it above the jacket halo
+                                .offset(y = if (isNarrow) (-14).dp else (-18).dp), // Position it above the jacket halo
                             shadowElevation = 1.dp
                         ) {
                             Text(
@@ -246,3 +247,4 @@ fun MaimaiScoreItem(
         }
     }
 }
+
