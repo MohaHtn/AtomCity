@@ -26,6 +26,7 @@ import coil3.request.crossfade
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.GlobalUIState
+import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,14 +42,19 @@ fun MaimaiScores(
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     
-    var showMiniMenu by remember { mutableStateOf(false) }
+    var showGamesMenu by remember { mutableStateOf(false) }
+    var showActionsMenu by remember { mutableStateOf(false) }
     val currentPage by maiteaViewModel._currentPage.collectAsState()
     
     val playerDataState by maiteaViewModel.playerData.collectAsState()
     val playerData = playerDataState?.data?.firstOrNull()
     val frameUrl = playerData?.options?.frame?.png ?: playerData?.options?.frame?.webp
 
-    // extra items removed (unused)
+    val extraItems = listOf(
+        Triple("maimaiBest30Scores", "Best 30", "Vos 30 meilleures performances"),
+        Triple("maimaiMostPlayed", "Plus joués", "Vos morceaux les plus joués"),
+        Triple("maimaiUsers", "Utilisateurs", "Voir les autres joueurs")
+    )
 
     LaunchedEffect(currentPage) {
         maiteaViewModel.fetchMaimaiPaginatedData(page = currentPage)
@@ -164,11 +170,18 @@ fun MaimaiScores(
                     onPageChange = { newPage ->
                         maiteaViewModel.onPageChange(newPage)
                     },
-                    onHomeClick = { showMiniMenu = !showMiniMenu },
-                    onMenuClick = { showMiniMenu = !showMiniMenu },
+                    onHomeClick = { 
+                        showGamesMenu = !showGamesMenu
+                        showActionsMenu = false
+                    },
+                    onMenuClick = { 
+                        showActionsMenu = !showActionsMenu
+                        showGamesMenu = false
+                    },
                     onSettingsClick = {
                         navController.navigate(Screen.Settings.route)
-                        showMiniMenu = false
+                        showGamesMenu = false
+                        showActionsMenu = false
                     }
                 )
             }
@@ -197,5 +210,21 @@ fun MaimaiScores(
                 }
             }
         }
+
+        OpenMiniMenu(
+            visible = showGamesMenu || showActionsMenu,
+            onDismiss = {
+                showGamesMenu = false
+                showActionsMenu = false
+            },
+            onItemClick = { route ->
+                navController.navigate(route)
+                showGamesMenu = false
+                showActionsMenu = false
+            },
+            showGames = showGamesMenu,
+            extraItems = if (showActionsMenu) extraItems else emptyList(),
+            modifier = Modifier.fillMaxSize().padding(bottom = 96.dp)
+        )
     }
 }

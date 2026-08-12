@@ -27,6 +27,7 @@ import coil3.request.crossfade
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.PlayerDetailsData
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
 import org.arcade.atomcity.ui.game.common.selectRatingBackground
+import org.arcade.atomcity.utils.format
 import kotlin.math.roundToInt
 
 @Composable
@@ -134,15 +135,7 @@ fun MaimaiPlayerDetailsContent(
     textColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     fun computeRating(rating: Int?): String {
-        if (rating != null) {
-            val s = rating.toString()
-            return when {
-                rating <= 1000 -> if (s.length >= 2) s.substring(0, s.length - 2) + "." + s.substring(s.length - 2) else s
-                s.length >= 4 -> s.substring(0, s.length - 2) + "." + s.substring(s.length - 2)
-                else -> s
-            }
-        }
-        return "0.00"
+        return rating?.let { (it.toDouble() / 100.0).format(2) } ?: "0.00"
     }
 
     fun getContrastingColor(backgroundColor: Color): Color {

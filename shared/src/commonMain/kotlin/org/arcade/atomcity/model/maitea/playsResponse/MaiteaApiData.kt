@@ -3,6 +3,8 @@ package org.arcade.atomcity.model.maitea.playsResponse
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 
+import org.arcade.atomcity.utils.format
+
 @Serializable
 data class MaiteaApiData (
   @SerialName( "id") var id: Int? = null,
@@ -26,5 +28,11 @@ data class MaiteaApiData (
   @SerialName( "rank") var rank: String? = null,
   @SerialName("rating") var rating: Double? = null
 ) {
-    val ratingFormatted: String? get() = rating?.toString()
+    val ratingFormatted: String? get() = rating?.format(2)
+
+    val achievementFormattedFixed: String? get() {
+        return achievement?.let {
+            "${(it.toDouble() / 100.0).format(2)}%"
+        } ?: achievementFormatted
+    }
 }

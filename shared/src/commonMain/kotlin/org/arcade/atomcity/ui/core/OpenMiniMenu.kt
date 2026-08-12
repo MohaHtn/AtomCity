@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
@@ -28,9 +28,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun OpenMiniMenu(
-    showMiniMenu: Boolean,
+    visible: Boolean,
     onDismiss: () -> Unit,
     onItemClick: (String) -> Unit,
+    showGames: Boolean = true,
     extraItems: List<Triple<String, String, String>> = emptyList(),
     modifier: Modifier = Modifier
 ) {
@@ -45,10 +46,10 @@ fun OpenMiniMenu(
         Triple("itg", "In The Groove 2", "dance dance revolution but better")
     )
 
-    val filteredGames = allGames.filter { it.first in availableKeys }
+    val filteredGames = if (showGames) allGames.filter { it.first in availableKeys } else emptyList()
 
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
-        if (showMiniMenu) {
+        if (visible) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -60,13 +61,14 @@ fun OpenMiniMenu(
             )
         }
         AnimatedVisibility(
-            visible = showMiniMenu,
+            visible = visible,
             enter = fadeIn() + expandVertically(expandFrom = Alignment.Bottom),
             exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Bottom)
         ) {
             Card(
                 modifier = Modifier
-                    .width(512.dp)
+                    .widthIn(max = 512.dp)
+                    .fillMaxWidth()
                     .padding(16.dp),
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {

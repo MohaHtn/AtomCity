@@ -48,11 +48,14 @@ fun TaikoScores(
     onNavigateToRoute: (String) -> Unit
 ) {
     val isLoading by taikoViewModel.isLoading.collectAsState()
-    var showMiniMenu by remember { mutableStateOf(false) }
+    var showGamesMenu by remember { mutableStateOf(false) }
+    var showActionsMenu by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val collapsedFraction = scrollBehavior.state.collapsedFraction
     var lastClickMark by remember { mutableStateOf(TimeSource.Monotonic.markNow()) }
     val scoresData by taikoViewModel.scoresData.collectAsState()
+
+    val extraItems = emptyList<Triple<String, String, String>>()
 
     LaunchedEffect(Unit) {
         taikoViewModel.getScores()
@@ -81,10 +84,12 @@ fun TaikoScores(
                         taikoViewModel.onPageChange(newPage)
                     },
                     onMenuClick = {
-                        showMiniMenu = !showMiniMenu
+                        showActionsMenu = !showActionsMenu
+                        showGamesMenu = false
                     },
                     onHomeClick = {
-                        showMiniMenu = !showMiniMenu
+                        showGamesMenu = !showGamesMenu
+                        showActionsMenu = false
                     },
                     onSettingsClick = onNavigateToSettings
                 )
@@ -192,18 +197,22 @@ fun TaikoScores(
         }
 
         OpenMiniMenu(
-            showMiniMenu = showMiniMenu,
+            visible = showGamesMenu || showActionsMenu,
             onDismiss = {
                 val now = TimeSource.Monotonic.markNow()
                 if (now - lastClickMark > 300.milliseconds) {
-                    showMiniMenu = false
+                    showGamesMenu = false
+                    showActionsMenu = false
                     lastClickMark = now
                 }
             },
             onItemClick = { route ->
                 onNavigateToRoute(route)
-                showMiniMenu = false
+                showGamesMenu = false
+                showActionsMenu = false
             },
+            showGames = showGamesMenu,
+            extraItems = if (showActionsMenu) extraItems else emptyList(),
             modifier = Modifier.fillMaxSize().padding(bottom = 96.dp)
         )
     }

@@ -41,7 +41,7 @@ fun MaimaiScoreItem(
     // Getting level info at the start of the page.
     LaunchedEffect(play.song?.id, play.difficultyLevel?.key) {
         if (play.song?.id != null && play.difficultyLevel?.key != null) {
-            levelInfo = difficultyRepository?.getLevelByDifficulty(play.song!!.id!!.toString(), play.difficultyLevel!!.key!!.toString())
+            levelInfo = difficultyRepository?.getLevelByDifficulty(play.song!!.id!!, play.difficultyLevel!!.key!!)
         }
     }
     
@@ -204,7 +204,7 @@ fun MaimaiScoreItem(
                     
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
-                            text = play.achievementFormatted?.replace("%", "") ?: "0.00",
+                            text = play.achievementFormattedFixed?.replace("%", "") ?: "0.00",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Black,
                                 fontSize = if (isNarrow) 18.sp else 24.sp,

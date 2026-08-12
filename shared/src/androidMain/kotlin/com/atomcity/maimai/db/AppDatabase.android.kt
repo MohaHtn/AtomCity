@@ -6,9 +6,8 @@ import androidx.room.RoomDatabase
 
 actual fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
     val appContext = org.koin.java.KoinJavaComponent.get<Context>(Context::class.java)
-    val dbFile = appContext.getDatabasePath("maimai.db")
     return Room.databaseBuilder<AppDatabase>(
         context = appContext,
-        name = dbFile.absolutePath
-    )
+        name = appContext.getDatabasePath("maimai.db").absolutePath
+    ).createFromAsset("maimai/database/maimai_internal_diffs.db")
 }

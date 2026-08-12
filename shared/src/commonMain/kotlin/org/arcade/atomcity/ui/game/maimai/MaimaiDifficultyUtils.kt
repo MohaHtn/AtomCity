@@ -54,10 +54,15 @@ fun MaimaiDifficultyBadge(
     val displayText = remember(difficultyValue, levelInfo) {
         val difficultyText = getDifficultyText(difficultyValue)
         val level = levelInfo?.level?.takeIf { it.isNotEmpty() }
-        val internal = levelInfo?.internalLevel?.takeIf { it.isNotEmpty() && it != level }
+        var internal = levelInfo?.internalLevel?.takeIf { it.isNotEmpty() }
+
+        // Formatting internal level to always have at least one decimal if it's a number
+        if (internal != null && !internal.contains(".") && internal.toDoubleOrNull() != null) {
+            internal = "$internal.0"
+        }
 
         // Creating level/internal level separator
-        val levels = listOfNotNull(level, internal).joinToString(" • ")
+        val levels = listOfNotNull(level, internal.takeIf { it != level }).joinToString(" • ")
 
         // Adding the difficulty name at the end
         if (levels.isNotEmpty()) "$difficultyText $levels" else difficultyText

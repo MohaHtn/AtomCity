@@ -71,6 +71,7 @@ val sharedModule = module {
     }
 
     single<AppDatabase> { getAppDatabase(getDatabaseBuilder()) }
+    single<com.atomcity.maimai.db.AppDatabase> { com.atomcity.maimai.db.getAppDatabase(com.atomcity.maimai.db.getDatabaseBuilder()) }
 
     single { GetTaikoServerDataUseCase(get()) }
     single { GetMaiteaDataUseCase(get()) }

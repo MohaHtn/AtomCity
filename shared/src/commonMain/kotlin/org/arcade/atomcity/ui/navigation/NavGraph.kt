@@ -48,6 +48,12 @@ fun AppNavigation(
 
     val showMiniMenu: MutableState<Boolean> = remember { mutableStateOf(false) }
 
+    val apiChecklistState by apiKeyManager.getApiChecklistStateFlow().collectAsState(initial = emptyList())
+
+    LaunchedEffect(apiChecklistState) {
+        GlobalUIState.availableApiKeys.value = apiChecklistState
+    }
+
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,

@@ -71,7 +71,7 @@ fun MaimaiScoresDetails(
 
     LaunchedEffect(scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
         if (scoreEntry?.song?.id != null && scoreEntry.difficultyLevel?.key != null) {
-            levelInfo = difficultyRepository.getLevelByDifficulty(scoreEntry.song!!.id!!.toString(), scoreEntry.difficultyLevel!!.key!!.toString())
+            levelInfo = difficultyRepository.getLevelByDifficulty(scoreEntry.song!!.id!!, scoreEntry.difficultyLevel!!.key!!)
         }
         
         val songName = scoreEntry?.song?.name?.en ?: scoreEntry?.song?.name?.jp
@@ -257,7 +257,7 @@ fun MaimaiScoresDetails(
                         }
 
                         Text(
-                            text = scoreEntry?.achievementFormatted?.replace("%", "") ?: "0.00",
+                            text = scoreEntry?.achievementFormattedFixed?.replace("%", "") ?: "0.00",
                             style = MaterialTheme.typography.displayLarge.copy(
                                 fontWeight = FontWeight.Black,
                                 fontSize = 56.sp,
@@ -559,11 +559,14 @@ fun BestPerPlayerItem(b: BestPerPlayerResponse) {
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                         )
                         if (label != "宴") {
-                            Text(
-                                text = b.ratingFormatted ?: "",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                modifier = Modifier.alpha(0.6f)
-                            )
+                            val displayRating = b.rating?.format(2) ?: b.ratingFormatted ?: ""
+                            if (displayRating.isNotEmpty()) {
+                                Text(
+                                    text = displayRating,
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                    modifier = Modifier.alpha(0.6f)
+                                )
+                            }
                         }
                     }
                 }
@@ -1013,11 +1016,14 @@ fun RatingVsScoreGraph(
                                 color = Color.White
                             )
                             if (entry.difficultyLevel != "宴" && entry.difficultyLevelJson?.value?.lowercase() != "utage") {
-                                Text(
-                                    text = "Rating : ${entry.ratingFormatted}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.8f)
-                                )
+                                val displayRating = entry.rating?.format(2) ?: entry.ratingFormatted
+                                if (!displayRating.isNullOrBlank()) {
+                                    Text(
+                                        text = "Rating : $displayRating",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.White.copy(alpha = 0.8f)
+                                    )
+                                }
                             }
                         }
                     }
@@ -1197,11 +1203,14 @@ fun PersonalBestProgressionGraph(
                                 color = Color.White.copy(alpha = 0.8f)
                             )
                             if (entry.difficultyLevel != "宴" && entry.difficultyLevelJson?.value?.lowercase() != "utage") {
-                                Text(
-                                    text = "Rating : ${entry.ratingFormatted}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.8f)
-                                )
+                                val displayRating = entry.rating?.format(2) ?: entry.ratingFormatted
+                                if (!displayRating.isNullOrBlank()) {
+                                    Text(
+                                        text = "Rating : $displayRating",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.White.copy(alpha = 0.8f)
+                                    )
+                                }
                             }
                         }
                     }

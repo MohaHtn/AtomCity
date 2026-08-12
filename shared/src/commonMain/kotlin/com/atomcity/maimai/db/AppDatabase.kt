@@ -4,7 +4,6 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
@@ -22,7 +21,6 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
 internal fun getAppDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {
     return builder
         .fallbackToDestructiveMigration(false)
-        .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
 }
