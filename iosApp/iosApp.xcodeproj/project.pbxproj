@@ -3,22 +3,38 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C42556FA302E3A5600814C5D /* maimai_internal_diffs.db in Resources */ = {isa = PBXBuildFile; fileRef = C42556F7302E3A5600814C5D /* maimai_internal_diffs.db */; };
 		C4FDCC123021EAE200AA234E /* iosAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FDCC113021EAE200AA234E /* iosAppApp.swift */; };
 		C4FDCC163021EAE400AA234E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C4FDCC153021EAE400AA234E /* Assets.xcassets */; };
 		C4FDCC1A3021EAE400AA234E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C4FDCC193021EAE400AA234E /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C42556F7302E3A5600814C5D /* maimai_internal_diffs.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = maimai_internal_diffs.db; sourceTree = "<group>"; };
 		C4FDCC0E3021EAE200AA234E /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4FDCC113021EAE200AA234E /* iosAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosAppApp.swift; sourceTree = "<group>"; };
 		C4FDCC153021EAE400AA234E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C4FDCC173021EAE400AA234E /* iosApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iosApp.entitlements; sourceTree = "<group>"; };
 		C4FDCC193021EAE400AA234E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C42556F6302E3A3900814C5D /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				database/maimai_internal_diffs.db,
+			);
+			target = C4FDCC0D3021EAE200AA234E /* iosApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		C42556F4302E3A2B00814C5D /* maimai */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C42556F6302E3A3900814C5D /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = maimai; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		C4FDCC0B3021EAE200AA234E /* Frameworks */ = {
@@ -31,9 +47,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C42556F8302E3A5600814C5D /* database */ = {
+			isa = PBXGroup;
+			children = (
+				C42556F7302E3A5600814C5D /* maimai_internal_diffs.db */,
+			);
+			path = database;
+			sourceTree = "<group>";
+		};
+		C42556F9302E3A5600814C5D /* maimai */ = {
+			isa = PBXGroup;
+			children = (
+				C42556F8302E3A5600814C5D /* database */,
+			);
+			name = maimai;
+			path = ../shared/src/iosMain/resources/maimai;
+			sourceTree = SOURCE_ROOT;
+		};
 		C4FDCC053021EAE100AA234E = {
 			isa = PBXGroup;
 			children = (
+				C42556F9302E3A5600814C5D /* maimai */,
+				C42556F4302E3A2B00814C5D /* maimai */,
 				C4FDCC103021EAE200AA234E /* iosApp */,
 				C4FDCC0F3021EAE200AA234E /* Products */,
 			);
@@ -82,6 +117,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				C42556F4302E3A2B00814C5D /* maimai */,
+			);
 			name = iosApp;
 			productName = iosApp;
 			productReference = C4FDCC0E3021EAE200AA234E /* iosApp.app */;
@@ -127,6 +165,7 @@
 			files = (
 				C4FDCC1A3021EAE400AA234E /* Preview Assets.xcassets in Resources */,
 				C4FDCC163021EAE400AA234E /* Assets.xcassets in Resources */,
+				C42556FA302E3A5600814C5D /* maimai_internal_diffs.db in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

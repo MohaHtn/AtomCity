@@ -48,6 +48,18 @@ interface SongDao {
     @Query("SELECT * FROM song")
     suspend fun getAllSongs(): List<SongEntity>
 
+    @Query(
+        """
+        SELECT level.*
+        FROM level
+        JOIN song ON song.id = level.songId
+        WHERE (lower(song.name_en) = lower(:title) OR lower(song.name_jp) = lower(:title) OR lower(song.matchedTitle) = lower(:title))
+        AND level.diffIndex = :diffIndex
+        LIMIT 1
+        """
+    )
+    suspend fun getLevelByTitleAndDifficulty(title: String, diffIndex: Int): LevelEntity?
+
     @Query("SELECT * FROM level WHERE songId = :songId AND diffIndex = :difficultyValue ORDER BY uid LIMIT 1")
     suspend fun getLevelByDifficulty(songId: Int, difficultyValue: Int): LevelEntity?
 }

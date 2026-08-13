@@ -41,7 +41,11 @@ fun MaimaiScoreItem(
     // Getting level info at the start of the page.
     LaunchedEffect(play.song?.id, play.difficultyLevel?.key) {
         if (play.song?.id != null && play.difficultyLevel?.key != null) {
-            levelInfo = difficultyRepository?.getLevelByDifficulty(play.song!!.id!!, play.difficultyLevel!!.key!!)
+            levelInfo = difficultyRepository?.getLevelByDifficulty(
+                play.song!!.id!!, 
+                play.difficultyLevel!!.key!!,
+                play.song?.name?.jp ?: play.song?.name?.en
+            )
         }
     }
     

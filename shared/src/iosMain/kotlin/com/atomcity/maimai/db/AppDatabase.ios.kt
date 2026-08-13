@@ -11,17 +11,29 @@ import kotlinx.cinterop.ExperimentalForeignApi
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
-    val dbFilePath = documentDirectory() + "/maimai.db"
     val fileManager = NSFileManager.defaultManager
+    val docsUrl = fileManager.URLForDirectory(
+        directory = NSDocumentDirectory,
+        inDomain = NSUserDomainMask,
+        appropriateForURL = null,
+        create = true,
+        error = null
+    )
+    val dbFilePath = docsUrl!!.path!! + "/maimai_v3.db"
+    
     if (!fileManager.fileExistsAtPath(dbFilePath)) {
         val bundle = NSBundle.mainBundle
-        val assetPath = bundle.pathForResource("maimai_internal_diffs", "db", "compose-resources/files/maimai/database")
-            ?: bundle.pathForResource("maimai_internal_diffs", "db")
+        val assetPath = bundle.pathForResource("maimai_internal_diffs", "db")
+            ?: bundle.pathForResource("maimai_internal_diffs", "db", "maimai/database")
         
         if (assetPath != null) {
+            println("AppDatabase: Fresh copy from $assetPath to $dbFilePath")
             fileManager.copyItemAtPath(assetPath, dbFilePath, null)
+        } else {
+            println("AppDatabase: CRITICAL ERROR - maimai_internal_diffs.db not found in bundle!")
         }
     }
+
     return Room.databaseBuilder<AppDatabase>(
         name = dbFilePath,
         factory = { AppDatabaseConstructor.initialize() }

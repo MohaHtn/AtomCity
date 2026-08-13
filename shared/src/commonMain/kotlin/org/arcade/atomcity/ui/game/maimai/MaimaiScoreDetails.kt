@@ -76,7 +76,11 @@ fun MaimaiScoresDetails(
         val diffLevel = scoreEntry?.difficultyLevel
 
         if (song?.id != null && diffLevel?.key != null) {
-            levelInfo = difficultyRepository.getLevelByDifficulty(song.id!!, diffLevel.key!!)
+            levelInfo = difficultyRepository.getLevelByDifficulty(
+                song.id!!, 
+                diffLevel.key!!,
+                song.name?.jp ?: song.name?.en
+            )
         }
         
         val songNameForHistory = song?.name?.en ?: song?.name?.jp
