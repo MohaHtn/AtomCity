@@ -70,14 +70,16 @@ fun MaimaiScoresDetails(
     val isLoading by maiteaViewModel?.isLoadingDetails?.collectAsState() ?: remember { mutableStateOf(false) }
 
     LaunchedEffect(scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
-        if (scoreEntry?.song?.id != null && scoreEntry.difficultyLevel?.key != null) {
-            levelInfo = difficultyRepository.getLevelByDifficulty(scoreEntry.song!!.id!!, scoreEntry.difficultyLevel!!.key!!)
+        val song = scoreEntry?.song
+        val diffLevel = scoreEntry?.difficultyLevel
+        if (song?.id != null && diffLevel?.key != null) {
+            levelInfo = difficultyRepository.getLevelByDifficulty(song.id!!, diffLevel.key!!)
         }
         
-        val songName = scoreEntry?.song?.name?.en ?: scoreEntry?.song?.name?.jp
+        val songName = song?.name?.en ?: song?.name?.jp
         songName?.let {
-            maiteaViewModel?.fetchChartHistory(it, scoreEntry?.difficultyLevel?.value)
-            maiteaViewModel?.fetchBestPerPlayer(it, scoreEntry?.difficultyLevel?.value)
+            maiteaViewModel?.fetchChartHistory(it, diffLevel?.value)
+            maiteaViewModel?.fetchBestPerPlayer(it, diffLevel?.value)
         }
     }
     Scaffold(
@@ -101,18 +103,31 @@ fun MaimaiScoresDetails(
             )
         }
     ) { innerPadding ->
-        if (isLoading && scoreEntry == null) {
+        if (scoreEntry == null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    Text(
+                        text = "Impossible de charger les détails du score",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(16.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         } else {
+            val song = scoreEntry.song
+            val diffLevel = scoreEntry.difficultyLevel
+            val songName = song?.name
+            val songArtist = song?.artist
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -122,7 +137,7 @@ fun MaimaiScoresDetails(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
             ElevatedCard(
-                colors = getDifficultyColorBackground(scoreEntry?.difficultyLevel?.value),
+                colors = getDifficultyColorBackground(diffLevel?.value),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(32.dp)
             ) {
@@ -141,21 +156,21 @@ fun MaimaiScoresDetails(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.weight(1f)
                         ) {
-                            if (scoreEntry?.isHighScore == true) {
+                            if (scoreEntry.isHighScore == true) {
                                 ScoreBadge(
                                     text = "MEILLEUR SCORE",
                                     containerColor = Color(0xFFFFF9C4),
                                     contentColor = Color(0xFFFBC02D)
                                 )
                             }
-                            if (scoreEntry?.isAllPerfect == true) {
+                            if (scoreEntry.isAllPerfect == true) {
                                 ScoreBadge(
                                     text = "ALL PERFECT",
                                     containerColor = Color(0xFFE0F2F1),
                                     contentColor = Color(0xFF00897B)
                                 )
                             }
-                            if (scoreEntry?.isTrackSkip == true) {
+                            if (scoreEntry.isTrackSkip == true) {
                                 ScoreBadge(
                                     text = "TRACK SKIP",
                                     containerColor = Color(0xFFFFEBEE),
@@ -165,7 +180,7 @@ fun MaimaiScoresDetails(
                         }
                         
                         Text(
-                            text = formatPlayDate(scoreEntry?.playDate),
+                            text = formatPlayDate(scoreEntry.playDate),
                             style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.alpha(0.6f)
                         )
@@ -181,8 +196,8 @@ fun MaimaiScoresDetails(
                                 .background(difficultyColor.copy(alpha = 0.1f), CircleShape)
                         )
                         AsyncImage(
-                            model = scoreEntry?.jacketImageUrl,
-                            contentDescription = scoreEntry?.song?.name?.jp,
+                            model = scoreEntry.jacketImageUrl,
+                            contentDescription = songName?.jp,
                             modifier = Modifier
                                 .size(160.dp)
                                 .clip(CircleShape)
@@ -195,7 +210,7 @@ fun MaimaiScoresDetails(
 
                     // Song Info
                     Text(
-                        text = scoreEntry?.song?.name?.jp ?: "Unknown",
+                        text = songName?.jp ?: "Unknown",
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Black,
                             textAlign = TextAlign.Center
@@ -204,9 +219,9 @@ fun MaimaiScoresDetails(
                         overflow = TextOverflow.Ellipsis
                     )
                     
-                    if (scoreEntry?.song?.name?.en != null && scoreEntry.song?.name?.en != scoreEntry.song?.name?.jp) {
+                    if (songName?.en != null && songName.en != songName.jp) {
                         Text(
-                            text = scoreEntry.song?.name?.en ?: "",
+                            text = songName.en ?: "",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.alpha(0.5f).padding(top = 4.dp),
                             textAlign = TextAlign.Center
@@ -215,8 +230,8 @@ fun MaimaiScoresDetails(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    val artistJp = scoreEntry?.song?.artist?.jp
-                    val artistEn = scoreEntry?.song?.artist?.en
+                    val artistJp = songArtist?.jp
+                    val artistEn = songArtist?.en
                     
                     Text(
                         text = artistJp ?: artistEn ?: "",
@@ -244,7 +259,7 @@ fun MaimaiScoresDetails(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        if (scoreEntry?.rank != null) {
+                        if (scoreEntry.rank != null) {
                             Text(
                                 text = scoreEntry.rank!!,
                                 style = MaterialTheme.typography.headlineLarge.copy(
@@ -257,7 +272,7 @@ fun MaimaiScoresDetails(
                         }
 
                         Text(
-                            text = scoreEntry?.achievementFormattedFixed?.replace("%", "") ?: "0.00",
+                            text = scoreEntry.achievementFormattedFixed?.replace("%", "") ?: "0.00",
                             style = MaterialTheme.typography.displayLarge.copy(
                                 fontWeight = FontWeight.Black,
                                 fontSize = 56.sp,
@@ -278,7 +293,7 @@ fun MaimaiScoresDetails(
 
                     // Difficulty Badge with Level Info
                     MaimaiDifficultyBadge(
-                        difficultyValue = scoreEntry?.difficultyLevel?.value,
+                        difficultyValue = diffLevel?.value,
                         levelInfo = levelInfo,
                         textStyle = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Black,
@@ -343,7 +358,7 @@ fun MaimaiScoresDetails(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
                     )
 
-                    val detail = scoreEntry?.scoreDetail
+                    val detail = scoreEntry.scoreDetail
 
                     detail?.tap?.let {
                         DetailRow("Taps", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
@@ -409,8 +424,8 @@ fun MaimaiScoresDetails(
                         difficultyColor = difficultyColor
                     )
 
-                    val isUtage = scoreEntry?.difficultyLevel?.value?.lowercase() == "utage" || 
-                                 scoreEntry?.difficultyLevel?.label == "宴"
+                    val isUtage = diffLevel?.value?.lowercase() == "utage" || 
+                                 diffLevel?.label == "宴"
 
                     if (!isUtage) {
                         Spacer(modifier = Modifier.height(24.dp))
