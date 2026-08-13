@@ -68,10 +68,13 @@ fun MaimaiScoresDetails(
     val chartHistory by maiteaViewModel?.chartHistory?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
     val bestPerPlayer by maiteaViewModel?.bestPerPlayer?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
     val isLoading by maiteaViewModel?.isLoadingDetails?.collectAsState() ?: remember { mutableStateOf(false) }
+    val isLoadingPlayById by maiteaViewModel?.isLoadingPlayById?.collectAsState() ?: remember { mutableStateOf(false) }
 
     LaunchedEffect(scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
+
         val song = scoreEntry?.song
         val diffLevel = scoreEntry?.difficultyLevel
+
         if (song?.id != null && diffLevel?.key != null) {
             levelInfo = difficultyRepository.getLevelByDifficulty(song.id!!, diffLevel.key!!)
         }
@@ -110,7 +113,7 @@ fun MaimaiScoresDetails(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                if (isLoading) {
+                if (isLoading || isLoadingPlayById) {
                     CircularProgressIndicator(
                         color = MaterialTheme.colorScheme.primary
                     )

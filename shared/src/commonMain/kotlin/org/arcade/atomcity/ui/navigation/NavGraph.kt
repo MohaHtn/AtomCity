@@ -6,7 +6,6 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -118,7 +117,9 @@ fun AppNavigation(
             val selectedPlayDetail by maiteaViewModel.selectedPlayDetail.collectAsState()
             
             val scoreEntryFromList = dataState?.data?.find { it.id == scoreId }
-            val scoreEntry = scoreEntryFromList ?: selectedPlayDetail?.takeIf { it.id == scoreId }
+            // Prefer the specifically fetched detail if it matches the ID, 
+            // as it's more stable than the paginated list which might refresh.
+            val scoreEntry = (selectedPlayDetail?.takeIf { it.id == scoreId }) ?: scoreEntryFromList
 
             LaunchedEffect(scoreId, scoreEntryFromList) {
                 if (scoreEntryFromList == null) {
@@ -126,12 +127,6 @@ fun AppNavigation(
                     if (!keyHash.isNullOrBlank()) {
                         maiteaViewModel.getPlayById(scoreId, keyHash)
                     }
-                }
-            }
-
-            DisposableEffect(scoreId) {
-                onDispose {
-                    maiteaViewModel.clearSelectedPlayDetail()
                 }
             }
 

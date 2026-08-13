@@ -2,6 +2,7 @@ package org.arcade.atomcity.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -9,12 +10,14 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
 import org.arcade.atomcity.model.maitea.ChartHistoryResponse
 import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
 import org.arcade.atomcity.model.maitea.BestPerPlayerResponse
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
+import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.MaimaiMostPlayedEntry
 
 @Serializable
@@ -56,13 +59,19 @@ class ScorefetcherClient(
             setBody(request)
         }.body()
 
-    suspend fun getScores(token: String, pageNumber: String): List<MaiteaApiData> =
-        client.get("${baseUrl}scores") {
+    suspend fun getScores(token: String, pageNumber: String): MaiteaPlaysResponse {
+        val response: HttpResponse = client.get("${baseUrl}scores") {
             addApiKey()
             header("Authorization", token)
             header("Accept", "application/json")
             parameter("pageNumber", pageNumber)
-        }.body()
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            MaiteaPlaysResponse(emptyList())
+        } else {
+            response.body()
+        }
+    }
 
     suspend fun checkApiKey(key: String): ApiKeyCheckResponse =
         client.get("${baseUrl}apikeys/check") {
@@ -81,50 +90,80 @@ class ScorefetcherClient(
             addApiKey()
         }.body()
 
-    suspend fun get30BestCharts(hashKey: String): List<PlayerBest30Response> =
-        client.get("${baseUrl}scores/top") {
+    suspend fun get30BestCharts(hashKey: String): List<PlayerBest30Response> {
+        val response: HttpResponse = client.get("${baseUrl}scores/top") {
             addApiKey()
             header("Accept", "application/json")
             parameter("keyHash", hashKey)
-        }.body()
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            emptyList()
+        } else {
+            response.body()
+        }
+    }
 
     suspend fun getChartHistory(
         hashKey: String,
         songName: String,
         difficulty: String? = null
-    ): List<ChartHistoryResponse> =
-        client.get("${baseUrl}scores/history") {
+    ): List<ChartHistoryResponse> {
+        val response: HttpResponse = client.get("${baseUrl}scores/history") {
             addApiKey()
             header("Accept", "application/json")
             parameter("keyHash", hashKey)
             parameter("songName", songName)
             parameter("difficulty", difficulty)
-        }.body()
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            emptyList()
+        } else {
+            response.body()
+        }
+    }
 
     suspend fun getBestPerPlayer(
         songName: String,
         difficulty: String? = null
-    ): List<BestPerPlayerResponse> =
-        client.get("${baseUrl}scores/best-per-player") {
+    ): List<BestPerPlayerResponse> {
+        val response: HttpResponse = client.get("${baseUrl}scores/best-per-player") {
             addApiKey()
             header("Accept", "application/json")
             parameter("songName", songName)
             parameter("difficulty", difficulty)
-        }.body()
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            emptyList()
+        } else {
+            response.body()
+        }
+    }
 
-    suspend fun getPlayById(id: Int, keyHash: String): MaiteaApiData =
-        client.get("${baseUrl}scores/$id") {
+    suspend fun getPlayById(id: Int, keyHash: String): MaiteaApiData {
+        val response: HttpResponse = client.get("${baseUrl}scores/$id") {
             addApiKey()
             header("Accept", "application/json")
             parameter("keyHash", keyHash)
-        }.body()
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            throw Exception("Score $id not found")
+        } else {
+            response.body()
+        }
+    }
 
-    suspend fun searchCharts(query: String, keyHash: String? = null): List<BestPerPlayerResponse> =
-        client.get("${baseUrl}scores/search") {
+    suspend fun searchCharts(query: String, keyHash: String? = null): List<BestPerPlayerResponse> {
+        val response: HttpResponse = client.get("${baseUrl}scores/search") {
             addApiKey()
             parameter("query", query)
             parameter("keyHash", keyHash)
-        }.body()
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            emptyList()
+        } else {
+            response.body()
+        }
+    }
 
     suspend fun getMostPlayed(
         limit: Int? = 30,
@@ -133,8 +172,8 @@ class ScorefetcherClient(
         day: String? = null,
         week: String? = null,
         month: String? = null
-    ): List<MaimaiMostPlayedEntry> =
-        client.get("${baseUrl}scores/most-played") {
+    ): List<MaimaiMostPlayedEntry> {
+        val response: HttpResponse = client.get("${baseUrl}scores/most-played") {
             addApiKey()
             parameter("limit", limit)
             parameter("period", period)
@@ -142,7 +181,13 @@ class ScorefetcherClient(
             parameter("day", day)
             parameter("week", week)
             parameter("month", month)
-        }.body()
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            emptyList()
+        } else {
+            response.body()
+        }
+    }
 
     suspend fun getMostPlayedByHash(
         keyHash: String,
@@ -152,8 +197,8 @@ class ScorefetcherClient(
         day: String? = null,
         week: String? = null,
         month: String? = null
-    ): List<MaimaiMostPlayedEntry> =
-        client.get("${baseUrl}scores/most-played/by-keyhash") {
+    ): List<MaimaiMostPlayedEntry> {
+        val response: HttpResponse = client.get("${baseUrl}scores/most-played/by-keyhash") {
             addApiKey()
             parameter("keyHash", keyHash)
             parameter("limit", limit)
@@ -162,5 +207,11 @@ class ScorefetcherClient(
             parameter("day", day)
             parameter("week", week)
             parameter("month", month)
-        }.body()
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            emptyList()
+        } else {
+            response.body()
+        }
+    }
 }

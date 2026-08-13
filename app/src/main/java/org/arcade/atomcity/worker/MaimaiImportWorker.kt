@@ -163,7 +163,6 @@ class MaimaiImportWorker(
             .setContentText(message)
             .setSmallIcon(android.R.drawable.stat_notify_sync)
             .setOngoing(true)
-            .setSilent(true) 
             .setProgress(100, progress, false)
             .build()
 

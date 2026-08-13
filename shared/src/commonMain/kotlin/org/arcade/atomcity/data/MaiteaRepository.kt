@@ -95,8 +95,7 @@ class MaiteaRepository(
         }
 
         try {
-            val playsList = scorefetcherClient.getScores("Bearer ${apiKey.trim()}", page.toString())
-            val response = MaiteaPlaysResponse(data = playsList)
+            val response = scorefetcherClient.getScores("Bearer ${apiKey.trim()}", page.toString())
             response.data.forEach { play ->
                 play.jacketImageUrl = findJacketUrlBySongName(play.song?.name?.jp) ?: findJacketUrlBySongName(play.song?.name?.en)
             }
@@ -199,6 +198,7 @@ class MaiteaRepository(
             play.jacketImageUrl = findJacketUrlBySongName(play.song?.name?.jp) ?: findJacketUrlBySongName(play.song?.name?.en)
             emit(play)
         } catch (e: Exception) {
+            PlatformUtils.log("MaiteaRepository", "Error fetching play by id $id: ${e.message}", true)
             emit(null)
         }
     }

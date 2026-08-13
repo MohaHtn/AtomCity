@@ -36,6 +36,9 @@ fun MaimaiScores(
     navController: androidx.navigation.NavHostController,
 ) {
     val isLoading by maiteaViewModel.isLoading.collectAsState()
+    val isImportingScores by maiteaViewModel.isImportingScores.collectAsState()
+    val importProgress by maiteaViewModel.importWorkerProgress.collectAsState()
+    val importMessage by maiteaViewModel.importWorkerMessage.collectAsState()
     val data by maiteaViewModel.data.collectAsState()
     val isMaimaiImportStateReady by GlobalUIState.isMaimaiImportStateReady
     val hasNextPage by maiteaViewModel.hasNextPage.collectAsState()
@@ -226,5 +229,12 @@ fun MaimaiScores(
             extraItems = if (showActionsMenu) extraItems else emptyList(),
             modifier = Modifier.fillMaxSize().padding(bottom = 96.dp)
         )
+
+        if (isImportingScores) {
+            MaimaiImportOverlay(
+                progress = importProgress,
+                message = importMessage ?: ""
+            )
+        }
     }
 }

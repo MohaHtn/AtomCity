@@ -88,6 +88,8 @@ class MaiteaViewModel(
     private val _isLoading30BestScores = MutableStateFlow(false)
     private val _isLoadingChartHistory = MutableStateFlow(false)
     private val _isLoadingPlayById = MutableStateFlow(false)
+    val isLoadingPlayById: StateFlow<Boolean> = _isLoadingPlayById
+
     private val _isLoadingBestPerPlayer = MutableStateFlow(false)
 
     private val _isLoadingMostPlayed = MutableStateFlow(false)
@@ -118,6 +120,7 @@ class MaiteaViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val isLoadingDetails: StateFlow<Boolean> = combine(
+        _isLoadingPlays,
         _isLoadingChartHistory,
         _isLoadingPlayById,
         _isLoadingBestPerPlayer,
@@ -241,7 +244,7 @@ class MaiteaViewModel(
                 }
             }
         } catch (e: Exception) {
-            // Log.e("MainActivityViewModel", "Error: ${e.message}")
+            //Log.e("MainActivityViewModel", "Error: ${e.message}")
             _isLoadingPlayer.value = false
         }
     }
@@ -318,10 +321,11 @@ class MaiteaViewModel(
                     response?.let { entry ->
                         _selectedPlayDetail.value = entry
                     }
-                    _isLoadingPlayById.value = false
+                    println("Fetched play by id: $id, keyHash: $keyHash, entry: ${response?.id}")
                 }
             } catch (e: Exception) {
-                // Log.e("MaiteaViewModel", "Error fetching play by id: ${e.message}")
+                //Log.e("MaiteaViewModel", "Error fetching play by id: ${e.message}")
+            } finally {
                 _isLoadingPlayById.value = false
             }
         }
