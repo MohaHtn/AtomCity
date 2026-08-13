@@ -52,7 +52,7 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
     }
 
     suspend fun getKeyHash(game: String?): String? {
-        val apiKey = getApiKey(game) ?: return null
+        val apiKey = getApiKey(game)?.trim() ?: return null
         return PlatformUtils.sha256(apiKey)
     }
 

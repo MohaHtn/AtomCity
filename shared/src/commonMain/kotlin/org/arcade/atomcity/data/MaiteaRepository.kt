@@ -63,7 +63,7 @@ class MaiteaRepository(
     }
 
     suspend fun startMaiTeaImport(): Boolean {
-        val apiKey = apiKeyManager.getApiKey("maimai") ?: return false
+        val apiKey = apiKeyManager.getApiKey("maimai")?.trim() ?: return false
         if (apiKey.isBlank()) return false
 
         return try {
@@ -95,25 +95,16 @@ class MaiteaRepository(
         }
 
         try {
-            val response = scorefetcherClient.getScores("Bearer ${apiKey.trim()}", page.toString())
+            val playsList = scorefetcherClient.getScores("Bearer ${apiKey.trim()}", page.toString())
+            val response = MaiteaPlaysResponse(data = playsList)
             response.data.forEach { play ->
                 play.jacketImageUrl = findJacketUrlBySongName(play.song?.name?.jp) ?: findJacketUrlBySongName(play.song?.name?.en)
             }
             pageCache.put(response)
             emit(response)
         } catch (e: Exception) {
-            // Fallback to profile client if needed, or handle error
-            try {
-                val response = profileClient.getAllUserScores(apiKey.trim(), page)
-                response.data.forEach { play ->
-                    play.jacketImageUrl = findJacketUrlBySongName(play.song?.name?.jp) ?: findJacketUrlBySongName(play.song?.name?.en)
-                }
-                pageCache.put(response)
-                emit(response)
-            } catch (e2: Exception) {
-                PlatformUtils.log("MaiteaRepository", "Error fetching scores: ${e2.message}", true)
-                emit(null)
-            }
+            PlatformUtils.log("MaiteaRepository", "Error fetching scores from scorefetcher: ${e.message}", true)
+            emit(null)
         }
     }
 
@@ -174,6 +165,10 @@ class MaiteaRepository(
 
             val realDiff = if (!difficulty.isNullOrBlank()) {
                 when (difficulty.trim().lowercase()) {
+                    "basic" -> "Basic"
+                    "advanced" -> "Advanced"
+                    "expert" -> "Expert"
+                    "master" -> "Master"
                     "remaster" -> "Re:Master"
                     "utage" -> "宴"
                     else -> difficulty
@@ -275,7 +270,7 @@ class MaiteaRepository(
 
     suspend fun removeApiKey(apiKey: String): Flow<DeleteApiKeyResponse> = flow {
         try {
-            val keyHash = PlatformUtils.sha256(apiKey)
+            val keyHash = PlatformUtils.sha256(apiKey.trim())
             emit(scorefetcherClient.deleteApiKey(keyHash))
         } catch (e: Exception) {
             // Handle error appropriately

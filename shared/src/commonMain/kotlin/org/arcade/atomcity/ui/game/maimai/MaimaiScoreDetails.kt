@@ -76,8 +76,8 @@ fun MaimaiScoresDetails(
             levelInfo = difficultyRepository.getLevelByDifficulty(song.id!!, diffLevel.key!!)
         }
         
-        val songName = song?.name?.en ?: song?.name?.jp
-        songName?.let {
+        val songNameForHistory = song?.name?.en ?: song?.name?.jp
+        songNameForHistory?.let {
             maiteaViewModel?.fetchChartHistory(it, diffLevel?.value)
             maiteaViewModel?.fetchBestPerPlayer(it, diffLevel?.value)
         }

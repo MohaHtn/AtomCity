@@ -13,7 +13,7 @@ class IosImportWorkManager(private val importService: ImportService) : ImportWor
     override fun startImport(apiKey: String) {
         if (_isActive.value) return
         
-        val keyHash = PlatformUtils.sha256(apiKey)
+        val keyHash = PlatformUtils.sha256(apiKey.trim())
         _isActive.value = true
         _progress.value = ImportProgress("running", 0, "Démarrage de l'import...")
 

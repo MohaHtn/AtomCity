@@ -50,7 +50,7 @@ class MaimaiImportWorker(
     }
 
     override suspend fun doWork(): Result {
-        val apiKey = inputData.getString(KEY_API_KEY) ?: return Result.failure()
+        val apiKey = inputData.getString(KEY_API_KEY)?.trim() ?: return Result.failure()
         val keyHash = PlatformUtils.sha256(apiKey)
 
         createNotificationChannel()

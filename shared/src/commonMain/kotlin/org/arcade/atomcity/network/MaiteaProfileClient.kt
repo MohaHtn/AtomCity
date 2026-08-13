@@ -1,14 +1,10 @@
 package org.arcade.atomcity.network
 
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.parameter
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
-import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 
 class MaiteaProfileClient(private val client: HttpClient, private val baseUrl: String = "https://maitea.app/api/v1/") {
     suspend fun getPlayerDetails(token: String): MaiteaPlayerDetailsResponse =
@@ -16,13 +12,5 @@ class MaiteaProfileClient(private val client: HttpClient, private val baseUrl: S
             header("Authorization", "Bearer $token")
             contentType(ContentType.Application.Json)
             header("Accept", ContentType.Application.Json)
-        }.body()
-
-    suspend fun getAllUserScores(token: String, page: Int): MaiteaPlaysResponse =
-        client.get("${baseUrl}plays") {
-            header("Authorization", "Bearer $token")
-            contentType(ContentType.Application.Json)
-            header("Accept", ContentType.Application.Json)
-            parameter("page", page)
         }.body()
 }

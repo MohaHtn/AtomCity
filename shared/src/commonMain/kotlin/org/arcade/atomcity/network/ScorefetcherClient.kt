@@ -14,7 +14,6 @@ import kotlinx.serialization.Serializable
 import org.arcade.atomcity.model.maitea.ChartHistoryResponse
 import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
 import org.arcade.atomcity.model.maitea.BestPerPlayerResponse
-import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
 import org.arcade.atomcity.model.maitea.MaimaiMostPlayedEntry
 
@@ -57,10 +56,11 @@ class ScorefetcherClient(
             setBody(request)
         }.body()
 
-    suspend fun getScores(token: String, pageNumber: String): MaiteaPlaysResponse =
+    suspend fun getScores(token: String, pageNumber: String): List<MaiteaApiData> =
         client.get("${baseUrl}scores") {
             addApiKey()
             header("Authorization", token)
+            header("Accept", "application/json")
             parameter("pageNumber", pageNumber)
         }.body()
 
@@ -73,6 +73,7 @@ class ScorefetcherClient(
     suspend fun getProfiles(): Map<String, String> =
         client.get("${baseUrl}apikeys/profiles") {
             addApiKey()
+            header("Accept", "application/json")
         }.body()
 
     suspend fun deleteApiKey(keyHash: String): DeleteApiKeyResponse =
@@ -83,6 +84,7 @@ class ScorefetcherClient(
     suspend fun get30BestCharts(hashKey: String): List<PlayerBest30Response> =
         client.get("${baseUrl}scores/top") {
             addApiKey()
+            header("Accept", "application/json")
             parameter("keyHash", hashKey)
         }.body()
 
@@ -93,6 +95,7 @@ class ScorefetcherClient(
     ): List<ChartHistoryResponse> =
         client.get("${baseUrl}scores/history") {
             addApiKey()
+            header("Accept", "application/json")
             parameter("keyHash", hashKey)
             parameter("songName", songName)
             parameter("difficulty", difficulty)
@@ -104,6 +107,7 @@ class ScorefetcherClient(
     ): List<BestPerPlayerResponse> =
         client.get("${baseUrl}scores/best-per-player") {
             addApiKey()
+            header("Accept", "application/json")
             parameter("songName", songName)
             parameter("difficulty", difficulty)
         }.body()
@@ -111,6 +115,7 @@ class ScorefetcherClient(
     suspend fun getPlayById(id: Int, keyHash: String): MaiteaApiData =
         client.get("${baseUrl}scores/$id") {
             addApiKey()
+            header("Accept", "application/json")
             parameter("keyHash", keyHash)
         }.body()
 
