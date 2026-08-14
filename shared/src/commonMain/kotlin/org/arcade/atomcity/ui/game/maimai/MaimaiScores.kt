@@ -54,9 +54,9 @@ fun MaimaiScores(
     val frameUrl = playerData?.options?.frame?.png ?: playerData?.options?.frame?.webp
 
     val extraItems = listOf(
-        Triple("maimaiBest30Scores", "Best 30", "Vos 30 meilleures performances"),
-        Triple("maimaiMostPlayed", "Plus joués", "Vos morceaux les plus joués"),
-        Triple("maimaiUsers", "Utilisateurs", "Voir les autres joueurs")
+        Triple("maimaiBest30Scores", "30 Meilleurs scores", "Vos 30 meilleures performances"),
+        Triple("maimaiMostPlayed", "Les plus joués", "Les morceaux les plus joués"),
+        Triple("maimaiUsers", "Utilisateurs", "Consulter les utilisateurs enregistrés"),
     )
 
     LaunchedEffect(currentPage) {

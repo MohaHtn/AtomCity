@@ -10,6 +10,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.style.TextOverflow
 import org.jetbrains.compose.resources.painterResource
 import atomcity.shared.generated.resources.*
 
@@ -50,7 +51,13 @@ fun BottomBarPill(
                     contentDescription = "Actions"
                 )
             },
-            label = { Text("Actions") }
+            label = { 
+                Text(
+                    text = "Actions",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                ) 
+            }
         )
 
         NavigationBarItem(
@@ -62,7 +69,13 @@ fun BottomBarPill(
                     contentDescription = "Jeux"
                 )
             },
-            label = { Text("Jeux") }
+            label = { 
+                Text(
+                    text = "Jeux",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                ) 
+            }
         )
 
         NavigationBarItem(
@@ -73,7 +86,13 @@ fun BottomBarPill(
                 imageVector = Icons.Filled.Settings,
                 contentDescription = "Paramètres"
             )},
-            label = { Text("Paramètres") }
+            label = { 
+                Text(
+                    text = "Paramètres",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                ) 
+            }
         )
         
         NavigationBarItem(
