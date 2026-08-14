@@ -134,22 +134,6 @@ fun MaimaiPlayerDetailsContent(
     collapsedFraction: Float,
     textColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
-    fun computeRating(rating: Int?): String {
-        return rating?.let { (it.toDouble() / 100.0).format(2) } ?: "0.00"
-    }
-
-    fun getContrastingColor(backgroundColor: Color): Color {
-        val luminance = (0.299 * backgroundColor.red + 0.587 * backgroundColor.green + 0.114 * backgroundColor.blue)
-        return if (luminance > 0.5f) Color.Black else Color.White
-    }
-
-    val ratingBackground = selectRatingBackground(playerData?.rating)
-    val ratingTextColor = if (ratingBackground is SolidColor) {
-        getContrastingColor(ratingBackground.value)
-    } else {
-        Color.White
-    }
-
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val isNarrow = maxWidth < 260.dp
         val avatarSize = if (isNarrow) {
@@ -202,25 +186,11 @@ fun MaimaiPlayerDetailsContent(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Surface(
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .background(ratingBackground, RoundedCornerShape(4.dp)),
-                    color = Color.Transparent,
-                    tonalElevation = 4.dp
-                ) {
-                    Text(
-                        text = computeRating(playerData?.rating),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = if (isNarrow) 11.sp else 13.sp,
-                            letterSpacing = 0.sp
-                        ),
-                        color = ratingTextColor,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
-                    )
-                }
+                MaimaiRatingBadge(
+                    rating = playerData?.rating,
+                    modifier = Modifier.padding(top = 4.dp),
+                    fontSize = if (isNarrow) 11.sp else 13.sp
+                )
             }
         }
     }

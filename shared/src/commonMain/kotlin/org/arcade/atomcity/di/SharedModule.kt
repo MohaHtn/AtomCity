@@ -80,5 +80,5 @@ val sharedModule = module {
     single { DifficultyRepository(get()) }
     single { ApiKeyManager(get()) }
     single { ThemeSettingsManager(get()) }
-    single { MaiteaRepository(get(), get(), get(), get(), get(), get(), get(named("jacketImages")), get(named("scorefetcher_api_key"))) }
+    single { MaiteaRepository(get(), get(), get(), get(), get(), get(), get(), get(named("jacketImages")), get(named("scorefetcher_api_key"))) }
 }

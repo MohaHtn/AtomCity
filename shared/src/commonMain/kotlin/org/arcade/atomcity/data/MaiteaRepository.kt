@@ -28,6 +28,7 @@ class MaiteaRepository(
     private val importWorkManager: ImportWorkManager,
     private val apiKeyManager: ApiKeyManager,
     private val database: AppDatabase,
+    private val difficultyRepository: DifficultyRepository,
     private val jacketImages: Map<String, String>,
     private val scorefetcherApiKey: String
 ) {
@@ -137,6 +138,14 @@ class MaiteaRepository(
         }
     }
 
+    fun getRatings(): Flow<Map<String, Int>> = flow {
+        try {
+            emit(scorefetcherClient.getRatings())
+        } catch (e: Exception) {
+            emit(emptyMap())
+        }
+    }
+
     fun get30BestCharts(hashKey: String? = null): Flow<List<PlayerBest30Response>> = flow {
         try {
             val key = hashKey ?: PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")
@@ -219,19 +228,35 @@ class MaiteaRepository(
     fun getMostPlayed(
         limit: Int? = 30,
         period: String? = "month",
-        date: String? = null
+        date: String? = null,
+        groupByHashkey: Boolean = false
     ): Flow<List<MaimaiMostPlayedEntry>> = flow {
         try {
             val response = when (period?.lowercase()) {
-                "day" -> scorefetcherClient.getMostPlayed(limit = limit, day = date)
-                "week" -> scorefetcherClient.getMostPlayed(limit = limit, week = date)
-                "month" -> scorefetcherClient.getMostPlayed(limit = limit, month = date)
-                else -> scorefetcherClient.getMostPlayed(limit = limit, period = period, date = date)
+                "day" -> scorefetcherClient.getMostPlayed(limit = limit, day = date, groupByHashkey = groupByHashkey)
+                "week" -> scorefetcherClient.getMostPlayed(limit = limit, week = date, groupByHashkey = groupByHashkey)
+                "month" -> scorefetcherClient.getMostPlayed(limit = limit, month = date, groupByHashkey = groupByHashkey)
+                "alltime" -> scorefetcherClient.getMostPlayed(limit = limit, alltime = "true", groupByHashkey = groupByHashkey)
+                else -> scorefetcherClient.getMostPlayed(limit = limit, period = period, date = date, groupByHashkey = groupByHashkey)
             }
             response.forEach { entry ->
-                entry.jacketImageUrl = entry.songJson?.name?.jp?.let { findJacketUrlBySongName(it) }
+                entry.jacketImageUrl = entry.songNameJp?.let { findJacketUrlBySongName(it) }
+                    ?: entry.songJson?.name?.jp?.let { findJacketUrlBySongName(it) }
+                    ?: entry.songNameEn?.let { findJacketUrlBySongName(it) }
                     ?: entry.songJson?.name?.en?.let { findJacketUrlBySongName(it) }
                     ?: entry.songName?.let { findJacketUrlBySongName(it) }
+
+                // Fetch level info
+                val diffIndex = org.arcade.atomcity.ui.game.maimai.getDifficultyIndex(entry.difficulty)
+                if (diffIndex != -1) {
+                    val songId = entry.songJson?.id ?: -1
+                    entry.levelInfo = difficultyRepository.getLevelByDifficulty(
+                        songId = songId,
+                        diffIndex = diffIndex,
+                        songTitle = entry.songNameJp ?: entry.songName,
+                        altTitle = entry.songNameEn
+                    )
+                }
             }
             emit(response)
         } catch (e: Exception) {
@@ -243,7 +268,8 @@ class MaiteaRepository(
         keyHash: String? = null,
         limit: Int? = 30,
         period: String? = "month",
-        date: String? = null
+        date: String? = null,
+        groupByHashkey: Boolean = false
     ): Flow<List<MaimaiMostPlayedEntry>> = flow {
         try {
             val key = keyHash ?: PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")
@@ -252,15 +278,30 @@ class MaiteaRepository(
                 return@flow
             }
             val response = when (period?.lowercase()) {
-                "day" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, day = date)
-                "week" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, week = date)
-                "month" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, month = date)
-                else -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, period = period, date = date)
+                "day" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, day = date, groupByHashkey = groupByHashkey)
+                "week" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, week = date, groupByHashkey = groupByHashkey)
+                "month" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, month = date, groupByHashkey = groupByHashkey)
+                "alltime" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, alltime = "true", groupByHashkey = groupByHashkey)
+                else -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, period = period, date = date, groupByHashkey = groupByHashkey)
             }
             response.forEach { entry ->
-                entry.jacketImageUrl = entry.songJson?.name?.jp?.let { findJacketUrlBySongName(it) }
+                entry.jacketImageUrl = entry.songNameJp?.let { findJacketUrlBySongName(it) }
+                    ?: entry.songJson?.name?.jp?.let { findJacketUrlBySongName(it) }
+                    ?: entry.songNameEn?.let { findJacketUrlBySongName(it) }
                     ?: entry.songJson?.name?.en?.let { findJacketUrlBySongName(it) }
                     ?: entry.songName?.let { findJacketUrlBySongName(it) }
+
+                // Fetch level info
+                val diffIndex = org.arcade.atomcity.ui.game.maimai.getDifficultyIndex(entry.difficulty)
+                if (diffIndex != -1) {
+                    val songId = entry.songJson?.id ?: -1
+                    entry.levelInfo = difficultyRepository.getLevelByDifficulty(
+                        songId = songId,
+                        diffIndex = diffIndex,
+                        songTitle = entry.songNameJp ?: entry.songName,
+                        altTitle = entry.songNameEn
+                    )
+                }
             }
             emit(response)
         } catch (e: Exception) {

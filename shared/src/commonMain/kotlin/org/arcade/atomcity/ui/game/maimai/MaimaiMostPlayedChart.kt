@@ -1,9 +1,12 @@
 package org.arcade.atomcity.ui.game.maimai
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -16,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -59,11 +63,21 @@ fun MaimaiMostPlayedChart(
         when (selectedPeriod) {
             "day" -> currentDate.toString() // yyyy-mm-dd
             "week" -> {
-                val daysToSubtract = currentDate.dayOfWeek.ordinal
-                val startOfWeek = currentDate.minus(DatePeriod(days = daysToSubtract))
-                startOfWeek.toString()
+                val dayOfYear = currentDate.dayOfYear
+                val dayOfWeek = currentDate.dayOfWeek.isoDayNumber // 1=Mon, 7=Sun
+                val weekNumber = (dayOfYear - dayOfWeek + 10) / 7
+                // Simplified ISO week number calculation
+                val finalWeek = if (weekNumber < 1) 52 else if (weekNumber > 53) 1 else weekNumber
+                val finalYear = when {
+                    weekNumber < 1 -> currentDate.year - 1
+                    weekNumber >= 52 && currentDate.month == Month.JANUARY -> currentDate.year - 1
+                    weekNumber == 1 && currentDate.month == Month.DECEMBER -> currentDate.year + 1
+                    else -> currentDate.year
+                }
+                "$finalYear-${finalWeek.toString().padStart(2, '0')}"
             }
             "month" -> "${currentDate.year}-${currentDate.month.number.toString().padStart(2, '0')}"
+            "alltime" -> null
             else -> "${currentDate.year}-${currentDate.month.number.toString().padStart(2, '0')}"
         }
     }
@@ -90,7 +104,7 @@ fun MaimaiMostPlayedChart(
                 val daysToSubtract = currentDate.dayOfWeek.ordinal
                 val startOfWeek = currentDate.minus(DatePeriod(days = daysToSubtract))
                 val endOfWeek = startOfWeek.plus(DatePeriod(days = 6))
-                "Semaine du ${startOfWeek.day} ${startOfWeek.month.toFrench()} au ${endOfWeek.day} ${endOfWeek.month.toFrench()}"
+                "Semaine du ${startOfWeek.day} ${startOfWeek.month.toFrench()} au ${endOfWeek.day} ${endOfWeek.month.toFrench()} ${endOfWeek.year}"
             }
             "month" -> "${currentDate.month.toFrench()} ${currentDate.year}"
             else -> "${currentDate.month.toFrench()} ${currentDate.year}"
@@ -98,7 +112,13 @@ fun MaimaiMostPlayedChart(
     }
 
     LaunchedEffect(isGlobal, selectedPeriod, apiDate) {
-        maiteaViewModel.fetchMostPlayedCharts(isGlobal, selectedPeriod, apiDate)
+        maiteaViewModel.fetchMostPlayedCharts(isGlobal, selectedPeriod, apiDate, groupByHashkey = isGlobal)
+    }
+
+    LaunchedEffect(isGlobal) {
+        if (isGlobal) {
+            maiteaViewModel.fetchProfiles()
+        }
     }
 
     Scaffold(
@@ -145,43 +165,48 @@ fun MaimaiMostPlayedChart(
                 PeriodChip(label = "Jour", selected = selectedPeriod == "day", onClick = { selectedPeriod = "day" })
                 PeriodChip(label = "Semaine", selected = selectedPeriod == "week", onClick = { selectedPeriod = "week" })
                 PeriodChip(label = "Mois", selected = selectedPeriod == "month", onClick = { selectedPeriod = "month" })
+                PeriodChip(label = "Tout", selected = selectedPeriod == "alltime", onClick = { selectedPeriod = "alltime" })
             }
 
-            // Date Selection
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = {
-                    currentDate = when (selectedPeriod) {
-                        "day" -> currentDate.minus(DatePeriod(days = 1))
-                        "week" -> currentDate.minus(DatePeriod(days = 7))
-                        "month" -> currentDate.minus(DatePeriod(months = 1))
-                        else -> currentDate.minus(DatePeriod(months = 1))
+            if (selectedPeriod != "alltime") {
+                // Date Selection
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = {
+                        currentDate = when (selectedPeriod) {
+                            "day" -> currentDate.minus(DatePeriod(days = 1))
+                            "week" -> currentDate.minus(DatePeriod(days = 7))
+                            "month" -> currentDate.minus(DatePeriod(months = 1))
+                            else -> currentDate.minus(DatePeriod(months = 1))
+                        }
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Précédent")
                     }
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Précédent")
-                }
 
-                Text(
-                    text = displayDate,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
+                    Text(
+                        text = displayDate,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
 
-                IconButton(onClick = {
-                    currentDate = when (selectedPeriod) {
-                        "day" -> currentDate.plus(DatePeriod(days = 1))
-                        "week" -> currentDate.plus(DatePeriod(days = 7))
-                        "month" -> currentDate.plus(DatePeriod(months = 1))
-                        else -> currentDate.plus(DatePeriod(months = 1))
+                    IconButton(onClick = {
+                        currentDate = when (selectedPeriod) {
+                            "day" -> currentDate.plus(DatePeriod(days = 1))
+                            "week" -> currentDate.plus(DatePeriod(days = 7))
+                            "month" -> currentDate.plus(DatePeriod(months = 1))
+                            else -> currentDate.plus(DatePeriod(months = 1))
+                        }
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Suivant")
                     }
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Suivant")
                 }
+            } else {
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             if (isLoading) {
@@ -213,6 +238,12 @@ fun MaimaiMostPlayedChart(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         MostPlayedBarChart(mostPlayedCharts.take(5), maxCount)
+                        
+                        if (isGlobal) {
+                            val profiles by maiteaViewModel.profiles.collectAsState()
+                            UserLegend(profiles, mostPlayedCharts.take(5))
+                        }
+
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
                             "Toutes les charts",
@@ -222,8 +253,42 @@ fun MaimaiMostPlayedChart(
                         )
                     }
                     items(mostPlayedCharts) { entry ->
-                        MostPlayedItem(entry, maxCount)
+                        MostPlayedItem(entry)
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun UserLegend(profiles: Map<String, String>, entries: List<MaimaiMostPlayedEntry>) {
+    val activeHashes = entries.flatMap { it.userPlayCounts?.keys ?: emptySet() }.distinct()
+    
+    if (activeHashes.isNotEmpty()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            activeHashes.forEach { hash ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(getColorForHash(hash))
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = profiles[hash] ?: "Utilisateur",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -237,6 +302,26 @@ fun PeriodChip(label: String, selected: Boolean, onClick: () -> Unit) {
         onClick = onClick,
         label = { Text(label) }
     )
+}
+
+private val UserColors = listOf(
+    Color(0xFFF06292), // Soft Pink
+    Color(0xFFBA68C8), // Soft Purple
+    Color(0xFF9575CD), // Soft Deep Purple
+    Color(0xFF7986CB), // Soft Indigo
+    Color(0xFF64B5F6), // Soft Blue
+    Color(0xFF4FC3F7), // Soft Light Blue
+    Color(0xFF4DD0E1), // Soft Cyan
+    Color(0xFF4DB6AC), // Soft Teal
+    Color(0xFF81C784), // Soft Green
+    Color(0xFFAED581), // Soft Light Green
+    Color(0xFFFFD54F), // Soft Amber
+    Color(0xFFFFB74D)  // Soft Orange
+)
+
+private fun getColorForHash(hash: String): Color {
+    val index = (hash.hashCode().let { if (it < 0) -it else it }) % UserColors.size
+    return UserColors[index]
 }
 
 @Composable
@@ -286,21 +371,40 @@ fun MostPlayedBarChart(topEntries: List<MaimaiMostPlayedEntry>, maxCount: Int) {
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                         contentAlignment = Alignment.BottomCenter
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.7f)
-                                .fillMaxHeight(fraction.coerceAtLeast(0.1f))
-                                .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                                .background(
-                                    color = if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
-                                )
-                        )
+                        val distribution = entry.userPlayCounts
+                        if (!distribution.isNullOrEmpty()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.7f)
+                                    .fillMaxHeight(fraction.coerceAtLeast(0.1f))
+                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                            ) {
+                                distribution.toList().sortedByDescending { it.second }.forEach { (hash, count) ->
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .weight(count.toFloat())
+                                            .background(getColorForHash(hash))
+                                    )
+                                }
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.7f)
+                                    .fillMaxHeight(fraction.coerceAtLeast(0.1f))
+                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                    .background(
+                                        color = if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                                    )
+                            )
+                        }
                     }
                     
                     Spacer(modifier = Modifier.height(4.dp))
                     
                     Text(
-                        text = entry.songName ?: "",
+                        text = entry.songNameJp ?: entry.songName ?: "",
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -316,24 +420,23 @@ fun MostPlayedBarChart(topEntries: List<MaimaiMostPlayedEntry>, maxCount: Int) {
 }
 
 @Composable
-fun MostPlayedItem(entry: MaimaiMostPlayedEntry, maxCount: Int) {
+fun MostPlayedItem(entry: MaimaiMostPlayedEntry) {
     val difficultyRepository: DifficultyRepository = koinInject()
-    var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
+    var levelInfo by remember { mutableStateOf(entry.levelInfo) }
 
-    val difficultyKey = remember(entry.difficulty) {
-        when (entry.difficulty?.lowercase()) {
-            "basic" -> 0
-            "advanced" -> 1
-            "expert" -> 2
-            "master" -> 3
-            "remaster" -> 4
-            else -> null
+    LaunchedEffect(entry.songName, entry.difficulty) {
+        val diffIndex = getDifficultyIndex(entry.difficulty)
+        if (diffIndex != -1 && entry.difficulty?.lowercase() != "utage") {
+            levelInfo = difficultyRepository.getLevelByDifficulty(
+                songId = entry.songJson?.id ?: -1,
+                diffIndex = diffIndex + 2, // fuck, it works idc anymore
+                songTitle = entry.songNameJp ?: entry.songName,
+                altTitle = entry.songNameEn
+            )
         }
-    }
 
-    LaunchedEffect(entry.songJson?.id, difficultyKey) {
-        if (entry.songJson?.id != null && difficultyKey != null) {
-            levelInfo = difficultyRepository.getLevelByDifficulty(entry.songJson.id!!, difficultyKey)
+        else {
+            levelInfo = LevelInfo(level = "", internalLevel = "")
         }
     }
 
@@ -360,23 +463,40 @@ fun MostPlayedItem(entry: MaimaiMostPlayedEntry, maxCount: Int) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = entry.songName ?: "Inconnu",
+                    text = entry.songNameEn ?: entry.songName ?: "Inconnu",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                if (!entry.userPlayCounts.isNullOrEmpty()) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        entry.userPlayCounts.toList().sortedByDescending { it.second }.take(4).forEach { (hash, count) ->
+                            Text(
+                                text = count.toString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 10.sp,
+                                color = getColorForHash(hash)
+                            )
+                        }
+                    }
+                }
+                
                 Text(
                     text = "${entry.playCount}",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 8.dp)
                 )
             }
             
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             
             Box(
                 modifier = Modifier
@@ -385,15 +505,29 @@ fun MostPlayedItem(entry: MaimaiMostPlayedEntry, maxCount: Int) {
                     .clip(RoundedCornerShape(4.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                val fraction = if (maxCount > 0) entry.playCount.toFloat() / maxCount else 0f
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(fraction)
-                        .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.primary)
-                )
+                val distribution = entry.userPlayCounts
+                
+                if (!distribution.isNullOrEmpty()) {
+                    Row(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                        distribution.toList().sortedByDescending { it.second }.forEach { (hash, count) ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(count.toFloat())
+                                    .fillMaxHeight()
+                                    .background(getColorForHash(hash))
+                            )
+                        }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.primary)
+                    )
+                }
             }
-            
+
             if (!entry.difficulty.isNullOrBlank()) {
                 MaimaiDifficultyBadge(
                     difficultyValue = entry.difficulty,

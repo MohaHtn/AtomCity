@@ -1,7 +1,7 @@
 package org.arcade.atomcity.ui.game.maimai
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,6 +37,7 @@ fun AtomCityUsers(
     modifier: Modifier = Modifier,
 ) {
     val profiles by maiteaViewModel.profiles.collectAsState()
+    val ratings by maiteaViewModel.ratings.collectAsState()
     val isLoading by maiteaViewModel.isLoading.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -88,15 +89,22 @@ fun AtomCityUsers(
                             modifier = Modifier.padding(vertical = 16.dp)
                         )
                     }
-                    items(profiles.toList()) { (_, username) ->
+                    items(profiles.toList()) { (hash, username) ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp)
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                if (ratings.containsKey(hash)) {
+                                    MaimaiRatingBadge(
+                                        rating = ratings[hash],
+                                        modifier = Modifier.padding(end = 12.dp)
+                                    )
+                                }
                                 Text(
                                     text = username,
                                     style = MaterialTheme.typography.bodyLarge,

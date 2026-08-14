@@ -43,6 +43,10 @@ class MaiteaViewModel(
     private val _profiles = MutableStateFlow<Map<String, String>>(emptyMap())
     val profiles: StateFlow<Map<String, String>> = _profiles
 
+    // StateFlow to hold the ratings data
+    private val _ratings = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val ratings: StateFlow<Map<String, Int>> = _ratings
+
     // StateFlow to hold the 30 maimai best scores
     private val _maimaiBestScores = MutableStateFlow<List<PlayerBest30Response>>(emptyList())
     val maimaiBestScores: StateFlow<List<PlayerBest30Response>> = _maimaiBestScores
@@ -261,6 +265,14 @@ class MaiteaViewModel(
                 // Log.e("MaiteaViewModel", "Error fetching profiles: ${e.message}")
                 _isLoadingProfiles.value = false
             }
+
+            try {
+                repository.getRatings().collect {
+                    _ratings.value = it
+                }
+            } catch (e: Exception) {
+                // Log.e("MaiteaViewModel", "Error fetching ratings: ${e.message}")
+            }
         }
     }
 
@@ -365,14 +377,14 @@ class MaiteaViewModel(
         _searchQuery.value = query
     }
 
-    fun fetchMostPlayedCharts(isGlobal: Boolean, period: String, date: String? = null) {
+    fun fetchMostPlayedCharts(isGlobal: Boolean, period: String, date: String? = null, groupByHashkey: Boolean = false) {
         viewModelScope.launch {
             try {
                 _isLoadingMostPlayed.value = true
                 val flow = if (isGlobal) {
-                    repository.getMostPlayed(period = period, date = date)
+                    repository.getMostPlayed(period = period, date = date, groupByHashkey = groupByHashkey)
                 } else {
-                    repository.getMostPlayedByHash(period = period, date = date)
+                    repository.getMostPlayedByHash(period = period, date = date, groupByHashkey = groupByHashkey)
                 }
 
                 flow.collect { entries ->

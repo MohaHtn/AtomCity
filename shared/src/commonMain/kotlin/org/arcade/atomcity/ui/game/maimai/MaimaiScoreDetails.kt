@@ -77,9 +77,10 @@ fun MaimaiScoresDetails(
 
         if (song?.id != null && diffLevel?.key != null) {
             levelInfo = difficultyRepository.getLevelByDifficulty(
-                song.id!!, 
-                diffLevel.key!!,
-                song.name?.jp ?: song.name?.en
+                songId = song.id!!, 
+                diffIndex = diffLevel.key!!,
+                songTitle = song.name?.jp,
+                altTitle = song.name?.en
             )
         }
         

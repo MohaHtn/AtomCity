@@ -85,6 +85,12 @@ class ScorefetcherClient(
             header("Accept", "application/json")
         }.body()
 
+    suspend fun getRatings(): Map<String, Int> =
+        client.get("${baseUrl}apikeys/ratings") {
+            addApiKey()
+            header("Accept", "application/json")
+        }.body()
+
     suspend fun deleteApiKey(keyHash: String): DeleteApiKeyResponse =
         client.delete("${baseUrl}apikeys/$keyHash") {
             addApiKey()
@@ -171,7 +177,9 @@ class ScorefetcherClient(
         date: String? = null,
         day: String? = null,
         week: String? = null,
-        month: String? = null
+        month: String? = null,
+        alltime: String? = null,
+        groupByHashkey: Boolean = false
     ): List<MaimaiMostPlayedEntry> {
         val response: HttpResponse = client.get("${baseUrl}scores/most-played") {
             addApiKey()
@@ -181,9 +189,14 @@ class ScorefetcherClient(
             parameter("day", day)
             parameter("week", week)
             parameter("month", month)
+            parameter("alltime", alltime)
+            parameter("groupByHashkey", groupByHashkey)
         }
         return if (response.status == HttpStatusCode.NotFound) {
             emptyList()
+        } else if (groupByHashkey) {
+            val grouped: Map<String, List<MaimaiMostPlayedEntry>> = response.body()
+            processGroupedEntries(grouped, limit ?: 30)
         } else {
             response.body()
         }
@@ -196,7 +209,9 @@ class ScorefetcherClient(
         date: String? = null,
         day: String? = null,
         week: String? = null,
-        month: String? = null
+        month: String? = null,
+        alltime: String? = null,
+        groupByHashkey: Boolean = false
     ): List<MaimaiMostPlayedEntry> {
         val response: HttpResponse = client.get("${baseUrl}scores/most-played/by-keyhash") {
             addApiKey()
@@ -207,11 +222,51 @@ class ScorefetcherClient(
             parameter("day", day)
             parameter("week", week)
             parameter("month", month)
+            parameter("alltime", alltime)
+            parameter("groupByHashkey", groupByHashkey)
         }
         return if (response.status == HttpStatusCode.NotFound) {
             emptyList()
+        } else if (groupByHashkey) {
+            val grouped: Map<String, List<MaimaiMostPlayedEntry>> = response.body()
+            processGroupedEntries(grouped, limit ?: 30)
         } else {
             response.body()
         }
+    }
+
+    private fun processGroupedEntries(
+        grouped: Map<String, List<MaimaiMostPlayedEntry>>,
+        limit: Int
+    ): List<MaimaiMostPlayedEntry> {
+        val chartMap = mutableMapOf<String, MaimaiMostPlayedEntry>()
+
+        grouped.forEach { (hash, entries) ->
+            entries.forEach { entry ->
+                val chartKey = "${entry.songName}_${entry.difficulty}"
+                val existing = chartMap[chartKey]
+                
+                if (existing == null) {
+                    chartMap[chartKey] = entry.copy(
+                        userPlayCounts = mutableMapOf(hash to entry.playCount)
+                    )
+                } else {
+                    val updatedCounts = (existing.userPlayCounts?.toMutableMap() ?: mutableMapOf()).apply {
+                        put(hash, entry.playCount)
+                    }
+                    chartMap[chartKey] = existing.copy(
+                        playCount = existing.playCount + entry.playCount,
+                        userPlayCounts = updatedCounts,
+                        songNameEn = entry.songNameEn,
+                        songNameJp = entry.songNameJp,
+                        playPercentage = (existing.playPercentage ?: 0.0) + (entry.playPercentage ?: 0.0)
+                    )
+                }
+            }
+        }
+
+        return chartMap.values
+            .sortedByDescending { it.playCount }
+            .take(limit)
     }
 }

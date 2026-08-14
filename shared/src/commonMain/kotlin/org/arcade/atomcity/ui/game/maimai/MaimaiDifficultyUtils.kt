@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.game.maimai
 
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,15 +27,40 @@ import org.arcade.atomcity.ui.game.common.getJacketBorderColor
  * @param difficultyValue the difficulty value taken from maitea API response.
  */
 fun getDifficultyText(difficultyValue: String?): String {
-    return when (difficultyValue) {
+    println("getDifficultyText called with: $difficultyValue")
+    return when (difficultyValue?.lowercase()) {
         "master" -> "Master"
         "advanced" -> "Advanced"
-        "remaster" -> "Re:Master"
+        "remaster", "re:master" -> "Re:Master"
         "basic" -> "Basic"
         "easy" -> "Easy"
         "expert" -> "Expert"
-        "utage" -> "宴 (Utage)"
+        "utage", "宴" -> "宴 (Utage)"
         else -> "N/A"
+    }
+}
+
+/**
+ * Gets the difficulty index for maimai database lookups.
+ *
+ * @param difficultyValue the difficulty value taken from maitea API response.
+ */
+fun getDifficultyIndex(difficultyValue: String?): Int {
+    return when (difficultyValue?.lowercase()) {
+        "basic" -> 0
+        "advanced" -> 1
+        "expert" -> 2
+        "master" -> 3
+        "remaster", "re:master" -> 4
+        "utage" -> 5
+        // Handle numeric strings if the API returns them
+        "0" -> 0
+        "1" -> 1
+        "2" -> 2
+        "3" -> 3
+        "4" -> 4
+        "5" -> 5
+        else -> -1
     }
 }
 
