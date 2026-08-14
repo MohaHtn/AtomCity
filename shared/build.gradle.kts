@@ -18,7 +18,7 @@ room {
 
 android {
     namespace = "org.arcade.atomcity.shared"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         minSdk = 24
     }

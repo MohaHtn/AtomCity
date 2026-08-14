@@ -1,7 +1,7 @@
 [versions]
 accompanistCoil = "0.16.0"
 accompanistSvg = "<version>"
-agp = "8.7.2"
+agp = "9.3.1"
 compose-multiplatform = "1.7.3"
 kotlin = "2.2.10"
 kotlinxSerialization = "1.8.0"
