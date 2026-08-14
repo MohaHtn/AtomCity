@@ -12,10 +12,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
@@ -58,6 +60,8 @@ fun MaimaiMostPlayedChart(
     var currentDate by remember { 
         mutableStateOf(Clock.System.todayIn(TimeZone.currentSystemDefault())) 
     }
+    val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
+    var showDatePicker by remember { mutableStateOf(false) }
     
     val apiDate = remember(currentDate, selectedPeriod) {
         when (selectedPeriod) {
@@ -84,18 +88,18 @@ fun MaimaiMostPlayedChart(
 
     val displayDate = remember(currentDate, selectedPeriod) {
         fun Month.toFrench(): String = when (this) {
-            Month.JANUARY -> "Janvier"
-            Month.FEBRUARY -> "Février"
-            Month.MARCH -> "Mars"
-            Month.APRIL -> "Avril"
-            Month.MAY -> "Mai"
-            Month.JUNE -> "Juin"
-            Month.JULY -> "Juillet"
-            Month.AUGUST -> "Août"
-            Month.SEPTEMBER -> "Septembre"
-            Month.OCTOBER -> "Octobre"
-            Month.NOVEMBER -> "Novembre"
-            Month.DECEMBER -> "Décembre"
+            Month.JANUARY -> "janvier"
+            Month.FEBRUARY -> "février"
+            Month.MARCH -> "mars"
+            Month.APRIL -> "avril"
+            Month.MAY -> "mai"
+            Month.JUNE -> "juin"
+            Month.JULY -> "juillet"
+            Month.AUGUST -> "août"
+            Month.SEPTEMBER -> "septembre"
+            Month.OCTOBER -> "octobre"
+            Month.NOVEMBER -> "novembre"
+            Month.DECEMBER -> "décembre"
         }
 
         when (selectedPeriod) {
@@ -104,7 +108,11 @@ fun MaimaiMostPlayedChart(
                 val daysToSubtract = currentDate.dayOfWeek.ordinal
                 val startOfWeek = currentDate.minus(DatePeriod(days = daysToSubtract))
                 val endOfWeek = startOfWeek.plus(DatePeriod(days = 6))
-                "Semaine du ${startOfWeek.day} ${startOfWeek.month.toFrench()} au ${endOfWeek.day} ${endOfWeek.month.toFrench()} ${endOfWeek.year}"
+                if (startOfWeek.month == endOfWeek.month) {
+                    "Semaine du ${startOfWeek.day} au ${endOfWeek.day} ${endOfWeek.month.toFrench()} ${endOfWeek.year}"
+                } else {
+                    "Semaine du ${startOfWeek.day} ${startOfWeek.month.toFrench()} au ${endOfWeek.day} ${endOfWeek.month.toFrench()} ${endOfWeek.year}"
+                }
             }
             "month" -> "${currentDate.month.toFrench()} ${currentDate.year}"
             else -> "${currentDate.month.toFrench()} ${currentDate.year}"
@@ -186,27 +194,92 @@ fun MaimaiMostPlayedChart(
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Précédent")
                     }
 
-                    Text(
-                        text = displayDate,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    IconButton(onClick = {
-                        currentDate = when (selectedPeriod) {
-                            "day" -> currentDate.plus(DatePeriod(days = 1))
-                            "week" -> currentDate.plus(DatePeriod(days = 7))
-                            "month" -> currentDate.plus(DatePeriod(months = 1))
-                            else -> currentDate.plus(DatePeriod(months = 1))
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .then(
+                                if (selectedPeriod == "day") {
+                                    Modifier.clip(RoundedCornerShape(8.dp))
+                                        .clickable { showDatePicker = true }
+                                        .padding(vertical = 4.dp)
+                                } else Modifier
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = displayDate,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        if (selectedPeriod == "day") {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Sélectionner une date",
+                                modifier = Modifier.padding(start = 8.dp).size(18.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
-                    }) {
+                    }
+
+                    IconButton(
+                        onClick = {
+                            currentDate = when (selectedPeriod) {
+                                "day" -> currentDate.plus(DatePeriod(days = 1))
+                                "week" -> currentDate.plus(DatePeriod(days = 7))
+                                "month" -> currentDate.plus(DatePeriod(months = 1))
+                                else -> currentDate.plus(DatePeriod(months = 1))
+                            }
+                        },
+                        enabled = when (selectedPeriod) {
+                            "day" -> currentDate < today
+                            "week" -> {
+                                val currentStartOfWeek = currentDate.minus(DatePeriod(days = currentDate.dayOfWeek.ordinal))
+                                val todayStartOfWeek = today.minus(DatePeriod(days = today.dayOfWeek.ordinal))
+                                currentStartOfWeek < todayStartOfWeek
+                            }
+                            "month" -> currentDate.year < today.year || (currentDate.year == today.year && currentDate.month < today.month)
+                            else -> false
+                        }
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Suivant")
                     }
                 }
             } else {
                 Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            if (showDatePicker && selectedPeriod == "day") {
+                val datePickerState = rememberDatePickerState(
+                    initialSelectedDateMillis = currentDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
+                    selectableDates = object : SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                            return utcTimeMillis <= Clock.System.now().toEpochMilliseconds()
+                        }
+                    }
+                )
+
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            datePickerState.selectedDateMillis?.let {
+                                currentDate = Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
+                            }
+                            showDatePicker = false
+                        }) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text("Annuler")
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
             }
 
             if (isLoading) {

@@ -30,7 +30,6 @@ import org.arcade.atomcity.ui.game.maimai.AtomCityUsers
 import org.arcade.atomcity.utils.ApiKeyManager
 
 sealed class Screen(val route: String) {
-    data object Home : Screen("home")
     data object Game : Screen("game/{gameId}") {
         fun createRoute(gameId: String) = "game/$gameId"
     }
@@ -47,34 +46,26 @@ fun AppNavigation(
 
     val showMiniMenu: MutableState<Boolean> = remember { mutableStateOf(false) }
 
-    val apiChecklistState by apiKeyManager.getApiChecklistStateFlow().collectAsState(initial = emptyList())
+    // Use null as initial to wait for DataStore
+    val apiChecklistState by apiKeyManager.getApiChecklistStateFlow().collectAsState(initial = null)
 
     LaunchedEffect(apiChecklistState) {
-        GlobalUIState.availableApiKeys.value = apiChecklistState
+        apiChecklistState?.let {
+            GlobalUIState.availableApiKeys.value = it
+        }
     }
+
+    // Wait until we know the API key state before rendering navigation
+    val currentApiChecklist = apiChecklistState ?: return
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
+        startDestination = if (currentApiChecklist.isEmpty()) "welcome" else Screen.Game.createRoute(currentApiChecklist.first()),
         enterTransition = { expandHorizontally() },
         exitTransition = { fadeOut(animationSpec = tween(500)) + slideOutHorizontally() },
         popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) }
     ) {
-        composable(Screen.Home.route) {
-            val apiChecklistState by apiKeyManager.getApiChecklistStateFlow().collectAsState(initial = emptyList())
-
-            LaunchedEffect(apiChecklistState) {
-                if (apiChecklistState.isEmpty()) {
-                    navController.navigate("welcome") {
-                        popUpTo(Screen.Home.route) { inclusive = true }
-                    }
-                } else {
-                    navController.navigate(Screen.Game.createRoute(apiChecklistState.first()))
-                }
-            }
-        }
-
         composable(
             Screen.Game.route,
             arguments = listOf(navArgument("gameId") { type = NavType.StringType })

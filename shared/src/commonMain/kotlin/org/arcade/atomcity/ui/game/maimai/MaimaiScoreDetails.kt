@@ -159,33 +159,10 @@ fun MaimaiScoresDetails(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                        MaimaiScoreBadgeRow(
+                            scoreEntry = scoreEntry,
                             modifier = Modifier.weight(1f)
-                        ) {
-                            if (scoreEntry.isHighScore == true) {
-                                ScoreBadge(
-                                    text = "MEILLEUR SCORE",
-                                    containerColor = Color(0xFFFFF9C4),
-                                    contentColor = Color(0xFFFBC02D)
-                                )
-                            }
-                            if (scoreEntry.isAllPerfect == true) {
-                                ScoreBadge(
-                                    text = "ALL PERFECT",
-                                    containerColor = Color(0xFFE0F2F1),
-                                    contentColor = Color(0xFF00897B)
-                                )
-                            }
-                            if (scoreEntry.isTrackSkip == true) {
-                                ScoreBadge(
-                                    text = "TRACK SKIP",
-                                    containerColor = Color(0xFFFFEBEE),
-                                    contentColor = Color(0xFFE53935)
-                                )
-                            }
-                        }
+                        )
                         
                         Text(
                             text = formatPlayDate(scoreEntry.playDate),
@@ -613,6 +590,49 @@ fun BestPerPlayerItem(b: BestPerPlayerResponse) {
 }
 
 @Composable
+fun MaimaiScoreBadgeRow(scoreEntry: MaiteaApiData, modifier: Modifier = Modifier) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        if (scoreEntry.isHighScore == true) {
+            ScoreBadge(
+                text = "MEILLEUR SCORE",
+                containerColor = Color(0xFFFFF9C4),
+                contentColor = Color(0xFFFBC02D)
+            )
+        }
+        if (scoreEntry.fullCombo == 1) {
+            val hasGreats = (scoreEntry.scoreDetail?.hits?.great ?: 0) > 0
+            ScoreBadge(
+                text = "FULL COMBO",
+                containerColor = if (hasGreats) Color(0xFFE3F2FD) else Color(0xFFFFF9C4),
+                contentColor = if (hasGreats) Color(0xFF1976D2) else Color(0xFFFBC02D)
+            )
+        }
+        if (scoreEntry.isAllPerfect == true) {
+            val allBreaksPerfect = (scoreEntry.scoreDetail?.breakk?.great ?: 0) == 0 &&
+                    (scoreEntry.scoreDetail?.breakk?.good ?: 0) == 0 &&
+                    (scoreEntry.scoreDetail?.breakk?.bad ?: 0) == 0
+            
+            ScoreBadge(
+                text = if (allBreaksPerfect) "ALL PERFECT +" else "ALL PERFECT",
+                containerColor = Color(0xFFE0F2F1),
+                contentColor = Color(0xFF00897B)
+            )
+        }
+        if (scoreEntry.isTrackSkip == true) {
+            ScoreBadge(
+                text = "TRACK SKIP",
+                containerColor = Color(0xFFFFEBEE),
+                contentColor = Color(0xFFE53935)
+            )
+        }
+    }
+}
+
+@Composable
 fun ScoreBadge(text: String, containerColor: Color, contentColor: Color) {
     Surface(
         color = containerColor,
@@ -740,6 +760,7 @@ fun ScoreHistoryGraph(
 
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var tooltipData by remember { mutableStateOf<Pair<ChartHistoryResponse, Offset>?>(null) }
+    val haptic = LocalHapticFeedback.current
 
 
     ElevatedCard(
@@ -781,7 +802,7 @@ fun ScoreHistoryGraph(
                                 val x = index.toFloat() * stepX
                                 val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
                                 tooltipData = entry to Offset(x, y)
-                                PlatformUtils.hapticImpact()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
                         }
                         .pointerInput(sortedHistory) {
@@ -793,7 +814,7 @@ fun ScoreHistoryGraph(
                                 val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
                                 
                                 if (tooltipData?.first != entry) {
-                                    PlatformUtils.hapticTick()
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     tooltipData = entry to Offset(x, y)
                                 }
                             }
@@ -924,6 +945,7 @@ fun RatingVsScoreGraph(
 
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var tooltipData by remember { mutableStateOf<Pair<ChartHistoryResponse, Offset>?>(null) }
+    val haptic = LocalHapticFeedback.current
 
     ElevatedCard(
         modifier = Modifier
@@ -962,7 +984,7 @@ fun RatingVsScoreGraph(
                                 val y = (size.height - (((entry.rating ?: 0.0) - minRating) / yRange * size.height)).toFloat()
                                 
                                 tooltipData = entry to Offset(x, y)
-                                PlatformUtils.hapticImpact()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
                         }
                         .pointerInput(dataPoints) {
@@ -975,7 +997,7 @@ fun RatingVsScoreGraph(
                                 val y = (size.height - (((entry.rating ?: 0.0) - minRating) / yRange * size.height)).toFloat()
                                 
                                 if (tooltipData?.first != entry) {
-                                    PlatformUtils.hapticTick()
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     tooltipData = entry to Offset(x, y)
                                 }
                             }
@@ -1090,6 +1112,7 @@ fun PersonalBestProgressionGraph(
 
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var tooltipData by remember { mutableStateOf<Pair<ChartHistoryResponse, Offset>?>(null) }
+    val haptic = LocalHapticFeedback.current
 
     ElevatedCard(
         modifier = Modifier
@@ -1130,7 +1153,7 @@ fun PersonalBestProgressionGraph(
                                 val x = index.toFloat() * stepX
                                 val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
                                 tooltipData = entry to Offset(x, y)
-                                PlatformUtils.hapticImpact()
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
                         }
                         .pointerInput(pbHistory) {
@@ -1142,7 +1165,7 @@ fun PersonalBestProgressionGraph(
                                 val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
                                 
                                 if (tooltipData?.first != entry) {
-                                    PlatformUtils.hapticTick()
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     tooltipData = entry to Offset(x, y)
                                 }
                             }

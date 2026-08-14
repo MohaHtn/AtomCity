@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,9 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 // no border: use filled surface color (no outline)
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.Alignment
@@ -56,53 +56,8 @@ fun MaimaiChartSearchBar(
     val isSearching by viewModel.isSearching.collectAsState()
 
     Box(modifier = modifier.fillMaxWidth()) {
-        // custom BasicTextField inside a pill-shaped Surface so the background is exactly as desired
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.onPrimary)
-                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
-                .padding(horizontal = 12.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Default.Search, contentDescription = null)
-                BasicTextField(
-                    value = query,
-                    onValueChange = {
-                        query = it
-                        viewModel.searchCharts(it)
-                    },
-                    singleLine = true,
-                    textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
-                    modifier = Modifier.weight(1f).padding(start = 8.dp),
-                    decorationBox = { innerTextField ->
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            if (query.isEmpty()) {
-                                Text(
-                                    text = "Rechercher un morceau ...",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-
-                if (query.isNotEmpty()) {
-                    IconButton(onClick = {
-                        query = ""
-                        viewModel.searchCharts("")
-                    }) {
-                        Icon(Icons.Default.Close, contentDescription = "Fermer")
-                    }
-                }
-            }
-        }
-
         // Show results overlay when active or when there is a query
+        // Rendered first so it is behind the search bar
         if (active || query.isNotEmpty()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Box(
@@ -112,16 +67,24 @@ fun MaimaiChartSearchBar(
                 )
 
                 Column(modifier = Modifier.fillMaxSize()) {
+                    // Spacer to account for the search bar height (48.dp)
+                    // so the list starts below it.
+                    Spacer(modifier = Modifier.height(52.dp))
+
                     if (isSearching) {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth().offset(y= -10.dp).padding(horizontal = 16.dp))
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
                     }
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize().offset(y = 42.dp),
+                        modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
-                            top = 16.dp,
+                            top = 8.dp,
                             start = 16.dp,
                             end = 16.dp,
-                            bottom = 100.dp
+                            bottom = 160.dp
                         ),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
@@ -165,7 +128,53 @@ fun MaimaiChartSearchBar(
                         }
                     }
                 }
+            }
+        }
 
+        // custom BasicTextField inside a pill-shaped Surface
+        // Rendered last to stay on top
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.surface) // Use surface for better contrast/visibility
+                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Default.Search, contentDescription = null)
+                BasicTextField(
+                    value = query,
+                    onValueChange = {
+                        query = it
+                        viewModel.searchCharts(it)
+                    },
+                    singleLine = true,
+                    textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+                    modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    decorationBox = { innerTextField ->
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            if (query.isEmpty()) {
+                                Text(
+                                    text = "Rechercher un morceau ...",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                            }
+                            innerTextField()
+                        }
+                    }
+                )
+
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = {
+                        query = ""
+                        viewModel.searchCharts("")
+                    }) {
+                        Icon(Icons.Default.Close, contentDescription = "Fermer")
+                    }
+                }
             }
         }
     }

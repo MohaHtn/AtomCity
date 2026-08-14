@@ -27,7 +27,6 @@ import org.arcade.atomcity.ui.game.common.getJacketBorderColor
  * @param difficultyValue the difficulty value taken from maitea API response.
  */
 fun getDifficultyText(difficultyValue: String?): String {
-    println("getDifficultyText called with: $difficultyValue")
     return when (difficultyValue?.lowercase()) {
         "master" -> "Master"
         "advanced" -> "Advanced"
