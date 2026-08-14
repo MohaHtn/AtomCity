@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "org.arcade.atomcity"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "org.arcade.atomcity"

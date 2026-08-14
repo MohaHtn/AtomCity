@@ -6,7 +6,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -251,11 +250,14 @@ fun MaimaiMostPlayedChart(
             }
 
             if (showDatePicker && selectedPeriod == "day") {
+                val todayMillis = remember<Long> { Clock.System.now().toEpochMilliseconds() }
                 val datePickerState = rememberDatePickerState(
                     initialSelectedDateMillis = currentDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
-                    selectableDates = object : SelectableDates {
-                        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                            return utcTimeMillis <= Clock.System.now().toEpochMilliseconds()
+                    selectableDates = remember {
+                        object : SelectableDates {
+                            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                                return utcTimeMillis <= todayMillis
+                            }
                         }
                     }
                 )
@@ -265,7 +267,7 @@ fun MaimaiMostPlayedChart(
                     confirmButton = {
                         TextButton(onClick = {
                             datePickerState.selectedDateMillis?.let {
-                                currentDate = Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
+                                currentDate = kotlinx.datetime.Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
                             }
                             showDatePicker = false
                         }) {
@@ -278,7 +280,10 @@ fun MaimaiMostPlayedChart(
                         }
                     }
                 ) {
-                    DatePicker(state = datePickerState)
+                    DatePicker(
+                        state = datePickerState,
+                        showModeToggle = false
+                    )
                 }
             }
 

@@ -3,7 +3,7 @@
 # Configuration
 SCHEME="iosApp"
 PROJECT="iosApp/iosApp.xcodeproj"
-BUNDLE_ID="org.atomcity.arcade.iosApp"
+BUNDLE_ID="org.arcade.atomcity.iosApp"
 
 echo "--- 🛠️  Searching for available Simulator ---"
 DEVICE_NAME=$(xcrun simctl list devices available | grep iPhone | head -n 1 | sed -E 's/^[[:space:]]*([^ (]+( [^ (]+)*).*/\1/')
@@ -23,18 +23,22 @@ export GRADLE_USER_HOME="$HOME/.gradle"
 export ANDROID_USER_HOME="$HOME/.android"
 unset ANDROID_PREFS_ROOT
 mkdir -p "$ANDROID_USER_HOME"
-# Use the shared:assembleDebug task
-./gradlew :shared:assembleDebug -Dorg.gradle.project.android.aapt2FromMaven=true || { echo "❌ Gradle build failed"; exit 1; }
+
+# Detect architecture and choose the correct Gradle task
+ARCH=$(uname -m)
+if [ "$ARCH" == "arm64" ]; then
+    GRADLE_TASK=":shared:linkDebugFrameworkIosSimulatorArm64"
+    SRC_FRAMEWORK="shared/build/bin/iosSimulatorArm64/debugFramework/shared.framework"
+else
+    GRADLE_TASK=":shared:linkDebugFrameworkIosX64"
+    SRC_FRAMEWORK="shared/build/bin/iosX64/debugFramework/shared.framework"
+fi
+
+# Use the appropriate task for iOS framework
+./gradlew $GRADLE_TASK -Dorg.gradle.project.android.aapt2FromMaven=true || { echo "❌ Gradle build failed"; exit 1; }
 
 # Create the directory Xcode expects and copy the framework there
 echo "--- 📁 Preparing Framework for Xcode ---"
-# Detect if we are on Intel or Apple Silicon for the directory name
-ARCH=$(uname -m)
-if [ "$ARCH" == "arm64" ]; then
-    SRC_FRAMEWORK="shared/build/bin/iosSimulatorArm64/debugFramework/shared.framework"
-else
-    SRC_FRAMEWORK="shared/build/bin/iosX64/debugFramework/shared.framework"
-fi
 
 # Get SDK version to match Xcode's search path
 SDK_VERSION=$(xcrun --sdk iphonesimulator --show-sdk-version)
@@ -46,11 +50,13 @@ cp -R "$SRC_FRAMEWORK" "$DEST_DIR/"
 # 2. Build iOS App via xcodebuild
 echo "--- 🏗️  Building iOS App ---"
 # We build only the active arch and skip xcbeautify if not present
+# Using a local derivedDataPath to avoid issues with external volumes
 xcodebuild -project "$PROJECT" \
            -scheme "$SCHEME" \
            -configuration Debug \
            -sdk iphonesimulator \
            -destination "id=$DEVICE_ID" \
+           -derivedDataPath "iosApp/build/derivedData" \
            ONLY_ACTIVE_ARCH=YES \
            build || { echo "❌ Xcode build failed"; exit 1; }
 
@@ -71,7 +77,7 @@ xcrun simctl bootstatus "$DEVICE_ID"
 # 4. Install and Launch App
 echo "--- 🚀 Installing and Launching App ---"
 # Get the build directory dynamically
-BUILD_DIR=$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Debug -sdk iphonesimulator -showBuildSettings | grep -m 1 "TARGET_BUILD_DIR =" | cut -d "=" -f2 | xargs)
+BUILD_DIR=$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Debug -sdk iphonesimulator -derivedDataPath "iosApp/build/derivedData" -showBuildSettings | grep -m 1 "TARGET_BUILD_DIR =" | cut -d "=" -f2 | xargs)
 APP_PATH="$BUILD_DIR/$SCHEME.app"
 
 if [ -d "$APP_PATH" ]; then

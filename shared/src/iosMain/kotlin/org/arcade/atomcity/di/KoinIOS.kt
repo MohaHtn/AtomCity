@@ -11,7 +11,7 @@ import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
 
 // Helper to start Koin from iOS (Swift)
-fun initKoin(
+fun doInitKoin(
     scorefetcherApiKey: String,
     networkErrorHandler: NetworkErrorHandler
 ) {
