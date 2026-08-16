@@ -109,7 +109,6 @@ class MaimaiImportWorker(
                                             return@use true
                                         }
                                     } else if (event.type == "completed") {
-                                        completed = true
                                         return@use true
                                     } else if (event.type == "failed") {
                                         return@use false

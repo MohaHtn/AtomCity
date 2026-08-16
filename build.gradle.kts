@@ -11,4 +11,4 @@ plugins {
 }
 
 group = "org.arcade.atomcity"
-version = "1.0"
+version = "1"

@@ -1,54 +1,60 @@
 package org.arcade.atomcity.ui.game.maimai
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.alpha
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.arcade.atomcity.data.DifficultyRepository
 import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
 import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.format
+import org.arcade.atomcity.utils.rememberPlatformContext
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiBest30Charts(
     onBackClick: () -> Unit,
     navController: NavHostController,
-    maiteaViewModel: MaiteaViewModel
+    maiteaViewModel: MaiteaViewModel,
+    repository: DifficultyRepository,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val isLoading by maiteaViewModel.isLoading.collectAsState()
     val maimaiBestScores by maiteaViewModel.maimaiBestScores.collectAsState()
+    val playerData by maiteaViewModel.playerData.collectAsState()
+    
+    val scope = rememberCoroutineScope()
+    val context = rememberPlatformContext()
+    val graphicsLayer = rememberGraphicsLayer()
+    var isGeneratingImage by remember { mutableStateOf(false) }
+    var showSharePreview by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
 
     LaunchedEffect(Unit) {
         maiteaViewModel.fetch30BestScores()
+        maiteaViewModel.fetchMaimaiPlayerDetails()
     }
 
     Scaffold(
@@ -75,6 +81,22 @@ fun MaimaiBest30Charts(
                 scrollBehavior = scrollBehavior
             )
         },
+        floatingActionButton = {
+            if (maimaiBestScores.isNotEmpty()) {
+                FloatingActionButton(
+                    onClick = {
+                        showSharePreview = true
+                    },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Prévisualiser le partage"
+                    )
+                }
+            }
+        }
     ) {
         paddingValues ->
         Box(
@@ -121,7 +143,122 @@ fun MaimaiBest30Charts(
                         }
                     }
                 }
+            }
+            
+            // Hidden capture area (composed but invisible to pre-load images)
+            Box(
+                modifier = Modifier
+                    .wrapContentSize(align = Alignment.TopStart, unbounded = true)
+                    .alpha(0f) // Invisible
+                    .drawWithContent {
+                        if (isGeneratingImage) {
+                            graphicsLayer.record {
+                                this@drawWithContent.drawContent()
+                            }
+                        }
+                    }
+            ) {
+                val player = playerData?.data?.firstOrNull()
+                MaimaiBest30Summary(
+                    playerName = player?.name,
+                    rating = player?.rating,
+                    iconUrl = player?.options?.iconDeka?.webp ?: player?.options?.iconDeka?.png ?: player?.options?.icon?.webp ?: player?.options?.icon?.png,
+                    bannerUrl = player?.options?.frame?.webp ?: player?.options?.frame?.png,
+                    title = player?.options?.title?.value,
+                    scores = maimaiBestScores,
+                    repository = repository,
+                    modifier = Modifier.width(600.dp), // Slightly wider for better B30 look
+                    isCapture = true
+                )
+            }
 
+            if (isGeneratingImage) {
+                LaunchedEffect(Unit) {
+                    // Larger delay to ensure images are loaded
+                    delay(1000.milliseconds)
+                    scope.launch {
+                        try {
+                            val bitmap = graphicsLayer.toImageBitmap()
+                            PlatformUtils.shareImage(bitmap, context)
+                        } catch (e: Exception) {
+                            // Handle error
+                        } finally {
+                            isGeneratingImage = false
+                        }
+                    }
+                }
+            }
+
+            if (showSharePreview) {
+                ModalBottomSheet(
+                    onDismissRequest = { showSharePreview = false },
+                    sheetState = sheetState,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    dragHandle = { BottomSheetDefaults.DragHandle() }
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding() // Correct way to handle bottom nav bar
+                    ) {
+                        Text(
+                            text = "Aperçu de vos 30 meilleurs scores",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = (-1).sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .heightIn(max = 500.dp) // Limit height of preview to keep button visible
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            val player = playerData?.data?.firstOrNull()
+                            MaimaiBest30Summary(
+                                playerName = player?.name,
+                                rating = player?.rating,
+                                iconUrl = player?.options?.iconDeka?.webp ?: player?.options?.iconDeka?.png ?: player?.options?.icon?.webp ?: player?.options?.icon?.png,
+                                bannerUrl = player?.options?.frame?.webp ?: player?.options?.frame?.png,
+                                title = player?.options?.title?.value,
+                                scores = maimaiBestScores,
+                                repository  = repository,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    sheetState.hide()
+                                    showSharePreview = false
+                                    isGeneratingImage = true
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 16.dp)
+                                .height(64.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null)
+                            Spacer(Modifier.width(12.dp))
+                            Text(
+                                "Partager",
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 1.sp
+                                )
+                            )
+                        }
+                    }
+                }
             }
         }
     }

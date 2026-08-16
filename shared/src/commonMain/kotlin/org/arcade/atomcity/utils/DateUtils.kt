@@ -6,3 +6,8 @@ package org.arcade.atomcity.utils
  * @return une chaîne formatée "jour mois année, heure:minute" ou chaîne vide si null
  */
 expect fun formatPlayDate(playDate: String?): String
+
+/**
+ * Retourne la date et l'heure actuelle formatée pour le partage.
+ */
+expect fun getCurrentFormattedDate(): String

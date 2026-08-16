@@ -55,3 +55,11 @@ actual fun formatPlayDate(playDate: String?): String {
         }
     } ?: ""
 }
+
+actual fun getCurrentFormattedDate(): String {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'à' HH:mm "))
+    } else {
+        SimpleDateFormat("dd/MM/yyyy 'à' HH:mm", Locale.getDefault()).format(java.util.Date())
+    }
+}

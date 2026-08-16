@@ -34,3 +34,12 @@ actual fun formatPlayDate(playDate: String?): String {
         }
     } ?: ""
 }
+
+actual fun getCurrentFormattedDate(): String {
+    val formatter = NSDateFormatter().apply {
+        dateFormat = "dd/MM/yyyy HH:mm"
+        locale = NSLocale.currentLocale
+        timeZone = NSTimeZone.localTimeZone
+    }
+    return formatter.stringFromDate(NSDate())
+}

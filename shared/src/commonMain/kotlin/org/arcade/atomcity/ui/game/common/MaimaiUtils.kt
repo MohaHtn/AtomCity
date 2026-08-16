@@ -3,6 +3,8 @@ package org.arcade.atomcity.ui.game.common
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -61,4 +63,35 @@ fun getJacketBorderColor(difficulty: String?): Color {
         "宴" -> Color(0xFFFF5722) // Orange
         else -> Color.Transparent
     }
+}
+
+fun getDifficultyIndex(difficulty: String?): Int {
+    return when (val clean = difficulty?.replace(":", "")?.trim()?.lowercase()) {
+        "basic" -> 0
+        "advanced" -> 1
+        "expert" -> 2
+        "master" -> 3
+        "remaster" -> 4
+        "utage" -> 5
+        "宴" -> 5
+        else -> clean?.toIntOrNull() ?: 0
+    }
+}
+
+@Composable
+fun rememberMaimaiLevel(
+    songId: Int,
+    diffIndex: Int,
+    songTitle: String?,
+    repository: org.arcade.atomcity.data.DifficultyRepository
+): String {
+    val levelInfo by produceState<String?>(initialValue = null, songId, diffIndex, songTitle, repository) {
+        val result = repository.getLevelByDifficulty(
+            songId = songId,
+            diffIndex = diffIndex,
+            songTitle = songTitle
+        )
+        value = result.level
+    }
+    return levelInfo ?: ""
 }
