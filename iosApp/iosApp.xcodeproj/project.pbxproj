@@ -108,10 +108,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C4FDCC1D3021EAE400AA234E /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
+                C4FDCC203021EB2900AA234E /* Compile Kotlin Multiplatform */,
 				C4FDCC0A3021EAE200AA234E /* Sources */,
 				C4FDCC0B3021EAE200AA234E /* Frameworks */,
 				C4FDCC0C3021EAE200AA234E /* Resources */,
-				C4FDCC203021EB2900AA234E /* Compile Kotlin Multiplatform */,
 			);
 			buildRules = (
 			);
