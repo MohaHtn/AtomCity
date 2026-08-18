@@ -40,6 +40,7 @@ import kotlinx.datetime.number
 import org.arcade.atomcity.domain.model.LevelInfo
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.koin.compose.koinInject
+import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
@@ -265,7 +266,7 @@ fun MaimaiMostPlayedChart(
                     confirmButton = {
                         TextButton(onClick = {
                             datePickerState.selectedDateMillis?.let {
-                                currentDate = kotlinx.datetime.Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
+                                currentDate = Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
                             }
                             showDatePicker = false
                         }) {
@@ -392,12 +393,51 @@ private val UserColors = listOf(
     Color(0xFF81C784), // Soft Green
     Color(0xFFAED581), // Soft Light Green
     Color(0xFFFFD54F), // Soft Amber
-    Color(0xFFFFB74D)  // Soft Orange
+    Color(0xFFFFB74D), // Soft Orange
+    Color(0xFFFF8A80), // Soft Coral
+    Color(0xFFFFAB91), // Soft Peach
+    Color(0xFFFFCC80), // Soft Apricot
+    Color(0xFFFFE082), // Soft Golden
+    Color(0xFFE6EE9C), // Soft Lime
+    Color(0xFFC5E1A5), // Soft Moss Green
+    Color(0xFFA5D6A7), // Soft Mint Green
+    Color(0xFF80CBC4), // Soft Seafoam
+    Color(0xFF80DEEA), // Soft Sky Cyan
+    Color(0xFF81D4FA), // Soft Azure
+    Color(0xFF90CAF9), // Soft Cornflower
+    Color(0xFF9FA8DA), // Soft Periwinkle
+    Color(0xFFB39DDB), // Soft Lavender
+    Color(0xFFCE93D8), // Soft Orchid
+    Color(0xFFF48FB1)  // Soft Rose
 )
 
 private fun getColorForHash(hash: String): Color {
-    val index = (hash.hashCode().let { if (it < 0) -it else it }) % UserColors.size
-    return UserColors[index]
+    val hash64 = stableHash64(hash)
+    val baseColor = UserColors[(hash64 % UserColors.size.toULong()).toInt()]
+    val whiteMix = 0.08f + (((hash64 shr 8) and 0x0Fu).toInt() / 100f)      // 0.08..0.23
+    val saturationScale = 0.9f + (((hash64 shr 16) and 0x0Fu).toInt() / 100f) // 0.90..1.05
+    val lightLift = (((hash64 shr 24) and 0x1Fu).toInt() / 31f) * 0.12f       // 0.00..0.12
+
+    fun tweak(channel: Float): Float {
+        val saturated = ((channel - 0.5f) * saturationScale + 0.2f).coerceIn(0f, 1f)
+        val lifted = (saturated + lightLift).coerceIn(0f, 1f)
+        return (lifted * (1f - whiteMix) + whiteMix).coerceIn(0f, 1f)
+    }
+
+    return Color(
+        red = tweak(baseColor.red),
+        green = tweak(baseColor.green),
+        blue = tweak(baseColor.blue),
+        alpha = 1f
+    )
+}
+
+private fun stableHash64(value: String): ULong {
+    var hash = 0xcbf29ce484222325uL
+    value.forEach { char ->
+        hash = (hash xor char.code.toULong()) * 0x100000001b3uL
+    }
+    return hash
 }
 
 @Composable
