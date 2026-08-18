@@ -36,13 +36,13 @@ jobs:
         run: printf '%s' "$APIKEYS_PROPERTIES" > apikeys.properties
 
       - name: Build Android debug APK
-        run: ./gradlew :mobile:assembleDebug
+        run: ./gradlew :app:assembleDebug
 
       - name: Upload Android debug APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: mobile/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
 
   build-ios:
     name: Build iOS simulator app
