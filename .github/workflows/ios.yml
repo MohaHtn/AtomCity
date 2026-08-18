@@ -2,19 +2,21 @@ name: iOS starter workflow
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
 
 jobs:
-
   build-android:
     name: Build Android
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,6 +36,7 @@ jobs:
   build-ios:
     name: Build iOS simulator app
     runs-on: macos-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,12 +47,12 @@ jobs:
       - name: Build iOS simulator app
         run: |
           xcodebuild build \
-          -project iosApp/iosApp.xcodeproj \
-          -configuration Release \
-          -scheme iosApp \
-          -sdk iphonesimulator \
-          -derivedDataPath ./build \
-          -verbose
+            -project iosApp/iosApp.xcodeproj \
+            -configuration Release \
+            -scheme iosApp \
+            -sdk iphonesimulator \
+            -derivedDataPath ./build \
+            -verbose
 
       - name: Upload app folder
         uses: actions/upload-artifact@v4
