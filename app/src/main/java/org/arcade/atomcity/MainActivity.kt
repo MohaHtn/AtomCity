@@ -25,15 +25,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.arcade.atomcity.di.apiKeyManagerModule
 import org.arcade.atomcity.di.appModule
-import org.arcade.atomcity.di.network.scorefetcherNetworkModule
-import org.arcade.atomcity.di.network.scorefetcherProfileDataModule
-import org.arcade.atomcity.di.network.taikoNetworkModule
 import org.arcade.atomcity.di.sharedModule
-import org.arcade.atomcity.di.viewmodel.scorefetcherViewModelModule
-import org.arcade.atomcity.di.viewmodel.taikoServerViewModelModule
-import org.arcade.atomcity.di.workerModule
 import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.GlobalUIState
@@ -57,24 +50,7 @@ class AtomCityApplication : Application() {
         startKoin {
             androidContext(this@AtomCityApplication)
 
-            val scorefetcherModules = listOf(
-                scorefetcherNetworkModule,
-                scorefetcherProfileDataModule,
-                scorefetcherViewModelModule
-            )
-
-            val taikoModules = listOf(
-                taikoNetworkModule,
-                taikoServerViewModelModule
-            )
-
-            val utilityModules = listOf(
-                apiKeyManagerModule,
-                appModule,
-                workerModule
-            )
-
-            modules(scorefetcherModules + taikoModules + utilityModules + sharedModule)
+            modules(appModule + sharedModule)
         }
         preloadMaimaiImportState()
     }
