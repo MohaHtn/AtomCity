@@ -8,3 +8,4 @@ class AndroidNetworkErrorHandler : NetworkErrorHandler {
         GlobalUIState.globalError.value = message
     }
 
+}
