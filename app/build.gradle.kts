@@ -1,5 +1,7 @@
 import java.util.Properties
 import com.github.triplet.gradle.androidpublisher.ResolutionStrategy
+import com.github.triplet.gradle.play.PlayPublisherExtension
+import com.android.build.api.dsl.ApplicationExtension
 
 plugins {
     alias(libs.plugins.android.application)
@@ -9,7 +11,12 @@ plugins {
     id("com.github.triplet.play") version "4.1.1"
 }
 
-android {
+val isGitHubActions = providers
+    .environmentVariable("GITHUB_ACTIONS")
+    .map { it.equals("true", ignoreCase = true) }
+    .getOrElse(false)
+
+extensions.configure<ApplicationExtension> {
     namespace = "org.arcade.atomcity"
     compileSdk = 36
 
@@ -20,20 +27,27 @@ android {
         versionCode = 3
         versionName = "1.1"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        signingConfig = signingConfigs.getByName("debug")
+        testInstrumentationRunner =
+            "androidx.test.runner.AndroidJUnitRunner"
 
-        // from https://stackoverflow.com/questions/77224069/saving-api-keys-on-local-properties-file-to-avoid-version-control-checking-in
-        val keystoreFile = project.rootProject.file("apikeys.properties")
+        val keystoreFile = rootProject.file("apikeys.properties")
         val properties = Properties()
-        properties.load(keystoreFile.inputStream())
-        val scorefetcherApiKey = properties.getProperty("SCOREFETCHER_API_KEY") ?: ""
+
+        if (keystoreFile.exists()) {
+            keystoreFile.inputStream().use(properties::load)
+        }
+
+        val scorefetcherApiKey =
+            properties.getProperty("SCOREFETCHER_API_KEY")
+                ?: System.getenv("SCOREFETCHER_API_KEY")
+                ?: ""
 
         buildConfigField(
             "String",
             "SCOREFETCHER_API_KEY",
             "\"$scorefetcherApiKey\""
         )
+
         versionNameSuffix = "pre-alpha-3"
     }
 
@@ -41,19 +55,25 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+
             optimization {
-                enable = true // Enables code and resource optimizations.
+                enable = true
             }
+
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
+                getDefaultProguardFile(
+                    "proguard-android-optimize.txt"
+                ),
                 "proguard-rules.pro"
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -62,10 +82,16 @@ android {
     lint {
         disable += "NullSafeMutableLiveData"
     }
+}
 
-    play {
-        serviceAccountCredentials.set(file("atomcity-autopublish.json"))
-        resolutionStrategy.set(ResolutionStrategy.AUTO)
+play {
+    enabled.set(!isGitHubActions)
+    resolutionStrategy.set(ResolutionStrategy.AUTO)
+
+    if (!isGitHubActions) {
+        serviceAccountCredentials.set(
+            file("atomcity-autopublish.json")
+        )
     }
 }
 
