@@ -56,7 +56,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -70,14 +70,15 @@ jobs:
         run: |
           xcodebuild build \
             -project iosApp/iosApp.xcodeproj \
-            -configuration Release \
             -scheme iosApp \
+            -configuration Release \
             -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
             -derivedDataPath ./build \
-            -verbose
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Upload app folder
         uses: actions/upload-artifact@v4
         with:
           name: iphonesimulator-app
-          path: build/Build/Products/Release-iphonesimulator/*
+          path: build/Build/Products/Release-iphonesimulator/*.app
