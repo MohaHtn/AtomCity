@@ -7,19 +7,22 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import org.arcade.atomcity.network.ScorefetcherClient
-import org.arcade.atomcity.network.TaikoServerClient
-import org.arcade.atomcity.network.ScorefetcherProfileClient
-import org.arcade.atomcity.network.ImportService
-import org.arcade.atomcity.network.NetworkErrorHandler
-import org.arcade.atomcity.network.installErrorValidator
-import org.arcade.atomcity.db.AppDatabase
-import org.arcade.atomcity.db.getAppDatabase
-import org.arcade.atomcity.db.getDatabaseBuilder
+import org.arcade.atomcity.data.remote.ScorefetcherClient
+import org.arcade.atomcity.data.remote.TaikoServerClient
+import org.arcade.atomcity.data.remote.ScorefetcherProfileClient
+import org.arcade.atomcity.data.remote.ImportService
+import org.arcade.atomcity.data.remote.NetworkErrorHandler
+import org.arcade.atomcity.data.remote.installErrorValidator
+import org.arcade.atomcity.data.local.AppDatabase
+import org.arcade.atomcity.data.local.getAppDatabase
+import org.arcade.atomcity.data.local.getDatabaseBuilder
 import org.koin.dsl.module
-import org.arcade.atomcity.data.ScorefetcherRepository
-import org.arcade.atomcity.data.TaikoServerRepository
-import org.arcade.atomcity.data.DifficultyRepository
+import org.arcade.atomcity.data.repository.ScorefetcherRepository
+import org.arcade.atomcity.domain.repository.IScorefetcherRepository
+import org.arcade.atomcity.domain.repository.IDifficultyRepository
+import org.arcade.atomcity.domain.repository.ITaikoServerRepository
+import org.arcade.atomcity.data.repository.TaikoServerRepository
+import org.arcade.atomcity.data.repository.DifficultyRepository
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.utils.ThemeSettingsManager
 import org.arcade.atomcity.utils.PlatformUtils
@@ -27,8 +30,8 @@ import org.arcade.atomcity.worker.ImportWorkManager
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
 import org.arcade.atomcity.domain.usecase.*
 import org.koin.core.qualifier.named
-import org.arcade.atomcity.model.utils.JacketUrl
-import org.arcade.atomcity.model.utils.MAIMAI_IMAGES_JSON
+import org.arcade.atomcity.data.remote.model.utils.JacketUrl
+import org.arcade.atomcity.data.remote.model.utils.MAIMAI_IMAGES_JSON
 
 val sharedModule = module {
     single {
@@ -72,7 +75,6 @@ val sharedModule = module {
     }
 
     single<AppDatabase> { getAppDatabase(getDatabaseBuilder()) }
-    single<com.atomcity.maimai.db.AppDatabase> { com.atomcity.maimai.db.getAppDatabase(com.atomcity.maimai.db.getDatabaseBuilder()) }
 
     single { GetTaikoServerDataUseCase(get()) }
     single { GetScorefetcherScoresUseCase(get()) }
@@ -80,9 +82,9 @@ val sharedModule = module {
     single { ScorefetcherImportUseCase(get()) }
     single { GetScorefetcherAnalyticsUseCase(get()) }
     single { GetScorefetcherJacketUseCase(get()) }
-    single { TaikoServerRepository(get()) }
-    single { DifficultyRepository(get()) }
+    single<ITaikoServerRepository> { TaikoServerRepository(get()) }
+    single<IDifficultyRepository> { DifficultyRepository(get()) }
     single { ApiKeyManager(get()) }
     single { ThemeSettingsManager(get()) }
-    single { ScorefetcherRepository(get(), get(), get(), get(), get(), get(), get(), get(named("jacketImages")), get(named("scorefetcher_api_key"))) }
+    single<IScorefetcherRepository> { ScorefetcherRepository(get(), get(), get(), get(), get(), get(), get(), get(named("jacketImages")), get(named("scorefetcher_api_key"))) }
 }

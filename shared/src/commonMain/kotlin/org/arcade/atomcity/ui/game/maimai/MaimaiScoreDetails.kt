@@ -36,11 +36,11 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.*
 import kotlinx.coroutines.launch
-import org.arcade.atomcity.data.DifficultyRepository
-import org.arcade.atomcity.data.LevelInfo
-import org.arcade.atomcity.model.scorefetcher.ChartHistoryResponse
-import org.arcade.atomcity.model.scorefetcher.BestPerPlayerResponse
-import org.arcade.atomcity.model.scorefetcher.playsResponse.*
+import org.arcade.atomcity.domain.repository.IDifficultyRepository
+import org.arcade.atomcity.domain.model.LevelInfo
+import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.*
 import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
@@ -61,7 +61,7 @@ fun MaimaiScoresDetails(
 ) {
     val difficultyColor = getJacketBorderColor(scoreEntry?.difficultyLevel?.value)
     
-    val difficultyRepository: DifficultyRepository = koinInject()
+    val difficultyRepository: IDifficultyRepository = koinInject()
     var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
     val scope = rememberCoroutineScope()
 

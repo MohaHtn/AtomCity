@@ -24,7 +24,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import org.arcade.atomcity.model.scorefetcher.playerDetailsResponse.PlayerDetailsData
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.PlayerDetailsData
 import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.ui.game.common.selectRatingBackground
 import org.arcade.atomcity.utils.format

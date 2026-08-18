@@ -23,9 +23,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.arcade.atomcity.data.DifficultyRepository
-import org.arcade.atomcity.model.scorefetcher.playerBest30Response.PlayerBest30Response
-import org.arcade.atomcity.model.scorefetcher.playsResponse.ScorefetcherApiData
+import org.arcade.atomcity.domain.repository.IDifficultyRepository
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerBest30Response.PlayerBest30Response
+import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
 import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.format
@@ -38,7 +38,7 @@ fun MaimaiBest30Charts(
     onBackClick: () -> Unit,
     navController: NavHostController,
     scorefetcherViewModel: ScorefetcherViewModel,
-    repository: DifficultyRepository,
+    repository: IDifficultyRepository,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val isLoading by scorefetcherViewModel.isLoading.collectAsState()

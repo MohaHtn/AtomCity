@@ -28,8 +28,8 @@ import org.arcade.atomcity.ui.game.maimai.MaimaiBest30Charts
 import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.game.maimai.AtomCityUsers
 import org.arcade.atomcity.utils.ApiKeyManager
+import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.koin.compose.koinInject
-import org.arcade.atomcity.data.DifficultyRepository
 
 sealed class Screen(val route: String) {
     data object Game : Screen("game/{gameId}") {
@@ -134,7 +134,7 @@ fun AppNavigation(
         }
 
         composable (route = "maimaiBest30Scores") {
-            val repository: DifficultyRepository = koinInject()
+            val repository: IDifficultyRepository = koinInject()
             MaimaiBest30Charts(
                 navController = navController,
                 onBackClick = { navController.popBackStack() },

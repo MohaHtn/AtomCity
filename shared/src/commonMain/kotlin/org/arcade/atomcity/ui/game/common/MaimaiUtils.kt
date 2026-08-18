@@ -83,7 +83,7 @@ fun rememberMaimaiLevel(
     songId: Int,
     diffIndex: Int,
     songTitle: String?,
-    repository: org.arcade.atomcity.data.DifficultyRepository
+    repository: org.arcade.atomcity.domain.repository.IDifficultyRepository
 ): String {
     val levelInfo by produceState<String?>(initialValue = null, songId, diffIndex, songTitle, repository) {
         val result = repository.getLevelByDifficulty(

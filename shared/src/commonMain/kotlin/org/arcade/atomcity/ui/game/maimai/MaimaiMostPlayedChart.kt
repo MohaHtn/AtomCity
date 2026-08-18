@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
-import org.arcade.atomcity.model.scorefetcher.MaimaiMostPlayedEntry
+import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
 import org.arcade.atomcity.utils.PlatformUtils
 import kotlinx.datetime.*
 import kotlin.time.Clock
@@ -39,8 +39,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
-import org.arcade.atomcity.data.DifficultyRepository
-import org.arcade.atomcity.data.LevelInfo
+import org.arcade.atomcity.domain.model.LevelInfo
+import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
@@ -499,7 +499,7 @@ fun MostPlayedBarChart(topEntries: List<MaimaiMostPlayedEntry>, maxCount: Int) {
 
 @Composable
 fun MostPlayedItem(entry: MaimaiMostPlayedEntry) {
-    val difficultyRepository: DifficultyRepository = koinInject()
+    val difficultyRepository: IDifficultyRepository = koinInject()
     var levelInfo by remember { mutableStateOf(entry.levelInfo) }
 
     LaunchedEffect(entry.songName, entry.difficulty) {

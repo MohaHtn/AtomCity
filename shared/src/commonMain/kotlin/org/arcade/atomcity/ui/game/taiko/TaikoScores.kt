@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import atomcity.shared.generated.resources.*
-import org.arcade.atomcity.model.taikoserver.songHistory.TaikoServerHistoryEntry
+import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.OpenMiniMenu

@@ -19,9 +19,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import org.arcade.atomcity.data.DifficultyRepository
-import org.arcade.atomcity.data.LevelInfo
-import org.arcade.atomcity.model.scorefetcher.playsResponse.*
+import org.arcade.atomcity.domain.repository.IDifficultyRepository
+import org.arcade.atomcity.domain.model.LevelInfo
+import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.formatPlayDate
@@ -33,7 +33,7 @@ fun MaimaiScoreItem(
     onClick: () -> Unit
 ) {
     val difficultyColor = getJacketBorderColor(play.difficultyLevel?.value)
-    val difficultyRepository: DifficultyRepository? = if (LocalInspectionMode.current) null else koinInject()
+    val difficultyRepository: IDifficultyRepository? = if (LocalInspectionMode.current) null else koinInject()
     
     var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
     val scope = rememberCoroutineScope()

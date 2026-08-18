@@ -81,7 +81,7 @@ class AtomCityApplication : Application() {
 
     private fun preloadMaimaiImportState() {
         startupScope.launch {
-            val repository = GlobalContext.get().get<org.arcade.atomcity.data.ScorefetcherRepository>()
+            val repository = GlobalContext.get().get<org.arcade.atomcity.data.repository.ScorefetcherRepository>()
             val isImporting = repository.isImportWorkerActive().first()
             GlobalUIState.isImportingMaimaiScores.value = isImporting
             GlobalUIState.isMaimaiImportStateReady.value = true

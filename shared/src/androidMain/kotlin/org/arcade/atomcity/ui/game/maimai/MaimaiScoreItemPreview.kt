@@ -3,7 +3,7 @@ package org.arcade.atomcity.ui.game.maimai
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import org.arcade.atomcity.model.scorefetcher.playsResponse.*
+import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.*
 
 @Preview(showBackground = true)
 @Composable

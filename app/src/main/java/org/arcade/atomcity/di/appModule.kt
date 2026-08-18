@@ -1,8 +1,8 @@
 package org.arcade.atomcity.di
 
 import org.arcade.atomcity.BuildConfig
-import org.arcade.atomcity.network.AndroidNetworkErrorHandler
-import org.arcade.atomcity.network.NetworkErrorHandler
+import org.arcade.atomcity.data.remote.AndroidNetworkErrorHandler
+import org.arcade.atomcity.data.remote.NetworkErrorHandler
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.koin.core.qualifier.named
 import org.koin.dsl.module

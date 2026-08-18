@@ -2,7 +2,7 @@ package org.arcade.atomcity.worker
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.arcade.atomcity.network.ImportService
+import org.arcade.atomcity.data.remote.ImportService
 import org.arcade.atomcity.utils.PlatformUtils
 
 class IosImportWorkManager(private val importService: ImportService) : ImportWorkManager {

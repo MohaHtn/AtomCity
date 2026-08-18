@@ -1,6 +1,6 @@
 package org.arcade.atomcity.di.viewmodel
 
-import org.arcade.atomcity.data.ScorefetcherRepository
+import org.arcade.atomcity.data.repository.ScorefetcherRepository
 import org.arcade.atomcity.domain.usecase.*
 import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.koin.core.module.dsl.viewModel

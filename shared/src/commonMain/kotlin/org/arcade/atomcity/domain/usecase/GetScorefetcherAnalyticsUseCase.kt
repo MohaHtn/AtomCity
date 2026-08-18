@@ -1,12 +1,12 @@
 package org.arcade.atomcity.domain.usecase
 
 import kotlinx.coroutines.flow.Flow
-import org.arcade.atomcity.data.ScorefetcherRepository
-import org.arcade.atomcity.model.scorefetcher.BestPerPlayerResponse
-import org.arcade.atomcity.model.scorefetcher.ChartHistoryResponse
-import org.arcade.atomcity.model.scorefetcher.MaimaiMostPlayedEntry
+import org.arcade.atomcity.domain.repository.IScorefetcherRepository
+import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
 
-class GetScorefetcherAnalyticsUseCase(private val repository: ScorefetcherRepository) {
+class GetScorefetcherAnalyticsUseCase(private val repository: IScorefetcherRepository) {
     fun getChartHistory(songName: String, difficulty: String?): Flow<List<ChartHistoryResponse>> = repository.getChartHistory(songName, difficulty)
 
     fun getBestPerPlayer(songName: String, difficulty: String?): Flow<List<BestPerPlayerResponse>> = repository.getBestPerPlayer(songName, difficulty)

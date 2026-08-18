@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.arcade.atomcity.model.scorefetcher.playsResponse.*
+import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.*
 
 @Preview(showBackground = true, name = "All Perfect + (No break greats)")
 @Composable

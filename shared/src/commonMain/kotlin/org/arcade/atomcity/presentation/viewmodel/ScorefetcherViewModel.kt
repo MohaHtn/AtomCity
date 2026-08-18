@@ -11,13 +11,13 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.arcade.atomcity.data.ImportWorkerStatus
+import org.arcade.atomcity.domain.model.ImportWorkerStatus
 import org.arcade.atomcity.domain.usecase.*
-import org.arcade.atomcity.model.scorefetcher.playsResponse.ScorefetcherApiData
-import org.arcade.atomcity.model.scorefetcher.playsResponse.ScorefetcherPlaysResponse
-import org.arcade.atomcity.model.scorefetcher.playerDetailsResponse.ScorefetcherPlayerDetailsResponse
-import org.arcade.atomcity.model.scorefetcher.ChartHistoryResponse
-import org.arcade.atomcity.model.scorefetcher.playerBest30Response.PlayerBest30Response
+import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
+import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherPlaysResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.ScorefetcherPlayerDetailsResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerBest30Response.PlayerBest30Response
 import org.arcade.atomcity.ui.core.GlobalUIState
 import kotlin.time.Duration.Companion.milliseconds
 import androidx.lifecycle.ViewModel
@@ -60,16 +60,16 @@ class ScorefetcherViewModel(
     val chartHistory: StateFlow<List<ChartHistoryResponse>> = _chartHistory
 
     // StateFlow to hold best-per-player responses
-    private val _bestPerPlayer = MutableStateFlow<List<org.arcade.atomcity.model.scorefetcher.BestPerPlayerResponse>>(emptyList())
-    val bestPerPlayer: StateFlow<List<org.arcade.atomcity.model.scorefetcher.BestPerPlayerResponse>> = _bestPerPlayer
+    private val _bestPerPlayer = MutableStateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>>(emptyList())
+    val bestPerPlayer: StateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>> = _bestPerPlayer
 
     // StateFlow to hold search results
-    private val _searchResults = MutableStateFlow<List<org.arcade.atomcity.model.scorefetcher.BestPerPlayerResponse>>(emptyList())
-    val searchResults: StateFlow<List<org.arcade.atomcity.model.scorefetcher.BestPerPlayerResponse>> = _searchResults
+    private val _searchResults = MutableStateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>>(emptyList())
+    val searchResults: StateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>> = _searchResults
 
     // StateFlow to hold most played charts
-    private val _mostPlayedCharts = MutableStateFlow<List<org.arcade.atomcity.model.scorefetcher.MaimaiMostPlayedEntry>>(emptyList())
-    val mostPlayedCharts: StateFlow<List<org.arcade.atomcity.model.scorefetcher.MaimaiMostPlayedEntry>> = _mostPlayedCharts
+    private val _mostPlayedCharts = MutableStateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry>>(emptyList())
+    val mostPlayedCharts: StateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry>> = _mostPlayedCharts
 
 
     // Expose the current page

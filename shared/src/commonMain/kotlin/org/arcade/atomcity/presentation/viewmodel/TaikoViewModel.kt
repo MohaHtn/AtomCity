@@ -3,11 +3,11 @@ package org.arcade.atomcity.presentation.viewmodel
 import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import org.arcade.atomcity.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
+import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
-import org.arcade.atomcity.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
-import org.arcade.atomcity.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
+import org.arcade.atomcity.data.remote.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
+import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
 import org.arcade.atomcity.utils.ApiKeyManager
 
 class TaikoViewModel(

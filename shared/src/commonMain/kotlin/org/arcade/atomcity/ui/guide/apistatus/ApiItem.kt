@@ -39,7 +39,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.arcade.atomcity.data.ScorefetcherRepository
+import org.arcade.atomcity.data.repository.ScorefetcherRepository
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager

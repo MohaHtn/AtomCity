@@ -2,7 +2,7 @@ package org.arcade.atomcity.di
 
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import org.arcade.atomcity.network.NetworkErrorHandler
+import org.arcade.atomcity.data.remote.NetworkErrorHandler
 import org.koin.core.qualifier.named
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get

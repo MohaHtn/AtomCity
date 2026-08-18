@@ -9,10 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.arcade.atomcity.model.scorefetcher.playerDetailsResponse.Icon
-import org.arcade.atomcity.model.scorefetcher.playerDetailsResponse.Options
-import org.arcade.atomcity.model.scorefetcher.playerDetailsResponse.PlayerDetailsData
-import org.arcade.atomcity.model.scorefetcher.playerDetailsResponse.Title
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.Icon
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.Options
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.PlayerDetailsData
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.Title
 
 @Preview(showBackground = true)
 @Composable

@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.arcade.atomcity.model.scorefetcher.playerBest30Response.PlayerBest30Response
-import org.arcade.atomcity.model.scorefetcher.playerDetailsResponse.ScorefetcherPlayerDetailsResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerBest30Response.PlayerBest30Response
+import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.ScorefetcherPlayerDetailsResponse
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.ui.game.common.rememberMaimaiLevel
 import org.arcade.atomcity.ui.game.common.getDifficultyIndex
@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import org.arcade.atomcity.utils.format
 import androidx.compose.ui.draw.alpha
-import org.arcade.atomcity.data.DifficultyRepository
+import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.arcade.atomcity.utils.getCurrentFormattedDate
 
 @Composable
@@ -38,7 +38,7 @@ fun MaimaiBest30Summary(
     bannerUrl: String? = null,
     title: String? = null,
     modifier: Modifier = Modifier,
-    repository: DifficultyRepository,
+    repository: IDifficultyRepository,
     isCapture: Boolean = false
 ) {
     Column(
@@ -160,7 +160,7 @@ fun MaimaiBest30Summary(
 @Composable
 fun SummaryScoreItem(
     score: PlayerBest30Response,
-    repository: DifficultyRepository,
+    repository: IDifficultyRepository,
     isCapture: Boolean = false
 ) {
     val difficultyColor = getJacketBorderColor(score.difficultyLevelJson?.value)
