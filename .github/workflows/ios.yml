@@ -30,6 +30,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Create apikeys.properties
+        env:
+          APIKEYS_PROPERTIES: ${{ secrets.APIKEYS_PROPERTIES }}
+        run: printf '%s' "$APIKEYS_PROPERTIES" > apikeys.properties
+
       - name: Build Android debug APK
         run: ./gradlew :mobile:assembleDebug
 
