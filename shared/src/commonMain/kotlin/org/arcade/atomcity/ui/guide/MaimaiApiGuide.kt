@@ -29,17 +29,17 @@ import atomcity.shared.generated.resources.guide_maimai_step1
 import atomcity.shared.generated.resources.guide_maimai_step2
 import atomcity.shared.generated.resources.guide_maimai_step3
 import atomcity.shared.generated.resources.guide_maimai_step4
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.ui.core.LinkText
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-const val MAIMAI_API_GUIDE_TITLE = "Ajouter une clé API maitea pour maimai FiNALE"
+const val MAIMAI_API_GUIDE_TITLE = "Ajouter une clé API Scorefetcher pour maimai FiNALE"
 const val MAIMAI_API_GUIDE_URL = "https://maitea.app"
 
 // Titles
-const val MAIMAI_API_TITLE_STEP1 = "Accès à Maitea"
+const val MAIMAI_API_TITLE_STEP1 = "Accès à Scorefetcher"
 const val MAIMAI_API_TITLE_STEP2 = "Navigation vers le profil"
 const val MAIMAI_API_TITLE_STEP3 = "Génération du Token"
 const val MAIMAI_API_TITLE_STEP4 = "Message de confirmation de création de la clé API"
@@ -56,7 +56,7 @@ const val MAIMAI_API_GUIDE_TEXT4 = "Lorsque vous voyez le message de succès, vo
 fun MaimaiApiGuide(
     apiKeyManager: ApiKeyManager,
     isVisible: MutableState<Boolean>,
-    maiteaViewModel: MaiteaViewModel
+    scorefetcherViewModel: ScorefetcherViewModel
 ) {
     val existingApiKey by apiKeyManager.getApiKeyFlow("maimai").collectAsState(initial = null)
 

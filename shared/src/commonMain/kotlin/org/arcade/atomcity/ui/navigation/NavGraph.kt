@@ -17,7 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.WelcomeScreen
 import org.arcade.atomcity.ui.core.SettingsScreen
@@ -41,7 +41,7 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavigation(
     taikoViewModel: TaikoViewModel,
-    maiteaViewModel: MaiteaViewModel,
+    scorefetcherViewModel: ScorefetcherViewModel,
     apiKeyManager: ApiKeyManager
 ) {
     val navController = rememberNavController()
@@ -76,7 +76,7 @@ fun AppNavigation(
             GameScreen(
                 gameId = gameId.toString(),
                 onBackClick = { navController.popBackStack() },
-                maiteaViewModel = maiteaViewModel,
+                scorefetcherViewModel = scorefetcherViewModel,
                 taikoViewModel = taikoViewModel,
                 navController = navController
             )
@@ -106,8 +106,8 @@ fun AppNavigation(
             arguments = listOf(navArgument("scoreId") { type = NavType.IntType })
         ) { backStackEntry ->
             val scoreId = backStackEntry.arguments?.getInt("scoreId") ?: 0
-            val dataState by maiteaViewModel.data.collectAsState()
-            val selectedPlayDetail by maiteaViewModel.selectedPlayDetail.collectAsState()
+            val dataState by scorefetcherViewModel.data.collectAsState()
+            val selectedPlayDetail by scorefetcherViewModel.selectedPlayDetail.collectAsState()
             
             val scoreEntryFromList = dataState?.data?.find { it.id == scoreId }
             // Prefer the specifically fetched detail if it matches the ID, 
@@ -118,14 +118,14 @@ fun AppNavigation(
                 if (scoreEntryFromList == null) {
                     val keyHash = apiKeyManager.getKeyHash("maimai")
                     if (!keyHash.isNullOrBlank()) {
-                        maiteaViewModel.getPlayById(scoreId, keyHash)
+                        scorefetcherViewModel.getPlayById(scoreId, keyHash)
                     }
                 }
             }
 
             MaimaiScoresDetails(
                 scoreEntry = scoreEntry,
-                maiteaViewModel = maiteaViewModel,
+                scorefetcherViewModel = scorefetcherViewModel,
                 onBackClick = { navController.popBackStack() },
                 onHistoryClick = { historyId ->
                     navController.navigate("maimaiScoresDetails/$historyId")
@@ -138,7 +138,7 @@ fun AppNavigation(
             MaimaiBest30Charts(
                 navController = navController,
                 onBackClick = { navController.popBackStack() },
-                maiteaViewModel = maiteaViewModel,
+                scorefetcherViewModel = scorefetcherViewModel,
                 repository = repository
             )
         }
@@ -147,13 +147,13 @@ fun AppNavigation(
             org.arcade.atomcity.ui.game.maimai.MaimaiMostPlayedChart(
                 onBackClick = { navController.popBackStack() },
                 navController = navController,
-                maiteaViewModel = maiteaViewModel
+                scorefetcherViewModel = scorefetcherViewModel
             )
         }
 
         composable("maimaiUsers") {
             AtomCityUsers(
-                maiteaViewModel = maiteaViewModel,
+                scorefetcherViewModel = scorefetcherViewModel,
                 onBackClick = { navController.popBackStack() }
             )
         }

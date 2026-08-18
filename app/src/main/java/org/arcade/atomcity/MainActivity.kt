@@ -27,14 +27,14 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.di.apiKeyManagerModule
 import org.arcade.atomcity.di.appModule
-import org.arcade.atomcity.di.network.maiteaNetworkModule
-import org.arcade.atomcity.di.network.maiteaProfileDataModule
+import org.arcade.atomcity.di.network.scorefetcherNetworkModule
+import org.arcade.atomcity.di.network.scorefetcherProfileDataModule
 import org.arcade.atomcity.di.network.taikoNetworkModule
 import org.arcade.atomcity.di.sharedModule
-import org.arcade.atomcity.di.viewmodel.maiTeaViewModelModule
+import org.arcade.atomcity.di.viewmodel.scorefetcherViewModelModule
 import org.arcade.atomcity.di.viewmodel.taikoServerViewModelModule
 import org.arcade.atomcity.di.workerModule
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.navigation.AppNavigation
@@ -57,10 +57,10 @@ class AtomCityApplication : Application() {
         startKoin {
             androidContext(this@AtomCityApplication)
 
-            val maiteaModules = listOf(
-                maiteaNetworkModule,
-                maiteaProfileDataModule,
-                maiTeaViewModelModule
+            val scorefetcherModules = listOf(
+                scorefetcherNetworkModule,
+                scorefetcherProfileDataModule,
+                scorefetcherViewModelModule
             )
 
             val taikoModules = listOf(
@@ -74,14 +74,14 @@ class AtomCityApplication : Application() {
                 workerModule
             )
 
-            modules(maiteaModules + taikoModules + utilityModules + sharedModule)
+            modules(scorefetcherModules + taikoModules + utilityModules + sharedModule)
         }
         preloadMaimaiImportState()
     }
 
     private fun preloadMaimaiImportState() {
         startupScope.launch {
-            val repository = GlobalContext.get().get<org.arcade.atomcity.data.MaiteaRepository>()
+            val repository = GlobalContext.get().get<org.arcade.atomcity.data.ScorefetcherRepository>()
             val isImporting = repository.isImportWorkerActive().first()
             GlobalUIState.isImportingMaimaiScores.value = isImporting
             GlobalUIState.isMaimaiImportStateReady.value = true

@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
-import org.arcade.atomcity.model.maitea.playerDetailsResponse.MaiteaPlayerDetailsResponse
+import org.arcade.atomcity.model.scorefetcher.playerBest30Response.PlayerBest30Response
+import org.arcade.atomcity.model.scorefetcher.playerDetailsResponse.ScorefetcherPlayerDetailsResponse
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.ui.game.common.rememberMaimaiLevel
 import org.arcade.atomcity.ui.game.common.getDifficultyIndex
@@ -54,11 +54,11 @@ fun MaimaiBest30Summary(
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(100.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.FillWidth
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(15.dp))
         }
 
         // Header
@@ -91,7 +91,8 @@ fun MaimaiBest30Summary(
                             text = title,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                fontSize = if (isCapture) 16.sp else 14.sp
                             )
                         )
                     }
@@ -186,9 +187,11 @@ fun SummaryScoreItem(
                 text = "${score.difficultyLevelJson?.label ?: ""} $levelValue",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = if (isCapture) 10.sp else 7.sp
+                    fontSize = if (isCapture) 12.sp else 7.sp
                 ),
                 color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .background(
@@ -221,7 +224,7 @@ fun SummaryScoreItem(
             text = "${((score.achievement ?: 0.0) / 100.0).format(2)}%",
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = if (isCapture) 10.sp else 7.sp
+                fontSize = if (isCapture) 24.sp else 10.sp
             ),
             maxLines = 1,
             textAlign = TextAlign.Center
@@ -231,7 +234,7 @@ fun SummaryScoreItem(
             text = score.songJson?.name?.en ?: "Titre inconnu",
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Bold,
-                fontSize = if (isCapture) 10.sp else 7.sp
+                fontSize = if (isCapture) 13.sp else 10.sp
             ),
             color = difficultyColor,
             maxLines = 1,
@@ -245,7 +248,7 @@ fun SummaryScoreItem(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Black,
                     color = difficultyColor,
-                    fontSize = if (isCapture) 12.sp else 9.sp
+                    fontSize = if (isCapture) 24.sp else 10.sp
                 )
             )
         }

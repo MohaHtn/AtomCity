@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.core.OpenMiniMenu
@@ -32,24 +32,24 @@ import org.arcade.atomcity.ui.navigation.Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiScores(
-    maiteaViewModel: MaiteaViewModel,
+    scorefetcherViewModel: ScorefetcherViewModel,
     navController: androidx.navigation.NavHostController,
 ) {
-    val isLoading by maiteaViewModel.isLoading.collectAsState()
-    val isImportingScores by maiteaViewModel.isImportingScores.collectAsState()
-    val importProgress by maiteaViewModel.importWorkerProgress.collectAsState()
-    val importMessage by maiteaViewModel.importWorkerMessage.collectAsState()
-    val data by maiteaViewModel.data.collectAsState()
+    val isLoading by scorefetcherViewModel.isLoading.collectAsState()
+    val isImportingScores by scorefetcherViewModel.isImportingScores.collectAsState()
+    val importProgress by scorefetcherViewModel.importWorkerProgress.collectAsState()
+    val importMessage by scorefetcherViewModel.importWorkerMessage.collectAsState()
+    val data by scorefetcherViewModel.data.collectAsState()
     val isMaimaiImportStateReady by GlobalUIState.isMaimaiImportStateReady
-    val hasNextPage by maiteaViewModel.hasNextPage.collectAsState()
+    val hasNextPage by scorefetcherViewModel.hasNextPage.collectAsState()
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     
     var showGamesMenu by remember { mutableStateOf(false) }
     var showActionsMenu by remember { mutableStateOf(false) }
-    val currentPage by maiteaViewModel._currentPage.collectAsState()
+    val currentPage by scorefetcherViewModel._currentPage.collectAsState()
     
-    val playerDataState by maiteaViewModel.playerData.collectAsState()
+    val playerDataState by scorefetcherViewModel.playerData.collectAsState()
     val playerData = playerDataState?.data?.firstOrNull()
     val frameUrl = playerData?.options?.frame?.png ?: playerData?.options?.frame?.webp
 
@@ -60,7 +60,7 @@ fun MaimaiScores(
     )
 
     LaunchedEffect(currentPage) {
-        maiteaViewModel.fetchMaimaiPaginatedData(page = currentPage)
+        scorefetcherViewModel.fetchMaimaiPaginatedData(page = currentPage)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -135,7 +135,7 @@ fun MaimaiScores(
                                             )
 
                                             MaimaiPlayerDetails(
-                                                maiteaViewModel = maiteaViewModel,
+                                                scorefetcherViewModel = scorefetcherViewModel,
                                                 collapsedFraction = collapsedFraction,
                                                 textColor = foregroundColor
                                             )
@@ -155,7 +155,7 @@ fun MaimaiScores(
                     }
                     if (isMaimaiImportStateReady) {
                         MaimaiChartSearchBar(
-                            viewModel = maiteaViewModel,
+                            viewModel = scorefetcherViewModel,
                             onNavigateToDetails = { id -> navController.navigate("maimaiScoresDetails/$id") },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -171,7 +171,7 @@ fun MaimaiScores(
                     isLoading = isLoading,
                     hasNextPage = hasNextPage,
                     onPageChange = { newPage ->
-                        maiteaViewModel.onPageChange(newPage)
+                        scorefetcherViewModel.onPageChange(newPage)
                     },
                     onHomeClick = { 
                         showGamesMenu = !showGamesMenu

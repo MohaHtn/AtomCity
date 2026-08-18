@@ -2,7 +2,7 @@ package org.arcade.atomcity.ui.game.maimai
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.game.taiko.TaikoScores
 import org.arcade.atomcity.ui.navigation.Screen
@@ -11,13 +11,13 @@ import org.arcade.atomcity.ui.navigation.Screen
 fun GameScreen(
     gameId: String,
     onBackClick: () -> Unit,
-    maiteaViewModel: MaiteaViewModel,
+    scorefetcherViewModel: ScorefetcherViewModel,
     taikoViewModel: TaikoViewModel,
     navController: NavHostController
 ) {
     when (gameId) {
         "maimai" -> MaimaiScores(
-            maiteaViewModel = maiteaViewModel,
+            scorefetcherViewModel = scorefetcherViewModel,
             navController = navController
         )
         "taiko" -> TaikoScores(

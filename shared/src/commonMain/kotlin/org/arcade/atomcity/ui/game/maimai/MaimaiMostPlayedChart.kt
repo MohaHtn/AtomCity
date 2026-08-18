@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
-import org.arcade.atomcity.model.maitea.MaimaiMostPlayedEntry
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
+import org.arcade.atomcity.model.scorefetcher.MaimaiMostPlayedEntry
 import org.arcade.atomcity.utils.PlatformUtils
 import kotlinx.datetime.*
 import kotlin.time.Clock
@@ -48,10 +48,10 @@ import org.koin.compose.koinInject
 fun MaimaiMostPlayedChart(
     onBackClick: () -> Unit,
     navController: NavHostController,
-    maiteaViewModel: MaiteaViewModel,
+    scorefetcherViewModel: ScorefetcherViewModel,
 ) {
-    val mostPlayedCharts by maiteaViewModel.mostPlayedCharts.collectAsState()
-    val isLoading by maiteaViewModel.isLoadingMostPlayed.collectAsState()
+    val mostPlayedCharts by scorefetcherViewModel.mostPlayedCharts.collectAsState()
+    val isLoading by scorefetcherViewModel.isLoadingMostPlayed.collectAsState()
 
     var isGlobal by remember { mutableStateOf(true) }
     var selectedPeriod by remember { mutableStateOf("month") }
@@ -119,12 +119,12 @@ fun MaimaiMostPlayedChart(
     }
 
     LaunchedEffect(isGlobal, selectedPeriod, apiDate) {
-        maiteaViewModel.fetchMostPlayedCharts(isGlobal, selectedPeriod, apiDate, groupByHashkey = isGlobal)
+        scorefetcherViewModel.fetchMostPlayedCharts(isGlobal, selectedPeriod, apiDate, groupByHashkey = isGlobal)
     }
 
     LaunchedEffect(isGlobal) {
         if (isGlobal) {
-            maiteaViewModel.fetchProfiles()
+            scorefetcherViewModel.fetchProfiles()
         }
     }
 
@@ -318,7 +318,7 @@ fun MaimaiMostPlayedChart(
                         MostPlayedBarChart(mostPlayedCharts.take(5), maxCount)
                         
                         if (isGlobal) {
-                            val profiles by maiteaViewModel.profiles.collectAsState()
+                            val profiles by scorefetcherViewModel.profiles.collectAsState()
                             UserLegend(profiles, mostPlayedCharts.take(5))
                         }
 

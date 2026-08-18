@@ -39,7 +39,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.arcade.atomcity.data.MaiteaRepository
+import org.arcade.atomcity.data.ScorefetcherRepository
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
@@ -55,7 +55,7 @@ internal fun ApiItem(
     
     // In preview mode, we don't use Koin
     val apiKeyManager = if (inspectionMode) null else koinInject<ApiKeyManager>()
-    val maiteaRepository = if (inspectionMode) null else koinInject<MaiteaRepository>()
+    val scorefetcherRepository = if (inspectionMode) null else koinInject<ScorefetcherRepository>()
     
     val scope = rememberCoroutineScope()
     
@@ -175,7 +175,7 @@ internal fun ApiItem(
                     var isDeletedOnServer = false
                     if (name == "maimai" && apiKey != null) {
                         try {
-                            maiteaRepository?.removeApiKey(apiKey!!)?.collect { response ->
+                            scorefetcherRepository?.removeApiKey(apiKey!!)?.collect { response ->
                                 PlatformUtils.log("ApiItem", "Clé API supprimée du serveur : ${response.message}")
                                 if (response.message == "API Key and associated data deleted.") {
                                     isDeletedOnServer = true
@@ -244,7 +244,7 @@ internal fun ApiItem(
                     
                     // Trigger import if we just added/modified the maimai key
                     if (key == "maimai") {
-                        maiteaRepository?.startMaiTeaImport()
+                        scorefetcherRepository?.startScorefetcherImport()
                     }
                 }
             },

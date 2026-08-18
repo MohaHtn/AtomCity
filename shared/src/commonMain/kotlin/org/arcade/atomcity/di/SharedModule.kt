@@ -9,7 +9,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.arcade.atomcity.network.ScorefetcherClient
 import org.arcade.atomcity.network.TaikoServerClient
-import org.arcade.atomcity.network.MaiteaProfileClient
+import org.arcade.atomcity.network.ScorefetcherProfileClient
 import org.arcade.atomcity.network.ImportService
 import org.arcade.atomcity.network.NetworkErrorHandler
 import org.arcade.atomcity.network.installErrorValidator
@@ -17,7 +17,7 @@ import org.arcade.atomcity.db.AppDatabase
 import org.arcade.atomcity.db.getAppDatabase
 import org.arcade.atomcity.db.getDatabaseBuilder
 import org.koin.dsl.module
-import org.arcade.atomcity.data.MaiteaRepository
+import org.arcade.atomcity.data.ScorefetcherRepository
 import org.arcade.atomcity.data.TaikoServerRepository
 import org.arcade.atomcity.data.DifficultyRepository
 import org.arcade.atomcity.utils.ApiKeyManager
@@ -25,7 +25,7 @@ import org.arcade.atomcity.utils.ThemeSettingsManager
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.worker.ImportWorkManager
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
-import org.arcade.atomcity.domain.usecase.GetMaiteaDataUseCase
+import org.arcade.atomcity.domain.usecase.*
 import org.koin.core.qualifier.named
 import org.arcade.atomcity.model.utils.JacketUrl
 import org.arcade.atomcity.model.utils.MAIMAI_IMAGES_JSON
@@ -58,7 +58,7 @@ val sharedModule = module {
 
     single { ScorefetcherClient(get(), get(named("scorefetcher_api_key")), "https://scorefetcher.mohahtn.xyz/") }
     single { TaikoServerClient(get(), "https://taiko.farewell.dev/api/") }
-    single { MaiteaProfileClient(get(), "https://maitea.app/api/v1/") }
+    single { ScorefetcherProfileClient(get(), "https://maitea.app/api/v1/") }
     single { ImportService(get(), get(named("scorefetcher_api_key"))) }
 
     single<Map<String, String>>(named("jacketImages")) {
@@ -75,10 +75,14 @@ val sharedModule = module {
     single<com.atomcity.maimai.db.AppDatabase> { com.atomcity.maimai.db.getAppDatabase(com.atomcity.maimai.db.getDatabaseBuilder()) }
 
     single { GetTaikoServerDataUseCase(get()) }
-    single { GetMaiteaDataUseCase(get()) }
+    single { GetScorefetcherScoresUseCase(get()) }
+    single { GetScorefetcherProfileUseCase(get()) }
+    single { ScorefetcherImportUseCase(get()) }
+    single { GetScorefetcherAnalyticsUseCase(get()) }
+    single { GetScorefetcherJacketUseCase(get()) }
     single { TaikoServerRepository(get()) }
     single { DifficultyRepository(get()) }
     single { ApiKeyManager(get()) }
     single { ThemeSettingsManager(get()) }
-    single { MaiteaRepository(get(), get(), get(), get(), get(), get(), get(), get(named("jacketImages")), get(named("scorefetcher_api_key"))) }
+    single { ScorefetcherRepository(get(), get(), get(), get(), get(), get(), get(), get(named("jacketImages")), get(named("scorefetcher_api_key"))) }
 }

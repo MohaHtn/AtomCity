@@ -52,7 +52,7 @@ const val setupWarningScreen =
     "afin de pouvoir récupérer de manière periodique vos scores. De plus, l'ajout de votre clé API sur cette " +
     "application vous permettra d'être visible aux yeux d'autres utilisateurs, en montrant vos scores dans un leaderboard. \n\n" +
     "À tout moment vous avez le choix de supprimer votre clé du serveur distant en allant dans les paramètres de " +
-    "l'application, ou de révoquer votre clé API directement sur le portail de MaiTea. Dans ce cas, le serveur distant supprimera la clé également.\n\n" +
+    "l'application, ou de révoquer votre clé API directement sur le portail de Scorefetcher. Dans ce cas, le serveur distant supprimera la clé également.\n\n" +
     "En ajoutant votre clé API, vous reconnaissiez que vous êtes au courant de cette fonctionnalité. Si vous n'êtes pas d'accord, n'utilisez pas l'application."
 
 var page1 = mutableStateOf(true)

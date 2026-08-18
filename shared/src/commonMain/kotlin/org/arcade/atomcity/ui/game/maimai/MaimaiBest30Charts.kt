@@ -24,8 +24,9 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.DifficultyRepository
-import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.model.scorefetcher.playerBest30Response.PlayerBest30Response
+import org.arcade.atomcity.model.scorefetcher.playsResponse.ScorefetcherApiData
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.format
 import org.arcade.atomcity.utils.rememberPlatformContext
@@ -36,13 +37,13 @@ import kotlin.time.Duration.Companion.milliseconds
 fun MaimaiBest30Charts(
     onBackClick: () -> Unit,
     navController: NavHostController,
-    maiteaViewModel: MaiteaViewModel,
+    scorefetcherViewModel: ScorefetcherViewModel,
     repository: DifficultyRepository,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    val isLoading by maiteaViewModel.isLoading.collectAsState()
-    val maimaiBestScores by maiteaViewModel.maimaiBestScores.collectAsState()
-    val playerData by maiteaViewModel.playerData.collectAsState()
+    val isLoading by scorefetcherViewModel.isLoading.collectAsState()
+    val maimaiBestScores by scorefetcherViewModel.maimaiBestScores.collectAsState()
+    val playerData by scorefetcherViewModel.playerData.collectAsState()
     
     val scope = rememberCoroutineScope()
     val context = rememberPlatformContext()
@@ -53,8 +54,8 @@ fun MaimaiBest30Charts(
 
 
     LaunchedEffect(Unit) {
-        maiteaViewModel.fetch30BestScores()
-        maiteaViewModel.fetchMaimaiPlayerDetails()
+        scorefetcherViewModel.fetch30BestScores()
+        scorefetcherViewModel.fetchMaimaiPlayerDetails()
     }
 
     Scaffold(
@@ -120,8 +121,8 @@ fun MaimaiBest30Charts(
                     ) {
 
                         items(maimaiBestScores) { score ->
-                            // Mapping PlayerBest30Response to MaiteaApiData to reuse MaimaiScoreItem
-                            val play = MaiteaApiData(
+                            // Mapping PlayerBest30Response to ScorefetcherApiData to reuse MaimaiScoreItem
+                            val play = ScorefetcherApiData(
                                 id = score.playId,
                                 song = score.songJson,
                                 achievementFormatted = "${((score.achievement ?: 0.0) / 100.0).format(2)}%",

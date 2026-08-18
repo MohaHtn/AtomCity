@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import org.arcade.atomcity.data.DifficultyRepository
 import org.arcade.atomcity.data.LevelInfo
-import org.arcade.atomcity.model.maitea.playsResponse.*
+import org.arcade.atomcity.model.scorefetcher.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.formatPlayDate
@@ -29,7 +29,7 @@ import org.koin.compose.koinInject
 
 @Composable
 fun MaimaiScoreItem(
-    play: MaiteaApiData,
+    play: ScorefetcherApiData,
     onClick: () -> Unit
 ) {
     val difficultyColor = getJacketBorderColor(play.difficultyLevel?.value)

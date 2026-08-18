@@ -38,10 +38,10 @@ import kotlin.math.*
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.DifficultyRepository
 import org.arcade.atomcity.data.LevelInfo
-import org.arcade.atomcity.model.maitea.ChartHistoryResponse
-import org.arcade.atomcity.model.maitea.BestPerPlayerResponse
-import org.arcade.atomcity.model.maitea.playsResponse.*
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.model.scorefetcher.ChartHistoryResponse
+import org.arcade.atomcity.model.scorefetcher.BestPerPlayerResponse
+import org.arcade.atomcity.model.scorefetcher.playsResponse.*
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.formatPlayDate
@@ -54,8 +54,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiScoresDetails(
-    scoreEntry: MaiteaApiData? = null,
-    maiteaViewModel: MaiteaViewModel? = null,
+    scoreEntry: ScorefetcherApiData? = null,
+    scorefetcherViewModel: ScorefetcherViewModel? = null,
     onBackClick: () -> Unit,
     onHistoryClick: (Int) -> Unit = {}
 ) {
@@ -65,10 +65,10 @@ fun MaimaiScoresDetails(
     var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
     val scope = rememberCoroutineScope()
 
-    val chartHistory by maiteaViewModel?.chartHistory?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
-    val bestPerPlayer by maiteaViewModel?.bestPerPlayer?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
-    val isLoading by maiteaViewModel?.isLoadingDetails?.collectAsState() ?: remember { mutableStateOf(false) }
-    val isLoadingPlayById by maiteaViewModel?.isLoadingPlayById?.collectAsState() ?: remember { mutableStateOf(false) }
+    val chartHistory by scorefetcherViewModel?.chartHistory?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+    val bestPerPlayer by scorefetcherViewModel?.bestPerPlayer?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
+    val isLoading by scorefetcherViewModel?.isLoadingDetails?.collectAsState() ?: remember { mutableStateOf(false) }
+    val isLoadingPlayById by scorefetcherViewModel?.isLoadingPlayById?.collectAsState() ?: remember { mutableStateOf(false) }
 
     LaunchedEffect(scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
 
@@ -86,8 +86,8 @@ fun MaimaiScoresDetails(
         
         val songNameForHistory = song?.name?.en ?: song?.name?.jp
         songNameForHistory?.let {
-            maiteaViewModel?.fetchChartHistory(it, diffLevel?.value)
-            maiteaViewModel?.fetchBestPerPlayer(it, diffLevel?.value)
+            scorefetcherViewModel?.fetchChartHistory(it, diffLevel?.value)
+            scorefetcherViewModel?.fetchBestPerPlayer(it, diffLevel?.value)
         }
     }
     Scaffold(
@@ -590,7 +590,7 @@ fun BestPerPlayerItem(b: BestPerPlayerResponse) {
 }
 
 @Composable
-fun MaimaiScoreBadgeRow(scoreEntry: MaiteaApiData, modifier: Modifier = Modifier) {
+fun MaimaiScoreBadgeRow(scoreEntry: ScorefetcherApiData, modifier: Modifier = Modifier) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,

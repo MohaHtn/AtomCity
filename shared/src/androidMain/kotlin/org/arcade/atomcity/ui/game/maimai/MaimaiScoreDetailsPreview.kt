@@ -7,14 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.arcade.atomcity.model.maitea.playsResponse.*
+import org.arcade.atomcity.model.scorefetcher.playsResponse.*
 
 @Preview(showBackground = true, name = "All Perfect + (No break greats)")
 @Composable
 fun PreviewAllPerfectPlus() {
     MaterialTheme {
         MaimaiScoreBadgeRow(
-            scoreEntry = MaiteaApiData(
+            scoreEntry = ScorefetcherApiData(
                 isAllPerfect = true,
                 scoreDetail = ScoreDetail(
                     breakk = Break(perfect = 10, great = 0, good = 0, bad = 0)
@@ -30,7 +30,7 @@ fun PreviewAllPerfectPlus() {
 fun PreviewAllPerfect() {
     MaterialTheme {
         MaimaiScoreBadgeRow(
-            scoreEntry = MaiteaApiData(
+            scoreEntry = ScorefetcherApiData(
                 isAllPerfect = true,
                 scoreDetail = ScoreDetail(
                     breakk = Break(perfect = 8, great = 2, good = 0, bad = 0)
@@ -46,7 +46,7 @@ fun PreviewAllPerfect() {
 fun PreviewFullComboBlue() {
     MaterialTheme {
         MaimaiScoreBadgeRow(
-            scoreEntry = MaiteaApiData(
+            scoreEntry = ScorefetcherApiData(
                 fullCombo = 1,
                 scoreDetail = ScoreDetail(
                     hits = Hits(perfect = 100, great = 5, good = 0, bad = 0)
@@ -62,7 +62,7 @@ fun PreviewFullComboBlue() {
 fun PreviewFullComboYellow() {
     MaterialTheme {
         MaimaiScoreBadgeRow(
-            scoreEntry = MaiteaApiData(
+            scoreEntry = ScorefetcherApiData(
                 fullCombo = 1,
                 scoreDetail = ScoreDetail(
                     hits = Hits(perfect = 105, great = 0, good = 0, bad = 0)
@@ -79,7 +79,7 @@ fun PreviewMultipleBadges() {
     MaterialTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             MaimaiScoreBadgeRow(
-                scoreEntry = MaiteaApiData(
+                scoreEntry = ScorefetcherApiData(
                     isHighScore = true,
                     isAllPerfect = true,
                     fullCombo = 1,

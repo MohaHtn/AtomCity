@@ -13,12 +13,12 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
-import org.arcade.atomcity.model.maitea.ChartHistoryResponse
-import org.arcade.atomcity.model.maitea.playerBest30Response.PlayerBest30Response
-import org.arcade.atomcity.model.maitea.BestPerPlayerResponse
-import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
-import org.arcade.atomcity.model.maitea.playsResponse.MaiteaPlaysResponse
-import org.arcade.atomcity.model.maitea.MaimaiMostPlayedEntry
+import org.arcade.atomcity.model.scorefetcher.ChartHistoryResponse
+import org.arcade.atomcity.model.scorefetcher.playerBest30Response.PlayerBest30Response
+import org.arcade.atomcity.model.scorefetcher.BestPerPlayerResponse
+import org.arcade.atomcity.model.scorefetcher.playsResponse.ScorefetcherApiData
+import org.arcade.atomcity.model.scorefetcher.playsResponse.ScorefetcherPlaysResponse
+import org.arcade.atomcity.model.scorefetcher.MaimaiMostPlayedEntry
 
 @Serializable
 data class ApiKeyRequest(
@@ -59,7 +59,7 @@ class ScorefetcherClient(
             setBody(request)
         }.body()
 
-    suspend fun getScores(token: String, pageNumber: String): MaiteaPlaysResponse {
+    suspend fun getScores(token: String, pageNumber: String): ScorefetcherPlaysResponse {
         val response: HttpResponse = client.get("${baseUrl}scores") {
             addApiKey()
             header("Authorization", token)
@@ -67,7 +67,7 @@ class ScorefetcherClient(
             parameter("pageNumber", pageNumber)
         }
         return if (response.status == HttpStatusCode.NotFound) {
-            MaiteaPlaysResponse(emptyList())
+            ScorefetcherPlaysResponse(emptyList())
         } else {
             response.body()
         }
@@ -79,13 +79,13 @@ class ScorefetcherClient(
             parameter("key", key)
         }.body()
 
-    suspend fun getProfiles(): Map<String, String> =
+    suspend fun getProfiles(): Map<String, String?> =
         client.get("${baseUrl}apikeys/profiles") {
             addApiKey()
             header("Accept", "application/json")
         }.body()
 
-    suspend fun getRatings(): Map<String, Int> =
+    suspend fun getRatings(): Map<String, Int?> =
         client.get("${baseUrl}apikeys/ratings") {
             addApiKey()
             header("Accept", "application/json")
@@ -145,7 +145,7 @@ class ScorefetcherClient(
         }
     }
 
-    suspend fun getPlayById(id: Int, keyHash: String): MaiteaApiData {
+    suspend fun getPlayById(id: Int, keyHash: String): ScorefetcherApiData {
         val response: HttpResponse = client.get("${baseUrl}scores/$id") {
             addApiKey()
             header("Accept", "application/json")

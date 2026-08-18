@@ -1,10 +1,12 @@
 import java.util.Properties
+import com.github.triplet.gradle.androidpublisher.ResolutionStrategy
 
 plugins {
     alias(libs.plugins.android.application)
     id("org.jetbrains.kotlin.android")
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    id("com.github.triplet.play") version "4.1.1"
 }
 
 android {
@@ -15,7 +17,7 @@ android {
         applicationId = "org.arcade.atomcity"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
+        versionCode = 3
         versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -55,6 +57,11 @@ android {
 
     lint {
         disable += "NullSafeMutableLiveData"
+    }
+
+    play {
+        serviceAccountCredentials.set(file("atomcity-autopublish.json"))
+        resolutionStrategy.set(ResolutionStrategy.AUTO)
     }
 }
 

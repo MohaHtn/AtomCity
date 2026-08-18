@@ -1,4 +1,5 @@
 *.iml
+app/atomcity-autopublish.json
 .gradle
 **/build/
 /local.properties

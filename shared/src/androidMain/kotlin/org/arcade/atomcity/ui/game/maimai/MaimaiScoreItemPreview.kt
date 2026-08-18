@@ -3,14 +3,14 @@ package org.arcade.atomcity.ui.game.maimai
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import org.arcade.atomcity.model.maitea.playsResponse.*
+import org.arcade.atomcity.model.scorefetcher.playsResponse.*
 
 @Preview(showBackground = true)
 @Composable
 fun MaimaiScoreItemMasterPreview(){
     MaterialTheme {
         MaimaiScoreItem(
-            play = MaiteaApiData(
+            play = ScorefetcherApiData(
                 id = 1,
                 achievement = 100,
                 achievementFormatted = "101.43",
@@ -41,7 +41,7 @@ fun MaimaiScoreItemMasterPreview(){
 fun MaimaiScoreItemExpertPreview(){
     MaterialTheme {
         MaimaiScoreItem(
-            play = MaiteaApiData(
+            play = ScorefetcherApiData(
                 id = 1,
                 achievement = 100,
                 achievementFormatted = "101.43",
@@ -72,7 +72,7 @@ fun MaimaiScoreItemExpertPreview(){
 fun MaimaiScoreItemUtagePreview(){
     MaterialTheme {
         MaimaiScoreItem(
-            play = MaiteaApiData(
+            play = ScorefetcherApiData(
                 id = 1,
                 achievement = 100,
                 achievementFormatted = "101.43",
@@ -103,7 +103,7 @@ fun MaimaiScoreItemUtagePreview(){
 fun MaimaiScoreItemEasyPreview(){
     MaterialTheme {
         MaimaiScoreItem(
-            play = MaiteaApiData(
+            play = ScorefetcherApiData(
                 id = 1,
                 achievement = 100,
                 achievementFormatted = "101.43",
@@ -134,7 +134,7 @@ fun MaimaiScoreItemEasyPreview(){
 fun MaimaiScoreItemBasicPreview(){
     MaterialTheme {
         MaimaiScoreItem(
-            play = MaiteaApiData(
+            play = ScorefetcherApiData(
                 id = 1,
                 achievement = 100,
                 achievementFormatted = "101.43",
@@ -165,7 +165,7 @@ fun MaimaiScoreItemBasicPreview(){
 fun MaimaiScoreItemReMasterPreview(){
     MaterialTheme {
         MaimaiScoreItem(
-            play = MaiteaApiData(
+            play = ScorefetcherApiData(
                 id = 1,
                 achievement = 100,
                 achievementFormatted = "101.43",
@@ -196,7 +196,7 @@ fun MaimaiScoreItemReMasterPreview(){
 fun MaimaiScoreItemUnknownPreview(){
     MaterialTheme {
         MaimaiScoreItem(
-            play = MaiteaApiData(
+            play = ScorefetcherApiData(
                 id = 1,
                 achievement = 100,
                 achievementFormatted = "101.43",

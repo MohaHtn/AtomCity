@@ -24,23 +24,23 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import org.arcade.atomcity.model.maitea.playerDetailsResponse.PlayerDetailsData
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.model.scorefetcher.playerDetailsResponse.PlayerDetailsData
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.ui.game.common.selectRatingBackground
 import org.arcade.atomcity.utils.format
 import kotlin.math.roundToInt
 
 @Composable
 fun MaimaiPlayerDetails(
-    maiteaViewModel: MaiteaViewModel,
+    scorefetcherViewModel: ScorefetcherViewModel,
     collapsedFraction: Float,
     textColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
-    val playerDataState by maiteaViewModel.playerData.collectAsState()
+    val playerDataState by scorefetcherViewModel.playerData.collectAsState()
     val playerData = playerDataState?.data?.firstOrNull()
 
     LaunchedEffect(Unit) {
-        maiteaViewModel.fetchMaimaiPlayerDetails()
+        scorefetcherViewModel.fetchMaimaiPlayerDetails()
     }
 
     MaimaiPlayerDetailsContent(

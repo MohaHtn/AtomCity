@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-// ...DockedSearchBar removed; using simple TextField instead
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,19 +34,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.height
-// no border: use filled surface color (no outline)
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.TextStyle
-import org.arcade.atomcity.model.maitea.playsResponse.MaiteaApiData
-import org.arcade.atomcity.presentation.viewmodel.MaiteaViewModel
+import org.arcade.atomcity.model.scorefetcher.playsResponse.ScorefetcherApiData
+import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
 import org.arcade.atomcity.utils.format
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiChartSearchBar(
     onNavigateToDetails: (Int) -> Unit,
-    viewModel: MaiteaViewModel,
+    viewModel: ScorefetcherViewModel,
     modifier: Modifier = Modifier
 ) {
     var query by remember { mutableStateOf("") }
@@ -56,8 +54,6 @@ fun MaimaiChartSearchBar(
     val isSearching by viewModel.isSearching.collectAsState()
 
     Box(modifier = modifier.fillMaxWidth()) {
-        // Show results overlay when active or when there is a query
-        // Rendered first so it is behind the search bar
         if (active || query.isNotEmpty()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Box(
@@ -67,8 +63,6 @@ fun MaimaiChartSearchBar(
                 )
 
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Spacer to account for the search bar height (48.dp)
-                    // so the list starts below it.
                     Spacer(modifier = Modifier.height(52.dp))
 
                     if (isSearching) {
@@ -91,7 +85,7 @@ fun MaimaiChartSearchBar(
                         items(searchResults) { result ->
                             val jacketUrl = result.jacketImageUrl
 
-                            val play = MaiteaApiData(
+                            val play = ScorefetcherApiData(
                                 id = result.playId,
                                 song = result.songJson,
                                 achievementFormatted = "${
@@ -131,14 +125,12 @@ fun MaimaiChartSearchBar(
             }
         }
 
-        // custom BasicTextField inside a pill-shaped Surface
-        // Rendered last to stay on top
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
                 .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.surface) // Use surface for better contrast/visibility
+                .background(MaterialTheme.colorScheme.surface)
                 .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.CenterStart
