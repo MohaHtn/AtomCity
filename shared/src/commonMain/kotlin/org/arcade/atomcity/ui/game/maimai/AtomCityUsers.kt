@@ -27,21 +27,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AtomCityUsers(
-    scorefetcherViewModel: ScorefetcherViewModel,
+    maimaiViewModel: MaimaiViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val profiles by scorefetcherViewModel.profiles.collectAsState()
-    val ratings by scorefetcherViewModel.ratings.collectAsState()
-    val isLoading by scorefetcherViewModel.isLoading.collectAsState()
+    val profiles by maimaiViewModel.profiles.collectAsState()
+    val ratings by maimaiViewModel.ratings.collectAsState()
+    val isLoading by maimaiViewModel.isLoading.collectAsState()
 
     LaunchedEffect(Unit) {
-        scorefetcherViewModel.fetchProfiles()
+        maimaiViewModel.fetchProfiles()
     }
 
     Scaffold(

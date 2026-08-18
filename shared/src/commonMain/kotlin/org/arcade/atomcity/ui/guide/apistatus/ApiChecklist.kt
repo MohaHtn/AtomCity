@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.guide.MaimaiApiGuide
@@ -56,11 +56,11 @@ internal fun ApiCheckList() {
         val apiKeyManager = koinInject<ApiKeyManager>()
         when (selectedGame) {
             "maimai" -> {
-                val scorefetcherViewModel = koinInject<ScorefetcherViewModel>()
+                val maimaiViewModel = koinInject<MaimaiViewModel>()
                 MaimaiApiGuide(
                     apiKeyManager = apiKeyManager,
                     isVisible = GlobalUIState.openApiGuide,
-                    scorefetcherViewModel = scorefetcherViewModel
+                    maimaiViewModel = maimaiViewModel
                 )
             }
             "Taiko no Tatsujin" -> {

@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -28,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
-import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
 import org.arcade.atomcity.utils.PlatformUtils
 import kotlinx.datetime.*
@@ -37,7 +36,6 @@ import kotlin.time.ExperimentalTime
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import org.arcade.atomcity.domain.model.LevelInfo
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
@@ -48,10 +46,10 @@ import org.koin.compose.koinInject
 fun MaimaiMostPlayedChart(
     onBackClick: () -> Unit,
     navController: NavHostController,
-    scorefetcherViewModel: ScorefetcherViewModel,
+    maimaiViewModel: MaimaiViewModel,
 ) {
-    val mostPlayedCharts by scorefetcherViewModel.mostPlayedCharts.collectAsState()
-    val isLoading by scorefetcherViewModel.isLoadingMostPlayed.collectAsState()
+    val mostPlayedCharts by maimaiViewModel.mostPlayedCharts.collectAsState()
+    val isLoading by maimaiViewModel.isLoadingMostPlayed.collectAsState()
 
     var isGlobal by remember { mutableStateOf(true) }
     var selectedPeriod by remember { mutableStateOf("month") }
@@ -119,12 +117,12 @@ fun MaimaiMostPlayedChart(
     }
 
     LaunchedEffect(isGlobal, selectedPeriod, apiDate) {
-        scorefetcherViewModel.fetchMostPlayedCharts(isGlobal, selectedPeriod, apiDate, groupByHashkey = isGlobal)
+        maimaiViewModel.fetchMostPlayedCharts(isGlobal, selectedPeriod, apiDate, groupByHashkey = isGlobal)
     }
 
     LaunchedEffect(isGlobal) {
         if (isGlobal) {
-            scorefetcherViewModel.fetchProfiles()
+            maimaiViewModel.fetchProfiles()
         }
     }
 
@@ -318,7 +316,7 @@ fun MaimaiMostPlayedChart(
                         MostPlayedBarChart(mostPlayedCharts.take(5), maxCount)
                         
                         if (isGlobal) {
-                            val profiles by scorefetcherViewModel.profiles.collectAsState()
+                            val profiles by maimaiViewModel.profiles.collectAsState()
                             UserLegend(profiles, mostPlayedCharts.take(5))
                         }
 

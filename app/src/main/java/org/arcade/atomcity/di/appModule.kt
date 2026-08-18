@@ -7,7 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import org.arcade.atomcity.BuildConfig
 import org.arcade.atomcity.data.remote.NetworkErrorHandler
 import org.arcade.atomcity.network.android.AndroidNetworkErrorHandler
-import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.worker.AndroidImportWorkManager
@@ -36,7 +36,7 @@ val appModule = module {
 
     // From ScorefetcherViewModelModule
     viewModel {
-        ScorefetcherViewModel(
+        MaimaiViewModel(
             scoresUseCase = get(),
             profileUseCase = get(),
             importUseCase = get(),

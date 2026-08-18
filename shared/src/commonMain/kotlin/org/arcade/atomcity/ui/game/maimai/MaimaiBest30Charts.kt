@@ -24,9 +24,8 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
-import org.arcade.atomcity.data.remote.model.scorefetcher.playerBest30Response.PlayerBest30Response
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
-import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.format
 import org.arcade.atomcity.utils.rememberPlatformContext
@@ -37,13 +36,13 @@ import kotlin.time.Duration.Companion.milliseconds
 fun MaimaiBest30Charts(
     onBackClick: () -> Unit,
     navController: NavHostController,
-    scorefetcherViewModel: ScorefetcherViewModel,
+    maimaiViewModel: MaimaiViewModel,
     repository: IDifficultyRepository,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    val isLoading by scorefetcherViewModel.isLoading.collectAsState()
-    val maimaiBestScores by scorefetcherViewModel.maimaiBestScores.collectAsState()
-    val playerData by scorefetcherViewModel.playerData.collectAsState()
+    val isLoading by maimaiViewModel.isLoading.collectAsState()
+    val maimaiBestScores by maimaiViewModel.maimaiBestScores.collectAsState()
+    val playerData by maimaiViewModel.playerData.collectAsState()
     
     val scope = rememberCoroutineScope()
     val context = rememberPlatformContext()
@@ -54,8 +53,8 @@ fun MaimaiBest30Charts(
 
 
     LaunchedEffect(Unit) {
-        scorefetcherViewModel.fetch30BestScores()
-        scorefetcherViewModel.fetchMaimaiPlayerDetails()
+        maimaiViewModel.fetch30BestScores()
+        maimaiViewModel.fetchMaimaiPlayerDetails()
     }
 
     Scaffold(

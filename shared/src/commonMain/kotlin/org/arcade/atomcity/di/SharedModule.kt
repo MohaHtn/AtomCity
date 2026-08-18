@@ -66,6 +66,7 @@ val sharedModule = module {
 
     single<Map<String, String>>(named("jacketImages")) {
         try {
+            PlatformUtils.log("SharedModule", "Successfully parsed jacket images JSON.", false)
             get<Json>().decodeFromString<List<JacketUrl>>(MAIMAI_IMAGES_JSON)
                 .associate { it.title to it.imageUrl }
         } catch (e: Exception) {

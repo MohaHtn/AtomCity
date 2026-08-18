@@ -39,7 +39,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.arcade.atomcity.data.repository.ScorefetcherRepository
+import org.arcade.atomcity.domain.repository.IScorefetcherRepository
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
@@ -55,7 +55,7 @@ internal fun ApiItem(
     
     // In preview mode, we don't use Koin
     val apiKeyManager = if (inspectionMode) null else koinInject<ApiKeyManager>()
-    val scorefetcherRepository = if (inspectionMode) null else koinInject<ScorefetcherRepository>()
+    val scorefetcherRepository = if (inspectionMode) null else koinInject<IScorefetcherRepository>()
     
     val scope = rememberCoroutineScope()
     

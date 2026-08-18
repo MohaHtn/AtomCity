@@ -86,7 +86,6 @@ fun MaimaiScoreItem(
                                 .size(if (isNarrow) 56.dp else 64.dp)
                                 .background(difficultyColor.copy(alpha = 0.15f), CircleShape)
                         )
-                        
                         AsyncImage(
                             model = play.jacketImageUrl,
                             contentDescription = "${play.song?.name} artwork",
@@ -109,7 +108,6 @@ fun MaimaiScoreItem(
                             shadowElevation = 1.dp
                         ) {
                             Text(
-                                //TODO: i18n
                                 text = "Meilleur score",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Black,

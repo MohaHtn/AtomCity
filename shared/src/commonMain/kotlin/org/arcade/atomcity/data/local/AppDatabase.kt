@@ -6,18 +6,16 @@ import androidx.room.Database
 import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 
 expect fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase>
 
 fun getAppDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {
     return builder
-        .setDriver(BundledSQLiteDriver())
         .fallbackToDestructiveMigration(true)
         .build()
 }
 
-@Database(entities = [DifficultyEntity::class, SongEntity::class, LevelEntity::class], version = 2, exportSchema = true)
+@Database(entities = [DifficultyEntity::class, SongEntity::class, LevelEntity::class], version = 3, exportSchema = true)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun difficultyDao(): DifficultyDao

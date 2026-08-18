@@ -24,7 +24,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlin.concurrent.Volatile
 
-class ScorefetcherViewModel(
+class MaimaiViewModel(
     private val scoresUseCase: GetScorefetcherScoresUseCase,
     private val profileUseCase: GetScorefetcherProfileUseCase,
     private val importUseCase: ScorefetcherImportUseCase,

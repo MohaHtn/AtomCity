@@ -313,7 +313,7 @@ class ScorefetcherRepository(
         }
     }
 
-    suspend fun removeApiKey(apiKey: String): Flow<DeleteApiKeyResponse> = flow {
+    override suspend fun removeApiKey(apiKey: String): Flow<DeleteApiKeyResponse> = flow {
         try {
             val keyHash = PlatformUtils.sha256(apiKey.trim())
             emit(scorefetcherClient.deleteApiKey(keyHash))

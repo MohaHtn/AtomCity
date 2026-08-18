@@ -38,14 +38,14 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.TextStyle
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
-import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.utils.format
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiChartSearchBar(
     onNavigateToDetails: (Int) -> Unit,
-    viewModel: ScorefetcherViewModel,
+    viewModel: MaimaiViewModel,
     modifier: Modifier = Modifier
 ) {
     var query by remember { mutableStateOf("") }

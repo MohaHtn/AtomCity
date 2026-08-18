@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -25,22 +24,20 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.PlayerDetailsData
-import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
-import org.arcade.atomcity.ui.game.common.selectRatingBackground
-import org.arcade.atomcity.utils.format
+import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import kotlin.math.roundToInt
 
 @Composable
 fun MaimaiPlayerDetails(
-    scorefetcherViewModel: ScorefetcherViewModel,
+    maimaiViewModel: MaimaiViewModel,
     collapsedFraction: Float,
     textColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
-    val playerDataState by scorefetcherViewModel.playerData.collectAsState()
+    val playerDataState by maimaiViewModel.playerData.collectAsState()
     val playerData = playerDataState?.data?.firstOrNull()
 
     LaunchedEffect(Unit) {
-        scorefetcherViewModel.fetchMaimaiPlayerDetails()
+        maimaiViewModel.fetchMaimaiPlayerDetails()
     }
 
     MaimaiPlayerDetailsContent(

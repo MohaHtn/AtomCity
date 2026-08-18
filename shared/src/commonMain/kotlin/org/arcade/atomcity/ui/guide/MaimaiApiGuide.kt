@@ -19,8 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,7 +27,7 @@ import atomcity.shared.generated.resources.guide_maimai_step1
 import atomcity.shared.generated.resources.guide_maimai_step2
 import atomcity.shared.generated.resources.guide_maimai_step3
 import atomcity.shared.generated.resources.guide_maimai_step4
-import org.arcade.atomcity.presentation.viewmodel.ScorefetcherViewModel
+import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.ui.core.LinkText
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
@@ -56,7 +54,7 @@ const val MAIMAI_API_GUIDE_TEXT4 = "Lorsque vous voyez le message de succès, vo
 fun MaimaiApiGuide(
     apiKeyManager: ApiKeyManager,
     isVisible: MutableState<Boolean>,
-    scorefetcherViewModel: ScorefetcherViewModel
+    maimaiViewModel: MaimaiViewModel
 ) {
     val existingApiKey by apiKeyManager.getApiKeyFlow("maimai").collectAsState(initial = null)
 

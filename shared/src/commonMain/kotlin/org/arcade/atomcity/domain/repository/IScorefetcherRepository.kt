@@ -9,6 +9,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
+import org.arcade.atomcity.data.remote.DeleteApiKeyResponse
 
 interface IScorefetcherRepository {
     fun findJacketUrlBySongName(songName: String?): String?
@@ -29,4 +30,5 @@ interface IScorefetcherRepository {
     fun searchCharts(query: String, keyHash: String? = null): Flow<List<BestPerPlayerResponse>>
     fun getMostPlayed(limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false): Flow<List<MaimaiMostPlayedEntry>>
     fun getMostPlayedByHash(keyHash: String? = null, limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false): Flow<List<MaimaiMostPlayedEntry>>
+    suspend fun removeApiKey(apiKey: String): Flow<DeleteApiKeyResponse>
 }
