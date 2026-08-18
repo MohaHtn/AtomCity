@@ -382,52 +382,45 @@ fun PeriodChip(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 private val UserColors = listOf(
-    Color(0xFFF06292), // Soft Pink
-    Color(0xFFBA68C8), // Soft Purple
-    Color(0xFF9575CD), // Soft Deep Purple
-    Color(0xFF7986CB), // Soft Indigo
-    Color(0xFF64B5F6), // Soft Blue
-    Color(0xFF4FC3F7), // Soft Light Blue
-    Color(0xFF4DD0E1), // Soft Cyan
-    Color(0xFF4DB6AC), // Soft Teal
-    Color(0xFF81C784), // Soft Green
-    Color(0xFFAED581), // Soft Light Green
-    Color(0xFFFFD54F), // Soft Amber
-    Color(0xFFFFB74D), // Soft Orange
-    Color(0xFFFF8A80), // Soft Coral
-    Color(0xFFFFAB91), // Soft Peach
-    Color(0xFFFFCC80), // Soft Apricot
-    Color(0xFFFFE082), // Soft Golden
-    Color(0xFFE6EE9C), // Soft Lime
-    Color(0xFFC5E1A5), // Soft Moss Green
-    Color(0xFFA5D6A7), // Soft Mint Green
-    Color(0xFF80CBC4), // Soft Seafoam
-    Color(0xFF80DEEA), // Soft Sky Cyan
-    Color(0xFF81D4FA), // Soft Azure
-    Color(0xFF90CAF9), // Soft Cornflower
-    Color(0xFF9FA8DA), // Soft Periwinkle
-    Color(0xFFB39DDB), // Soft Lavender
-    Color(0xFFCE93D8), // Soft Orchid
-    Color(0xFFF48FB1)  // Soft Rose
+    // 200, 300, 400 weights for a varied but soft palette
+    Color(0xFFEF9A9A), Color(0xFFE57373), Color(0xFFEF5350), // Red
+    Color(0xFFF48FB1), Color(0xFFF06292), Color(0xFFEC407A), // Pink
+    Color(0xFFCE93D8), Color(0xFFBA68C8), Color(0xFFAB47BC), // Purple
+    Color(0xFFB39DDB), Color(0xFF9575CD), Color(0xFF7E57C2), // Deep Purple
+    Color(0xFF9FA8DA), Color(0xFF7986CB), Color(0xFF5C6BC0), // Indigo
+    Color(0xFF90CAF9), Color(0xFF64B5F6), Color(0xFF42A5F5), // Blue
+    Color(0xFF81D4FA), Color(0xFF4FC3F7), Color(0xFF29B6F6), // Light Blue
+    Color(0xFF80DEEA), Color(0xFF4DD0E1), Color(0xFF26C6DA), // Cyan
+    Color(0xFF80CBC4), Color(0xFF4DB6AC), Color(0xFF26A69A), // Teal
+    Color(0xFFA5D6A7), Color(0xFF81C784), Color(0xFF66BB6A), // Green
+    Color(0xFFC5E1A5), Color(0xFFAED581), Color(0xFF9CCC65), // Light Green
+    Color(0xFFE6EE9C), Color(0xFFDCE775), Color(0xFFD4E157), // Lime
+    Color(0xFFFFF59D), Color(0xFFFFF176), Color(0xFFFFEE58), // Yellow
+    Color(0xFFFFE082), Color(0xFFFFD54F), Color(0xFFFFCA28), // Amber
+    Color(0xFFFFCC80), Color(0xFFFFB74D), Color(0xFFFFA726), // Orange
+    Color(0xFFFFAB91), Color(0xFFFF8A65), Color(0xFFFF7043), // Deep Orange
+    Color(0xFFBCAAA4), Color(0xFFA1887F), Color(0xFF8D6E63), // Brown
+    Color(0xFFB0BEC5), Color(0xFF90A4AE), Color(0xFF78909C)  // Blue Grey
 )
 
 private fun getColorForHash(hash: String): Color {
-    val hash64 = stableHash64(hash)
-    val baseColor = UserColors[(hash64 % UserColors.size.toULong()).toInt()]
-    val whiteMix = 0.08f + (((hash64 shr 8) and 0x0Fu).toInt() / 100f)      // 0.08..0.23
-    val saturationScale = 0.9f + (((hash64 shr 16) and 0x0Fu).toInt() / 100f) // 0.90..1.05
-    val lightLift = (((hash64 shr 24) and 0x1Fu).toInt() / 31f) * 0.12f       // 0.00..0.12
-
-    fun tweak(channel: Float): Float {
-        val saturated = ((channel - 0.5f) * saturationScale + 0.2f).coerceIn(0f, 1f)
-        val lifted = (saturated + lightLift).coerceIn(0f, 1f)
-        return (lifted * (1f - whiteMix) + whiteMix).coerceIn(0f, 1f)
-    }
-
+    val h = stableHash64(hash)
+    // On utilise un index basé sur le hash pour piocher dans la liste étendue
+    val index = (h % UserColors.size.toULong()).toInt()
+    val baseColor = UserColors[index]
+    
+    // On applique une légère variation supplémentaire basée sur le hash 
+    // pour augmenter l'unicité même si l'index est le même (pigeonhole principle)
+    val hueShift = (((h shr 8) and 0x0Fu).toInt() - 7) / 100f // -0.07..0.08
+    val satShift = (((h shr 12) and 0x0Fu).toInt() - 7) / 100f // -0.07..0.08
+    
+    // Fonction simple de tweak pour rester dans le ton "soft"
+    fun tweak(c: Float, shift: Float) = (c + shift).coerceIn(0.1f, 0.9f)
+    
     return Color(
-        red = tweak(baseColor.red),
-        green = tweak(baseColor.green),
-        blue = tweak(baseColor.blue),
+        red = tweak(baseColor.red, hueShift),
+        green = tweak(baseColor.green, satShift),
+        blue = tweak(baseColor.blue, -hueShift),
         alpha = 1f
     )
 }
