@@ -53,7 +53,7 @@ jobs:
 
       - name: Prepare release APK
         run: |
-          cp app/build/outputs/apk/release/app-release.apk \
+          cp app/release/app-release.apk \
              "AtomCity-${GITHUB_REF_NAME}.apk"
 
       - name: Upload workflow artifact
