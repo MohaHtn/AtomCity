@@ -2,12 +2,16 @@ package org.arcade.atomcity.ui.game.taiko
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,10 +31,13 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import atomcity.shared.generated.resources.*
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.BottomBarPill
+import org.arcade.atomcity.ui.core.MarkdownText
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.formatPlayDate
@@ -54,8 +61,24 @@ fun TaikoScores(
     val collapsedFraction = scrollBehavior.state.collapsedFraction
     var lastClickMark by remember { mutableStateOf(TimeSource.Monotonic.markNow()) }
     val scoresData by taikoViewModel.scoresData.collectAsState()
+    val filteredScores by taikoViewModel.filteredScores.collectAsState()
+    val searchQuery by taikoViewModel.searchQuery.collectAsState()
+    val dashboardData by taikoViewModel.dashboardData.collectAsState()
+    val showDashboardTrigger by taikoViewModel.showDashboardTrigger.collectAsState()
+    var showDashboardDialog by remember { mutableStateOf(false) }
+    var doNotShowAgain by remember { mutableStateOf(false) }
 
-    val extraItems = emptyList<Triple<String, String, String>>()
+    LaunchedEffect(showDashboardTrigger) {
+        if (showDashboardTrigger) {
+            showDashboardDialog = true
+        }
+    }
+
+    val extraItems = listOf(
+        Triple("taikoUserSettings", "Paramètres", "oue les paramètres")
+    )
+
+    val isRefreshing by taikoViewModel.isRefreshing.collectAsState()
 
     LaunchedEffect(Unit) {
         taikoViewModel.getScores()
@@ -95,97 +118,147 @@ fun TaikoScores(
                 )
             },
         ) { paddingValues ->
-            Box {
-                if (isLoading) {
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { taikoViewModel.getScores(forceRefresh = true) },
+                modifier = Modifier.padding(paddingValues)
+            ) {
+                if (isLoading && !isRefreshing) {
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier
-                                .padding(paddingValues)
-                                .size(50.dp)
-                                .align(Alignment.Center)
+                            modifier = Modifier.align(Alignment.Center)
                         )
                     }
                 } else {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        scoresData?.let { dataList ->
-                            if (dataList.taikoServerSongHistoryData.isNotEmpty()) {
-                                item {
-                                    TaikoProgressionGraph(
-                                        history = dataList.taikoServerSongHistoryData,
-                                        modifier = Modifier.padding(16.dp)
-                                    )
-                                }
-                            }
+                        item {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { taikoViewModel.onSearchQueryChange(it) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                placeholder = { Text("Rechercher un morceau...") },
+                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true
+                            )
+                        }
 
-                            items(dataList.taikoServerSongHistoryData.size) { index ->
-                                val score = dataList.taikoServerSongHistoryData[index]
+                        if (filteredScores.isNotEmpty()) {
+                            items(filteredScores.size) { index ->
+                                val score = filteredScores[index]
                                 Card(
                                     modifier = Modifier
                                         .padding(8.dp)
-                                        .fillMaxSize(),
-                                    colors = setDifficultyColorBackground(score.difficulty)
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            score.songId?.let { id ->
+                                                onNavigateToRoute("taikoScoresDetails/$id")
+                                            }
+                                        },
+                                    colors = setDifficultyColorBackground(score.difficulty),
+                                    shape = RoundedCornerShape(16.dp)
                                 ) {
                                     Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Image(
                                             painter = painterResource(getDifficultyDrawable(score.difficulty)),
                                             contentDescription = null,
                                             modifier = Modifier.align(Alignment.BottomEnd)
-                                                .matchParentSize(),
-                                            contentScale = ContentScale.Crop,
-                                            alpha = 0.2f
+                                                .size(120.dp),
+                                            contentScale = ContentScale.Fit,
+                                            alpha = 0.3f
                                         )
                                         Column(
                                             modifier = Modifier
                                                 .padding(16.dp)
-                                                .fillMaxSize()
+                                                .fillMaxWidth()
                                         ) {
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.Top
                                             ) {
-                                                Text(
-                                                    text = score.musicName.toString(),
-                                                    style = MaterialTheme.typography.headlineMedium,
-                                                    modifier = Modifier.padding(end = 5.dp),
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    color = Color.White
-                                                )
-                                                Text(
-                                                    text = displayDifficultyName(score.difficulty),
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = Color.White
-                                                )
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Text(
+                                                        text = score.musicName ?: "Song ${score.songId}",
+                                                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        color = Color.White
+                                                    )
+                                                    if (!score.musicNameEN.isNullOrBlank() && score.musicNameEN != score.musicName) {
+                                                        Text(
+                                                            text = score.musicNameEN ?: "",
+                                                            style = MaterialTheme.typography.titleSmall,
+                                                            color = Color.White.copy(alpha = 0.9f),
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis
+                                                        )
+                                                    }
+                                                    Text(
+                                                        text = score.musicArtist ?: "",
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = Color.White.copy(alpha = 0.7f),
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                }
+                                                Column(horizontalAlignment = Alignment.End) {
+                                                    Text(
+                                                        text = "${displayDifficultyName(score.difficulty)} (${score.stars ?: 0})",
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        color = Color.White
+                                                    )
+                                                    Text(
+                                                        text = "★".repeat(score.stars ?: 0),
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        color = Color.Yellow
+                                                    )
+                                                }
                                             }
+
+                                            Spacer(modifier = Modifier.height(12.dp))
+
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.Bottom
                                             ) {
-                                                Text(
-                                                    text = score.musicArtist.toString(),
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = Color.White
-                                                )
-                                                Text(
-                                                    text = score.score.toString(),
-                                                    style = MaterialTheme.typography.displaySmall,
-                                                    color = Color.White
-                                                )
+                                                Column {
+                                                    Text(
+                                                        text = score.score.toString(),
+                                                        style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
+                                                        color = Color.White
+                                                    )
+                                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                        ScoreBadge("GOOD", score.goodCount, Color(0xFFFFD700))
+                                                        ScoreBadge("OK", score.okCount, Color(0xFFC0C0C0))
+                                                        ScoreBadge("MISS", score.missCount, Color(0xFFE57373))
+                                                    }
+                                                }
+                                                
+                                                Column(horizontalAlignment = Alignment.End) {
+                                                    if ((score.comboCount ?: 0) > 0) {
+                                                        Text(
+                                                            text = "COMBO ${score.comboCount}",
+                                                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                                            color = Color.White
+                                                        )
+                                                    }
+                                                    Text(
+                                                        text = formatPlayDate(score.playTime.toString()),
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        color = Color.White.copy(alpha = 0.7f)
+                                                    )
+                                                }
                                             }
-                                            Text(
-                                                text = formatPlayDate(score.playTime.toString()),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = Color.White
-                                            )
                                         }
                                     }
                                 }
@@ -215,122 +288,95 @@ fun TaikoScores(
             extraItems = if (showActionsMenu) extraItems else emptyList(),
             modifier = Modifier.fillMaxSize().padding(bottom = 96.dp)
         )
+
+        if (showDashboardDialog && dashboardData != null) {
+            AlertDialog(
+                onDismissRequest = {
+                showDashboardDialog = false
+                taikoViewModel.dismissDashboard()
+                if (doNotShowAgain) {
+                    taikoViewModel.setShowDashboardPreference(false)
+                }
+            },
+                title = {
+                    Text(
+                        text = "DASHBOARD",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                },
+                text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        MarkdownText(text = dashboardData!!)
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .pointerInput(Unit) {
+                                    detectTapGestures {
+                                        doNotShowAgain = !doNotShowAgain
+                                    }
+                                }
+                        ) {
+                            Checkbox(
+                                checked = doNotShowAgain,
+                                onCheckedChange = { doNotShowAgain = it }
+                            )
+                            Text(
+                                text = "Ne plus afficher",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                    onClick = {
+                        showDashboardDialog = false
+                        taikoViewModel.dismissDashboard()
+                        if (doNotShowAgain) {
+                            taikoViewModel.setShowDashboardPreference(false)
+                        }
+                    }
+                ) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
     }
 }
 
+
 @Composable
-fun TaikoProgressionGraph(
-    history: List<TaikoServerHistoryEntry>,
-    modifier: Modifier = Modifier
-) {
-    val density = LocalDensity.current
-    val sortedHistory = remember(history) {
-        history.takeLast(20) 
-    }
-
-    if (sortedHistory.size < 3) return
-
-    val maxScore = sortedHistory.maxOfOrNull { it.score ?: 0 }?.toFloat() ?: 1000000f
-    val minScore = sortedHistory.minOfOrNull { it.score ?: 0 }?.toFloat() ?: 0f
-    val scoreRange = (maxScore - minScore).coerceAtLeast(10000f)
-
-    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
-    var tooltipData by remember { mutableStateOf<Pair<TaikoServerHistoryEntry, Offset>?>(null) }
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(200.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-        shape = RoundedCornerShape(24.dp)
+fun ScoreBadge(label: String, count: Int?, color: Color) {
+    Surface(
+        color = color.copy(alpha = 0.2f),
+        shape = RoundedCornerShape(4.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.5f))
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Row(
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = "PROGRESSION DES SCORES TAIKO",
-                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.primary
+                text = "$label: ",
+                style = MaterialTheme.typography.labelSmall,
+                color = color
             )
-
-            Box(modifier = Modifier.fillMaxSize().padding(top = 16.dp)) {
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .onGloballyPositioned { canvasSize = it.size }
-                        .pointerInput(sortedHistory) {
-                            detectTapGestures { offset ->
-                                val stepX = size.width.toFloat() / (sortedHistory.size - 1)
-                                val index = (offset.x / stepX).roundToInt().coerceIn(0, sortedHistory.size - 1)
-                                val entry = sortedHistory[index]
-                                val x = index.toFloat() * stepX
-                                val y = size.height.toFloat() - ((entry.score?.toFloat() ?: 0f) - minScore) / scoreRange * size.height.toFloat()
-                                tooltipData = entry to Offset(x, y)
-                                PlatformUtils.hapticImpact()
-                            }
-                        }
-                        .pointerInput(sortedHistory) {
-                            detectHorizontalDragGestures { change, _ ->
-                                val stepX = size.width.toFloat() / (sortedHistory.size - 1)
-                                val index = (change.position.x / stepX).roundToInt().coerceIn(0, sortedHistory.size - 1)
-                                val entry = sortedHistory[index]
-                                val x = index.toFloat() * stepX
-                                val y = size.height.toFloat() - ((entry.score?.toFloat() ?: 0f) - minScore) / scoreRange * size.height.toFloat()
-                                
-                                if (tooltipData?.first != entry) {
-                                    PlatformUtils.hapticTick()
-                                    tooltipData = entry to Offset(x, y)
-                                }
-                            }
-                        }
-                ) {
-                    val width = size.width
-                    val height = size.height
-                    val stepX = width / (sortedHistory.size - 1)
-
-                    val path = Path()
-                    val points = mutableListOf<Offset>()
-
-                    sortedHistory.forEachIndexed { index, entry ->
-                        val x = index * stepX
-                        val y = height - ((entry.score?.toFloat() ?: 0f) - minScore) / scoreRange * height
-                        val point = Offset(x, y)
-                        points.add(point)
-                        if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
-                    }
-
-                    drawPath(
-                        path = path,
-                        color = Color(0xFFCF2C00),
-                        style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-                    )
-
-                    points.forEach { point ->
-                        drawCircle(Color.White, radius = 4.dp.toPx(), center = point)
-                        drawCircle(Color(0xFFCF2C00), radius = 2.dp.toPx(), center = point)
-                    }
-                }
-
-                tooltipData?.let { (entry, offset) ->
-                    val xOffset = with(density) { (offset.x - 40.dp.toPx()).toInt() }
-                    val yOffset = with(density) { (offset.y - 50.dp.toPx()).toInt() }
-                    
-                    Surface(
-                        modifier = Modifier.offset {
-                            IntOffset(
-                                xOffset.coerceIn(0, (canvasSize.width - with(density) { 80.dp.toPx() }.toInt())),
-                                yOffset.coerceAtLeast(0)
-                            )
-                        },
-                        color = Color(0xFFCF2C00),
-                        shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 4.dp
-                    ) {
-                        Column(modifier = Modifier.padding(6.dp)) {
-                            Text(entry.musicName ?: "Taiko", color = Color.White, style = MaterialTheme.typography.labelSmall)
-                            Text("${entry.score}", color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Black)
-                        }
-                    }
-                }
-            }
+            Text(
+                text = count?.toString() ?: "0",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = Color.White
+            )
         }
     }
 }
@@ -357,14 +403,19 @@ fun getDifficultyDrawable(difficulty: Int?): DrawableResource {
     }
 }
 
-@Composable
-fun setDifficultyColorBackground(difficulty: Int?): CardColors {
+fun getDifficultyColor(difficulty: Int?): Color {
     return when (difficulty) {
-        1 -> CardDefaults.cardColors(containerColor = Color(0xFFCF2C00))
-        2 -> CardDefaults.cardColors(containerColor = Color(0xFF657E25))
-        3 -> CardDefaults.cardColors(containerColor = Color(0xFF223004))
-        4 -> CardDefaults.cardColors(containerColor = Color(0xFFCE2D76))
-        5 -> CardDefaults.cardColors(containerColor = Color(0xFF6B1D8C))
-        else -> CardDefaults.cardColors(containerColor = Color.Gray)
+        1 -> Color(0xFFCF2C00)
+        2 -> Color(0xFF657E25)
+        3 -> Color(0xFF223004)
+        4 -> Color(0xFFCE2D76)
+        5 -> Color(0xFF6B1D8C)
+        else -> Color.Gray
     }
 }
+
+@Composable
+fun setDifficultyColorBackground(difficulty: Int?): CardColors {
+    return CardDefaults.cardColors(containerColor = getDifficultyColor(difficulty))
+}
+

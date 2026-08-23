@@ -25,6 +25,7 @@ import org.arcade.atomcity.data.repository.TaikoServerRepository
 import org.arcade.atomcity.data.repository.DifficultyRepository
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.utils.ThemeSettingsManager
+import org.arcade.atomcity.utils.UserPreferencesManager
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.worker.ImportWorkManager
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
@@ -60,7 +61,7 @@ val sharedModule = module {
     }
 
     single { ScorefetcherClient(get(), get(named("scorefetcher_api_key")), "https://scorefetcher.mohahtn.xyz/") }
-    single { TaikoServerClient(get(), "https://taiko.farewell.dev/api/") }
+    single { TaikoServerClient(get(), "https://taiko.farewell.dev/") }
     single { ScorefetcherProfileClient(get(), "https://maitea.app/api/v1/") }
     single { ImportService(get(), get(named("scorefetcher_api_key"))) }
 
@@ -86,5 +87,6 @@ val sharedModule = module {
     single<IDifficultyRepository> { DifficultyRepository(get()) }
     single { ApiKeyManager(get()) }
     single { ThemeSettingsManager(get()) }
+    single { UserPreferencesManager(get()) }
     single<IScorefetcherRepository> { ScorefetcherRepository(get(), get(), get(), get(), get(), get(), get(), get(named("jacketImages")), get(named("scorefetcher_api_key"))) }
 }

@@ -27,6 +27,8 @@ import org.arcade.atomcity.ui.game.maimai.GameScreen
 import org.arcade.atomcity.ui.game.maimai.MaimaiBest30Charts
 import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.game.maimai.AtomCityUsers
+import org.arcade.atomcity.ui.game.taiko.TaikoUserSettings
+import org.arcade.atomcity.ui.game.taiko.TaikoScoresDetails
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.koin.compose.koinInject
@@ -154,6 +156,25 @@ fun AppNavigation(
         composable("maimaiUsers") {
             AtomCityUsers(
                 maimaiViewModel = maimaiViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable("taikoUserSettings") {
+            TaikoUserSettings(
+                taikoViewModel = taikoViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = "taikoScoresDetails/{songId}",
+            arguments = listOf(navArgument("songId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val songId = backStackEntry.arguments?.getInt("songId") ?: 0
+            TaikoScoresDetails(
+                songId = songId,
+                taikoViewModel = taikoViewModel,
                 onBackClick = { navController.popBackStack() }
             )
         }
