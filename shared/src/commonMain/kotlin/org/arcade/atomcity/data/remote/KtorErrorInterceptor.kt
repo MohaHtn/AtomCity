@@ -2,8 +2,12 @@ package org.arcade.atomcity.data.remote
 
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
 import io.ktor.http.HttpStatusCode
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Ktor equivalent of the OkHttp ErrorInterceptor.
@@ -32,7 +36,22 @@ fun HttpClientConfig<*>.installErrorValidator(errorHandler: NetworkErrorHandler)
                 HttpStatusCode.InternalServerError -> "Erreur interne du serveur. (500)"
                 HttpStatusCode.Unauthorized -> "Non autorisé (401). Vérifiez votre clé API."
                 HttpStatusCode.Forbidden -> "Accès refusé (403)."
-                else -> "Une erreur réseau est survenue (${statusCode.value}) : $url"
+                HttpStatusCode.Conflict -> {
+                    try {
+                        val body = response.bodyAsText()
+                        Json.parseToJsonElement(body).jsonObject["message"]?.jsonPrimitive?.content ?: "Conflit (409)"
+                    } catch (e: Exception) {
+                        "Conflit (409)"
+                    }
+                }
+                else -> {
+                    try {
+                        val body = response.bodyAsText()
+                        Json.parseToJsonElement(body).jsonObject["message"]?.jsonPrimitive?.content ?: "Une erreur réseau est survenue (${statusCode.value}) : $url"
+                    } catch (e: Exception) {
+                        "Une erreur réseau est survenue (${statusCode.value}) : $url"
+                    }
+                }
             }
             
             errorHandler.onError(message)

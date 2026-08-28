@@ -92,14 +92,23 @@ class TaikoViewModel(
 
     internal val _currentPage = MutableStateFlow(1)
 
+    private val _snackbarMessage = MutableStateFlow<String?>(null)
+    val snackbarMessage: StateFlow<String?> = _snackbarMessage
 
+    fun showSnackbar(message: String) {
+        _snackbarMessage.value = message
+    }
 
-    fun onPageChange(newPage: Int) {
-        _currentPage.value = newPage
+    fun clearSnackbar() {
+        _snackbarMessage.value = null
     }
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
+    }
+
+    fun onPageChange(newPage: Int) {
+        _currentPage.value = newPage
     }
 
     fun setShowDashboardPreference(show: Boolean) {
@@ -324,18 +333,21 @@ class TaikoViewModel(
         }
     }
 
-    suspend fun updateUserSettings(settings: TaikoServerUserSettingsResponse) {
+    suspend fun updateUserSettings(settings: TaikoServerUserSettingsResponse): Boolean {
         val token = apiKeyManager.getTaikoAuthToken()
         val baid = settings.baid
         if (token != null && baid != null) {
-            try {
-                val response = usecase.updateUserSettings(baid, settings, token)
-                _userSettingsData.value = response
-                _userDetailedSettings.value = response
+            return try {
+                usecase.updateUserSettings(baid, settings, token)
+                _userSettingsData.value = settings
+                _userDetailedSettings.value = settings
+                true
             } catch (e: Exception) {
                 PlatformUtils.log("TaikoViewModel", "Update settings failed: ${e.message}")
+                false
             }
         }
+        return false
     }
 
     private val _communityScores = MutableStateFlow<Map<Int, TaikoServerPlayHistoryResponse>>(emptyMap())

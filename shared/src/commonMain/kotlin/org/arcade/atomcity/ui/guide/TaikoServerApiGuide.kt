@@ -39,6 +39,8 @@ const val TAIKO_API_GUIDE_STEP1_TITLE = "Récupération de l'ID"
 const val TAIKO_API_GUIDE_STEP1_DESC = "Etape 1 Récupération de l'ID utilisateur"
 const val TAIKO_API_GUIDE_STEP1_TEXT = "Entrez votre ID utilisateur (User Number) pour synchroniser vos données. Vous pouvez le trouver sur votre profil du serveur Taiko."
 
+const val TAIKO_API_GUIDE_INFO = "Pour accèder à votre compte Taiko no Tatsujin, veuillez entrer vos identifiant, comme si vous vous connectez à https://tatsuj.in/."
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaikoServerApiGuide(

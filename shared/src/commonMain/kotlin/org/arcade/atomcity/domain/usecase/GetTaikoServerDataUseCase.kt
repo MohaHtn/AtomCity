@@ -54,7 +54,7 @@ class GetTaikoServerDataUseCase(private val repository: ITaikoServerRepository) 
     suspend fun login(loginRequest: TaikoLoginRequest): TaikoServerAuthResponse =
         repository.login(loginRequest)
 
-    suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String): TaikoServerUserSettingsResponse =
+    suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String) =
         repository.updateUserSettings(baid, settings, authToken)
 
     suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse =

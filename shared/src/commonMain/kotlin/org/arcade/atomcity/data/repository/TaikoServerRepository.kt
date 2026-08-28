@@ -72,8 +72,7 @@ class TaikoServerRepository(private val client: TaikoServerClient) : ITaikoServe
         baid: Int,
         settings: TaikoServerUserSettingsResponse,
         authToken: String
-    ): TaikoServerUserSettingsResponse =
-        client.updateUserSettings(baid, settings, authToken)
+    ) = client.updateUserSettings(baid, settings, authToken)
 
     override suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse =
         client.changePassword(passwordRequest)

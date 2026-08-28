@@ -328,6 +328,9 @@ class ScorefetcherRepository(
             val response = scorefetcherClient.addTaikoUser(baid)
             response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Created
         } catch (e: Exception) {
+            if (e.message?.contains("User already exists") == true) {
+                return true
+            }
             PlatformUtils.log("ScorefetcherRepository", "Error adding Taiko user: ${e.message}", true)
             false
         }

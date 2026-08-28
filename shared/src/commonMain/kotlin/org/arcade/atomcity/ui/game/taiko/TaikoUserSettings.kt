@@ -16,14 +16,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData
+import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerTitlesResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+import org.arcade.atomcity.utils.formatPlayDate
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +46,8 @@ fun TaikoUserSettings(
     val isLoading by taikoViewModel.isLoadingUserSettings.collectAsState()
     
     val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
+    val snackbarHostState = remember { SnackbarHostState() }
     var localSettings by remember(serverSettings) { mutableStateOf(serverSettings) }
     var isSaving by remember { mutableStateOf(false) }
 
@@ -48,9 +58,25 @@ fun TaikoUserSettings(
     }
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    shape = RoundedCornerShape(24.dp)
+                )
+            }
+        },
         topBar = {
             TopAppBar(
-                title = { Text("Profil") },
+                title = { taikoViewModel.userSettingsData.value?.myDonName?.let {
+                    Text(
+                        text = it,
+                        maxLines = 1, 
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium,
+                ) }},
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
@@ -65,8 +91,14 @@ fun TaikoUserSettings(
                         localSettings?.let {
                             scope.launch {
                                 isSaving = true
-                                taikoViewModel.updateUserSettings(it)
+                                val success = taikoViewModel.updateUserSettings(it)
                                 isSaving = false
+                                if (success) {
+                                    onBackClick()
+                                    taikoViewModel.showSnackbar("Paramètres enregistrés")
+                                } else {
+                                    snackbarHostState.showSnackbar("Erreur lors de l'enregistrement")
+                                }
                             }
                         }
                     },
@@ -98,22 +130,37 @@ fun TaikoUserSettings(
                         .padding(16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    ProfileHeader(data, imagesData, titles)
+                    val nameplateUrls = taikoViewModel.getNameplateUrls(data)
+                    ProfileHeader(data, imagesData, titles, nameplateUrls)
                     
                     Spacer(modifier = Modifier.height(24.dp))
 
                     SettingSection("Profil") {
-                        SettingItem("Pseudo", data.myDonName ?: "Inconnu")
-                        
+                        OutlinedTextField(
+                            value = data.myDonName ?: "",
+                            onValueChange = { localSettings = data.copy(myDonName = it) },
+                            label = { Text("Nom") },
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                            shape = RoundedCornerShape(50),
+                            singleLine = true
+                        )
+                        OutlinedTextField(
+                            value = data.title ?: "",
+                            onValueChange = { localSettings = data.copy(title = it) },
+                            label = { Text("Titre") },
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                            shape = RoundedCornerShape(50),
+                            singleLine = true
+                        )
+
                         val titleName = titles?.get(data.titlePlateId.toString())?.titleNameEN ?: data.title ?: "Inconnu"
                         ExpressiveGridItem(
-                            label = "Titre",
+                            label = "Plaque de titre",
                             value = titleName,
                             imageUrl = buildImageUrl("title", findPlateFilename(data.titlePlateId, imagesData)),
                             onClick = { showDialogFor = "title" },
                             modifier = Modifier.fillMaxWidth().height(120.dp)
                         )
-                        SettingItem("BAID", data.baid?.toString() ?: "N/A")
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -152,31 +199,76 @@ fun TaikoUserSettings(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SettingSection("Affichage") {
+                    SettingSection("Affichage et Recherche") {
                         SettingToggle("Montrer le panel des succès", data.isDisplayAchievement ?: false) {
                             localSettings = data.copy(isDisplayAchievement = it)
                         }
                         SettingToggle("Montrer le Dan sur la nameplate", data.isDisplayDanOnNamePlate ?: false) {
                             localSettings = data.copy(isDisplayDanOnNamePlate = it)
                         }
-                        SettingToggle("SouUchi", data.isDisplaySouUchi ?: false) {
+                        SettingToggle("Afficher les musques SouUchi", data.isDisplaySouUchi ?: false) {
                             localSettings = data.copy(isDisplaySouUchi = it)
                         }
                         SettingToggle("Voix", data.isVoiceOn ?: true) {
                             localSettings = data.copy(isVoiceOn = it)
                         }
+
+                        val achievementRankPanelUrl = getAchievementRankPanelUrl(data.achievementDisplayDifficulty)
+                        if (achievementRankPanelUrl != null) {
+                            AsyncImage(
+                                model = achievementRankPanelUrl,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(140.dp)
+                                    .padding(vertical = 8.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+
+                        SettingDropdown(
+                            label = "Affichage de la carte de progression : Difficulté",
+                            description = "Affiche la carte de progression en fonction de la difficulté choisie.",
+                            selectedOption = getAchievementDisplayDifficultyName(data.achievementDisplayDifficulty),
+                            options = listOf("Désactivé", "Facile", "Normal", "Difficile", "Oni", "Oni/Ura"),
+                            onOptionSelected = { localSettings = data.copy(achievementDisplayDifficulty = findAchievementDisplayDifficultyId(it)) }
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        SettingDropdown(
+                            label = "Mode recherche : Difficulté",
+                            description = "Propose le menu de filtre de la diffculté choisie.",
+                            selectedOption = getCourseName(data.difficultySettingCourse),
+                            options = listOf("Désactivé", "Configurer à chaque fois", "Normal", "Difficile", "Oni", "Ura"),
+                            onOptionSelected = { localSettings = data.copy(difficultySettingCourse = findDifficultySettingCourse(it)) }
+                        )
+                        SettingDropdown(
+                            label = "Mode recherche : Étoiles",
+                            description = "Propose le menu de filtre de la l'étoile de clear choisie.",
+                            selectedOption = getStarName(data.difficultySettingStar),
+                            options = listOf("Désactivé", "Configurer à chaque fois", "Défaut", "Pas Clear", "Pas Full Combo", "Pas Donderful Combo"),
+                            onOptionSelected = { localSettings = data.copy(difficultySettingStar = findDifficultySettingStar(it)) }
+                        )
+                        SettingDropdown(
+                            label = "Mode recherche : Tri",
+                            description = "Propose le menu de filtre de tri choisi.",
+                            selectedOption = getSortName(data.difficultySettingSort),
+                            options = (1..10).map { "★ $it" },
+                            onOptionSelected = { localSettings = data.copy(difficultySettingSort = findDifficultySettingSort(it)) }
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SettingSection("Paramètres de jeu") {
+                    SettingSection("Paramètres de gameplay") {
                         data.playSetting?.let { play ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 val itemModifier = Modifier.weight(1f)
-                                ExpressiveGridItem("Vitesse", "x${(play.speed ?: 0) + 1}", buildImageUrl("speed", findFilename("speed", play.speed, imagesData)), onClick = { showDialogFor = "speed" }, modifier = itemModifier)
+                                ExpressiveGridItem("Vitesse", getSpeedName(play.speed), buildImageUrl("speed", findFilename("speed", play.speed, imagesData)), onClick = { showDialogFor = "speed" }, modifier = itemModifier)
                                 
                                 val randomImg = when(play.randomType) {
                                     1 -> "Random_Whimsical.png"
@@ -192,32 +284,60 @@ fun TaikoUserSettings(
                             
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            SettingToggle("Vanish", play.isVanishOn ?: false) {
+                            SettingToggle("Disparition", play.isVanishOn ?: false) {
                                 localSettings = data.copy(playSetting = play.copy(isVanishOn = it))
                             }
                             SettingToggle("Inverse", play.isInverseOn ?: false) {
                                 localSettings = data.copy(playSetting = play.copy(isInverseOn = it))
                             }
+
+                            SettingDropdown(
+                                label = "Son des tambours",
+                                selectedOption = getToneName(data.toneId),
+                                options = listOf(
+                                    "Taiko", "Festival", "Dogs & Cats", "Deluxe Taiko", "Drumset",
+                                    "Tambourine", "Wadadon", "Clapping", "Conga", "8-bit Taiko",
+                                    "Heave-ho", "Mecha Don", "Funassyi", "Rap", "Hosogai",
+                                    "Akemi", "Synth Drum", "Shuriken", "Bubble Pop", "Electric Guitar"
+                                ),
+                                onOptionSelected = { localSettings = data.copy(toneId = findTone(it)) }
+                            )
                         }
                     }
 
+
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SettingSection("Personnalisation") {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Box(modifier = Modifier.weight(1f)) { SettingItem("Face", data.faceColor?.toString() ?: "0") }
-                            Box(modifier = Modifier.weight(1f)) { SettingItem("Corps", data.bodyColor?.toString() ?: "0") }
-                            Box(modifier = Modifier.weight(1f)) { SettingItem("Membres", data.limbColor?.toString() ?: "0") }
+                    SettingSection("Position des notes") {
+                        Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "Décalage", style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    text = (data.notesPosition ?: 0).let { if (it > 0) "+$it" else it.toString() },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Slider(
+                                value = (data.notesPosition ?: 0).toFloat(),
+                                onValueChange = {
+                                    val newValue = it.roundToInt()
+                                    if (newValue != data.notesPosition) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        localSettings = data.copy(notesPosition = newValue)
+                                    }
+                                },
+                                valueRange = -5f..5f,
+                                steps = 9,
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = "Dernière partie : ${data.lastPlayDateTime ?: "Inconnue"}",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
 
                     Spacer(modifier = Modifier.height(80.dp)) // Spacer for FAB
                 }
@@ -235,7 +355,7 @@ fun TaikoUserSettings(
             "body" -> imagesData?.images?.costumes?.body?._files ?: emptyList()
             "face" -> imagesData?.images?.costumes?.face?._files ?: emptyList()
             "puchi" -> imagesData?.images?.costumes?.puchi?._files ?: emptyList()
-            "speed" -> imagesData?.images?.speed?._files ?: emptyList()
+            "speed" -> (imagesData?.images?.speed?._files ?: emptyList()).sortedBy { extractId(it) }
             "title" -> imagesData?.images?.nameplates?._files ?: emptyList()
             "random" -> listOf("Normal", "Random_Whimsical.png", "Random_Messy.png")
             else -> emptyList()
@@ -289,6 +409,67 @@ fun extractPlateId(filename: String): Int {
         suffix.startsWith("Toho_Y22_") -> suffix.substringAfter("Toho_Y22_").toIntOrNull()?.let { it + 9 } ?: 0
         suffix.startsWith("AprilFool_") -> suffix.substringAfter("AprilFool_").toIntOrNull()?.let { it + 14 } ?: 0
         else -> 0
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingDropdown(
+    label: String,
+    selectedOption: String,
+    options: List<String>,
+    description: String? = null,
+    onOptionSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        if (description != null) {
+            Surface(
+                color = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+            ) {
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+        }
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = selectedOption,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(label) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth(),
+                shape = RoundedCornerShape(50)
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = { Text(selectionOption) },
+                        onClick = {
+                            onOptionSelected(selectionOption)
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -354,7 +535,162 @@ fun buildImageUrl(type: String, filename: String?): String? {
     }
 }
 
-fun findFilename(type: String, id: Int?, imagesData: org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData?): String? {
+fun findDifficultySettingCourse(id: String): Int? = when (id) {
+    "Désactivé" -> 0
+    "Configurer à chaque fois" -> 1
+    "Normal" -> 2
+    "Difficile" -> 3
+    "Oni" -> 4
+    "Ura" -> 5
+    else -> null
+}
+
+fun getCourseName(id: Int?): String = when (id) {
+    0 -> "Désactivé"
+    1 -> "Configurer à chaque fois"
+    2 -> "Normal"
+    3 -> "Difficile"
+    4 -> "Oni"
+    5 -> "Ura"
+    else -> "Désactivé"
+}
+
+fun getAchievementDisplayDifficultyName(id: Int?): String = when (id) {
+    0 -> "Désactivé"
+    1 -> "Facile"
+    2 -> "Normal"
+    3 -> "Difficile"
+    4 -> "Oni"
+    5 -> "Ura"
+    else -> "Désactivé"
+}
+
+fun findAchievementDisplayDifficultyId(name: String): Int? = when (name) {
+    "Désactivé" -> 0
+    "Facile" -> 1
+    "Normal" -> 2
+    "Difficile" -> 3
+    "Oni" -> 4
+    "Oni/Ura" -> 5
+    else -> null
+}
+
+fun getAchievementRankPanelUrl(id: Int?): String? {
+    val filename = when (id) {
+        1 -> "rank_panel_Easy.webp"
+        2 -> "rank_panel_Normal.webp"
+        3 -> "rank_panel_Hard.webp"
+        4 -> "rank_panel_Oni.webp"
+        5 -> "rank_panel_Ura_Oni.webp"
+        else -> null
+    }
+    return buildImageUrl("rank_panel", filename)
+}
+
+fun findTone(id: String?): Int? = when (id){
+    "Taiko" -> 0
+    "Festival" -> 1
+    "Dogs & Cats" -> 2
+    "Deluxe Taiko" -> 3
+    "Drumset" -> 4
+    "Tambourine" -> 5
+    "Wadadon" -> 6
+    "Clapping" -> 7
+    "Conga" -> 8
+    "8-bit Taiko" -> 9
+    "Heave-ho" -> 10
+    "Mecha Don" -> 11
+    "Funassyi" -> 12
+    "Rap" -> 13
+    "Hosogai" -> 14
+    "Akemi" -> 15
+    "Synth Drum" -> 16
+    "Shuriken" -> 17
+    "Bubble Pop" -> 18
+    "Electric Guitar" -> 19
+    else -> null
+}
+
+fun getToneName(id: Int?): String = when (id) {
+    0 -> "Taiko"
+    1 -> "Festival"
+    2 -> "Dogs & Cats"
+    3 -> "Deluxe Taiko"
+    4 -> "Drumset"
+    5 -> "Tambourine"
+    6 -> "Wadadon"
+    7 -> "Clapping"
+    8 -> "Conga"
+    9 -> "8-bit Taiko"
+    10 -> "Heave-ho"
+    11 -> "Mecha Don"
+    12 -> "Funassyi"
+    13 -> "Rap"
+    14 -> "Hosogai"
+    15 -> "Akemi"
+    16 -> "Synth Drum"
+    17 -> "Shuriken"
+    18 -> "Bubble Pop"
+    19 -> "Electric Guitar"
+    else -> "Taiko"
+}
+
+fun findDifficultySettingSort(id: String): Int? = when (id) {
+    "★ 1" -> 0
+    "★ 2" -> 1
+    "★ 3" -> 2
+    "★ 4" -> 3
+    "★ 5" -> 4
+    "★ 6" -> 5
+    "★ 7" -> 6
+    "★ 8" -> 7
+    "★ 9" -> 8
+    "★ 10" -> 9
+    else -> null
+}
+
+fun getSortName(id: Int?): String = if (id != null && id in 0..9) "★ ${id + 1}" else "★ 1"
+
+fun findDifficultySettingStar(id: String): Int? = when (id) {
+    "Désactivé" -> 0
+    "Configurer à chaque fois" -> 1
+    "Défaut" -> 2
+    "Pas Clear" -> 3
+    "Pas Full Combo" -> 4
+    "Pas Donderful Combo" -> 5
+    else -> null
+}
+
+fun getStarName(id: Int?): String = when (id) {
+    0 -> "Désactivé"
+    1 -> "Configurer à chaque fois"
+    2 -> "Défaut"
+    3 -> "Pas Clear"
+    4 -> "Pas Full Combo"
+    5 -> "Pas Donderful Combo"
+    else -> "Désactivé"
+}
+
+fun getSpeedName(id: Int?): String = when (id) {
+    0 -> "x1.0"
+    1 -> "x1.1"
+    2 -> "x1.2"
+    3 -> "x1.3"
+    4 -> "x1.4"
+    5 -> "x1.5"
+    6 -> "x1.6"
+    7 -> "x1.7"
+    8 -> "x1.8"
+    9 -> "x1.9"
+    10 -> "x2.0"
+    11 -> "x2.5"
+    12 -> "x3.0"
+    13 -> "x3.5"
+    14 -> "x4.0"
+    else -> "x1.0"
+}
+
+fun findFilename(type: String, id: Int?, imagesData: TaikoImagesData?): String? {
     if (id == null || imagesData == null) return null
     val files = when (type) {
         "kigurumi" -> imagesData.images.costumes?.kigurumi?._files
@@ -368,7 +704,7 @@ fun findFilename(type: String, id: Int?, imagesData: org.arcade.atomcity.data.re
     return files?.find { extractId(it) == id }
 }
 
-fun findPlateFilename(id: Int?, imagesData: org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData?): String? {
+fun findPlateFilename(id: Int?, imagesData: TaikoImagesData?): String? {
     if (id == null || imagesData == null) return null
     val suffix = when (id) {
         0 -> "Wood"
@@ -390,8 +726,9 @@ fun findPlateFilename(id: Int?, imagesData: org.arcade.atomcity.data.remote.mode
 @Composable
 fun ProfileHeader(
     settings: TaikoServerUserSettingsResponse,
-    imagesData: org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData?,
-    titles: org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerTitlesResponse?
+    imagesData: TaikoImagesData?,
+    titles: TaikoServerTitlesResponse?,
+    nameplateUrls: List<String>
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -448,46 +785,16 @@ fun ProfileHeader(
             }
 
             // Nameplate Preview Area
-            Box(
+            TaikoNameplate(
+                name = settings.myDonName,
+                title = titles?.get(settings.titlePlateId.toString())?.titleNameEN ?: settings.title ?: "",
+                nameplateUrls = nameplateUrls,
+                collapsedFraction = 1f,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(80.dp)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                val baseUrl = "https://taiko.farewell.dev/images/Nameplates/"
-                
-                // Nameplate layers
-                AsyncImage(model = "${baseUrl}nameplate.webp", contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
-                
-                if (settings.isDisplayDanOnNamePlate == true) {
-                    AsyncImage(model = "${baseUrl}nameplate_dan.webp", contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
-                }
-                
-                val plateFilename = findPlateFilename(settings.titlePlateId, imagesData)
-                AsyncImage(model = "${baseUrl}$plateFilename", contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
-
-                // Nickname & Title
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(start = 55.dp, end = 20.dp),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    val titleName = titles?.get(settings.titlePlateId.toString())?.titleNameEN ?: settings.title ?: ""
-                    Text(
-                        text = titleName,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = androidx.compose.ui.graphics.Color.Black,
-                        maxLines = 1
-                    )
-                    Text(
-                        text = settings.myDonName ?: "Inconnu",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = androidx.compose.ui.graphics.Color.Black,
-                        maxLines = 1
-                    )
-                }
-            }
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            )
         }
     }
 }

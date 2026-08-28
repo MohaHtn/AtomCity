@@ -12,9 +12,14 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
 
     fun getApiChecklistStateFlow(): Flow<List<String>> {
         return dataStore.data.map { preferences ->
-            preferences.asMap().mapNotNull { (key, value) ->
-                if (value is String) key.name else null
-            }
+            preferences.asMap().keys.mapNotNull { key ->
+                val name = key.name
+                when {
+                    name == "taiko_access_code" -> "taiko"
+                    name.startsWith("taiko_") -> null // Filter out other taiko internal keys
+                    else -> name
+                }
+            }.distinct()
         }
     }
 
@@ -88,9 +93,14 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
     suspend fun getAvailableApiKeys(): List<String> {
         return try {
             val preferences = dataStore.data.firstOrNull() ?: return emptyList()
-            preferences.asMap().mapNotNull { (key, value) ->
-                if (value is String) key.name else null
-            }
+            preferences.asMap().keys.mapNotNull { key ->
+                val name = key.name
+                when {
+                    name == "taiko_access_code" -> "taiko"
+                    name.startsWith("taiko_") -> null
+                    else -> name
+                }
+            }.distinct()
         } catch (e: Exception) {
             PlatformUtils.log("ApiKeyManager", "Erreur lors de la lecture des clés API: ${e.message}", true)
             emptyList()

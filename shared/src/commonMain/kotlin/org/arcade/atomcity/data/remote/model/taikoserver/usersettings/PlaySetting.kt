@@ -8,5 +8,5 @@ data class PlaySetting (
   @SerialName( "speed") var speed: Int? = null,
   @SerialName( "isVanishOn") var isVanishOn: Boolean? = null,
   @SerialName( "isInverseOn") var isInverseOn: Boolean? = null,
-  @SerialName( "randomType") var randomType: Int? = null
+  @SerialName( "randomType") var randomType: Int? = null,
 )

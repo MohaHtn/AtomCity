@@ -69,12 +69,13 @@ class TaikoServerClient(private val client: HttpClient, private val baseUrl: Str
             setBody(loginRequest)
         }.body()
 
-    suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String): TaikoServerUserSettingsResponse =
+    suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String) {
         client.post("${baseUrl}api/UserSettings/$baid") {
             contentType(ContentType.Application.Json)
             header("Authorization", "Bearer $authToken")
             setBody(settings)
-        }.body()
+        }
+    }
 
     suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse =
         client.post("${baseUrl}api/Auth/ChangePassword") {

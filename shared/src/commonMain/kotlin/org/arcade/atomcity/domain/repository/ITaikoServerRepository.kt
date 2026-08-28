@@ -21,6 +21,6 @@ interface ITaikoServerRepository {
     fun getUserFlow(userNumber: String): Flow<TaikoServerUserResponse?>
     fun getSongLeaderboardFlow(songId: String, baid: String, difficulty: Int, page: Int, limit: Int): Flow<TaikoServerLeaderboardResponse?>
     suspend fun login(loginRequest: TaikoLoginRequest): TaikoServerAuthResponse
-    suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String): TaikoServerUserSettingsResponse
+    suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String)
     suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse
 }
