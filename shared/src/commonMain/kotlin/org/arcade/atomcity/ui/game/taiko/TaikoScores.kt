@@ -1,53 +1,49 @@
 package org.arcade.atomcity.ui.game.taiko
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import atomcity.shared.generated.resources.*
-import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
+import coil3.compose.AsyncImage
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.MarkdownText
 import org.arcade.atomcity.ui.core.OpenMiniMenu
-import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.formatPlayDate
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
 @Composable
 fun TaikoScores(
     taikoViewModel: TaikoViewModel,
@@ -60,7 +56,6 @@ fun TaikoScores(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val collapsedFraction = scrollBehavior.state.collapsedFraction
     var lastClickMark by remember { mutableStateOf(TimeSource.Monotonic.markNow()) }
-    val scoresData by taikoViewModel.scoresData.collectAsState()
     val filteredScores by taikoViewModel.filteredScores.collectAsState()
     val searchQuery by taikoViewModel.searchQuery.collectAsState()
     val dashboardData by taikoViewModel.dashboardData.collectAsState()
@@ -88,15 +83,55 @@ fun TaikoScores(
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
-                LargeTopAppBar(
-                    title = {
-                        TaikoPlayerDetails(
-                            taikoViewModel = taikoViewModel,
-                            collapsedFraction = collapsedFraction
-                        )
-                    },
-                    scrollBehavior = scrollBehavior
-                )
+                Box {
+                    AsyncImage(
+                        model = Res.getUri("files/taiko/header.jpg"),
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.Crop,
+                        alpha = (1f - collapsedFraction * 0.7f).coerceIn(0f, 1f)
+                    )
+                    
+                    val shadowAlpha = (1f - collapsedFraction).coerceIn(0f, 1f)
+                    // Top Shadow
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp)
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(Color.Black.copy(alpha = 0.6f * shadowAlpha), Color.Transparent)
+                                )
+                            )
+                            .align(Alignment.TopCenter)
+                    )
+                    // Bottom Shadow
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp)
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f * shadowAlpha))
+                                )
+                            )
+                            .align(Alignment.BottomCenter)
+                    )
+
+                    LargeTopAppBar(
+                        title = {
+                            TaikoPlayerDetails(
+                                taikoViewModel = taikoViewModel,
+                                collapsedFraction = collapsedFraction
+                            )
+                        },
+                        colors = TopAppBarDefaults.largeTopAppBarColors(
+                            containerColor = Color.Transparent,
+                            scrolledContainerColor = Color.Transparent,
+                        ),
+                        scrollBehavior = scrollBehavior
+                    )
+                }
             },
             bottomBar = {
                 BottomBarPill(
@@ -118,145 +153,184 @@ fun TaikoScores(
                 )
             },
         ) { paddingValues ->
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = { taikoViewModel.getScores(forceRefresh = true) },
-                modifier = Modifier.padding(paddingValues)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
             ) {
-                if (isLoading && !isRefreshing) {
-                    Box(
-                        modifier = Modifier.fillMaxSize()
+                // Fixed Search Bar (Sticky)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = { taikoViewModel.onSearchQueryChange(it) },
+                            singleLine = true,
+                            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp),
+                            decorationBox = { innerTextField ->
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    if (searchQuery.isEmpty()) {
+                                        Text(
+                                            text = "Rechercher un morceau...",
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            }
+                        )
+
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { taikoViewModel.onSearchQueryChange("") }) {
+                                Icon(Icons.Default.Close, contentDescription = "Fermer")
+                            }
+                        }
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        item {
-                            OutlinedTextField(
-                                value = searchQuery,
-                                onValueChange = { taikoViewModel.onSearchQueryChange(it) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                placeholder = { Text("Rechercher un morceau...") },
-                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                                shape = RoundedCornerShape(12.dp),
-                                singleLine = true
+                }
+
+                @Composable
+                fun ScoresContent() {
+                    if (isLoading && !isRefreshing) {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center)
                             )
                         }
-
-                        if (filteredScores.isNotEmpty()) {
-                            items(filteredScores.size) { index ->
-                                val score = filteredScores[index]
-                                Card(
-                                    modifier = Modifier
-                                        .padding(8.dp)
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            score.songId?.let { id ->
-                                                onNavigateToRoute("taikoScoresDetails/$id")
-                                            }
-                                        },
-                                    colors = setDifficultyColorBackground(score.difficulty),
-                                    shape = RoundedCornerShape(16.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth()
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            if (filteredScores.isNotEmpty()) {
+                                items(filteredScores.size) { index ->
+                                    val score = filteredScores[index]
+                                    Card(
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                score.songId?.let { id ->
+                                                    onNavigateToRoute("taikoScoresDetails/$id")
+                                                }
+                                            },
+                                        colors = setDifficultyColorBackground(score.difficulty),
+                                        shape = RoundedCornerShape(16.dp)
                                     ) {
-                                        Image(
-                                            painter = painterResource(getDifficultyDrawable(score.difficulty)),
-                                            contentDescription = null,
-                                            modifier = Modifier.align(Alignment.BottomEnd)
-                                                .size(120.dp),
-                                            contentScale = ContentScale.Fit,
-                                            alpha = 0.3f
-                                        )
-                                        Column(
-                                            modifier = Modifier
-                                                .padding(16.dp)
-                                                .fillMaxWidth()
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.Top
+                                            Image(
+                                                painter = painterResource(getDifficultyDrawable(score.difficulty)),
+                                                contentDescription = null,
+                                                modifier = Modifier.align(Alignment.BottomEnd)
+                                                    .size(120.dp),
+                                                contentScale = ContentScale.Fit,
+                                                alpha = 0.3f
+                                            )
+                                            Column(
+                                                modifier = Modifier
+                                                    .padding(16.dp)
+                                                    .fillMaxWidth()
                                             ) {
-                                                Column(modifier = Modifier.weight(1f)) {
-                                                    Text(
-                                                        text = score.musicName ?: "Song ${score.songId}",
-                                                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                                                        maxLines = 1,
-                                                        overflow = TextOverflow.Ellipsis,
-                                                        color = Color.White
-                                                    )
-                                                    if (!score.musicNameEN.isNullOrBlank() && score.musicNameEN != score.musicName) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.Top
+                                                ) {
+                                                    Column(modifier = Modifier.weight(1f)) {
                                                         Text(
-                                                            text = score.musicNameEN ?: "",
-                                                            style = MaterialTheme.typography.titleSmall,
-                                                            color = Color.White.copy(alpha = 0.9f),
+                                                            text = score.musicName ?: "Song ${score.songId}",
+                                                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis,
+                                                            color = Color.White
+                                                        )
+                                                        if (!score.musicNameEN.isNullOrBlank() && score.musicNameEN != score.musicName) {
+                                                            Text(
+                                                                text = score.musicNameEN ?: "",
+                                                                style = MaterialTheme.typography.titleSmall,
+                                                                color = Color.White.copy(alpha = 0.9f),
+                                                                maxLines = 1,
+                                                                overflow = TextOverflow.Ellipsis
+                                                            )
+                                                        }
+                                                        Text(
+                                                            text = score.musicArtist ?: "",
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            color = Color.White.copy(alpha = 0.7f),
                                                             maxLines = 1,
                                                             overflow = TextOverflow.Ellipsis
                                                         )
                                                     }
-                                                    Text(
-                                                        text = score.musicArtist ?: "",
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        color = Color.White.copy(alpha = 0.7f),
-                                                        maxLines = 1,
-                                                        overflow = TextOverflow.Ellipsis
-                                                    )
-                                                }
-                                                Column(horizontalAlignment = Alignment.End) {
-                                                    Text(
-                                                        text = "${displayDifficultyName(score.difficulty)} (${score.stars ?: 0})",
-                                                        style = MaterialTheme.typography.labelMedium,
-                                                        color = Color.White
-                                                    )
-                                                    Text(
-                                                        text = "★".repeat(score.stars ?: 0),
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        color = Color.Yellow
-                                                    )
-                                                }
-                                            }
-
-                                            Spacer(modifier = Modifier.height(12.dp))
-
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.Bottom
-                                            ) {
-                                                Column {
-                                                    Text(
-                                                        text = score.score.toString(),
-                                                        style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
-                                                        color = Color.White
-                                                    )
-                                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                        ScoreBadge("GOOD", score.goodCount, Color(0xFFFFD700))
-                                                        ScoreBadge("OK", score.okCount, Color(0xFFC0C0C0))
-                                                        ScoreBadge("MISS", score.missCount, Color(0xFFE57373))
-                                                    }
-                                                }
-                                                
-                                                Column(horizontalAlignment = Alignment.End) {
-                                                    if ((score.comboCount ?: 0) > 0) {
+                                                    Column(horizontalAlignment = Alignment.End) {
                                                         Text(
-                                                            text = "COMBO ${score.comboCount}",
-                                                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                                            text = "${displayDifficultyName(score.difficulty)} (${score.stars ?: 0})",
+                                                            style = MaterialTheme.typography.labelMedium,
                                                             color = Color.White
                                                         )
+                                                        Text(
+                                                            text = "★".repeat(score.stars ?: 0),
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            color = Color.Yellow
+                                                        )
                                                     }
-                                                    Text(
-                                                        text = formatPlayDate(score.playTime.toString()),
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        color = Color.White.copy(alpha = 0.7f)
-                                                    )
+                                                }
+
+                                                Spacer(modifier = Modifier.height(12.dp))
+
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.Bottom
+                                                ) {
+                                                    Column {
+                                                        Text(
+                                                            text = score.score.toString(),
+                                                            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
+                                                            color = Color.White
+                                                        )
+                                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                            ScoreBadge("GOOD", score.goodCount, Color(0xFFFFD700))
+                                                            ScoreBadge("OK", score.okCount, Color(0xFFC0C0C0))
+                                                            ScoreBadge("MISS", score.missCount, Color(0xFFE57373))
+                                                        }
+                                                    }
+                                                    
+                                                    Column(horizontalAlignment = Alignment.End) {
+                                                        if ((score.comboCount ?: 0) > 0) {
+                                                            Text(
+                                                                text = "COMBO ${score.comboCount}",
+                                                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                                                color = Color.White
+                                                            )
+                                                        }
+                                                        Text(
+                                                            text = formatPlayDate(score.playTime.toString()),
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            color = Color.White.copy(alpha = 0.7f)
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -264,6 +338,20 @@ fun TaikoScores(
                                 }
                             }
                         }
+                    }
+                }
+
+                if (collapsedFraction <= 0.01f) {
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = { taikoViewModel.getScores(forceRefresh = true) },
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        ScoresContent()
+                    }
+                } else {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        ScoresContent()
                     }
                 }
             }
@@ -293,12 +381,12 @@ fun TaikoScores(
             AlertDialog(
                 modifier = Modifier.fillMaxWidth().fillMaxHeight(0.8f),
                 onDismissRequest = {
-                showDashboardDialog = false
-                taikoViewModel.dismissDashboard()
-                if (doNotShowAgain) {
-                    taikoViewModel.setShowDashboardPreference(false)
-                }
-            },
+                    showDashboardDialog = false
+                    taikoViewModel.dismissDashboard()
+                    if (doNotShowAgain) {
+                        taikoViewModel.setShowDashboardPreference(false)
+                    }
+                },
                 text = {
                     Column(
                         modifier = Modifier
@@ -333,14 +421,14 @@ fun TaikoScores(
                 },
                 confirmButton = {
                     TextButton(
-                    onClick = {
-                        showDashboardDialog = false
-                        taikoViewModel.dismissDashboard()
-                        if (doNotShowAgain) {
-                            taikoViewModel.setShowDashboardPreference(false)
+                        onClick = {
+                            showDashboardDialog = false
+                            taikoViewModel.dismissDashboard()
+                            if (doNotShowAgain) {
+                                taikoViewModel.setShowDashboardPreference(false)
+                            }
                         }
-                    }
-                ) {
+                    ) {
                         Text("OK")
                     }
                 }
@@ -348,7 +436,6 @@ fun TaikoScores(
         }
     }
 }
-
 
 @Composable
 fun ScoreBadge(label: String, count: Int?, color: Color) {
@@ -375,8 +462,8 @@ fun ScoreBadge(label: String, count: Int?, color: Color) {
     }
 }
 
-fun displayDifficultyName(difficulty: Int?) : String{
-    return when(difficulty){
+fun displayDifficultyName(difficulty: Int?): String {
+    return when (difficulty) {
         1 -> "Kantan (Facile)"
         2 -> "Futsuu (Normal)"
         3 -> "Muzukashii (Difficile)"
@@ -412,4 +499,3 @@ fun getDifficultyColor(difficulty: Int?): Color {
 fun setDifficultyColorBackground(difficulty: Int?): CardColors {
     return CardDefaults.cardColors(containerColor = getDifficultyColor(difficulty))
 }
-

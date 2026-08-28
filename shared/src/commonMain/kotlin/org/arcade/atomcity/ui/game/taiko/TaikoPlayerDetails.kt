@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +17,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
@@ -56,7 +56,15 @@ fun TaikoPlayerDetailsContent(
     taikoViewModel: TaikoViewModel? = null,
     userSettings: org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse? = null
 ) {
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth().offset(y = (-4).dp)
+            .padding(horizontal = 4.dp, vertical = 2.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surface.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 0.7f)),
+                shape = RoundedCornerShape(16.dp),
+            )
+    ) {
         val isNarrow = maxWidth < 260.dp
         val avatarSize = if (isNarrow) {
             lerp(80.dp, 56.dp, collapsedFraction)
@@ -64,10 +72,8 @@ fun TaikoPlayerDetailsContent(
             lerp(110.dp, 64.dp, collapsedFraction)
         }
 
-        Row(
-
-        ) {
-            Column( modifier = Modifier.align(Alignment.CenterVertically)){
+        Row {
+            Column( modifier = Modifier.align(Alignment.CenterVertically).padding(8.dp)){
                 Text(
                     text = "Taiko ",
                     fontWeight = FontWeight.Bold,
@@ -163,17 +169,12 @@ fun TaikoPlayerDetailsContent(
                         )
                     }
                 } else {
-                    // Fallback
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.primaryContainer
+                        color = Color.Transparent
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = (name?.take(1) ?: "T").uppercase(),
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         }
                     }
                 }
@@ -235,50 +236,198 @@ fun TaikoPlayerDetailsContent(
 
                 if (isDanPlate) {
                     Column(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp)
                     ) {
+                        val titleWeight = 0.55f * collapsedFraction
                         // Title area (Teal top part)
-                        Box(
-                            modifier = Modifier
-                                .weight(0.55f)
-                                .fillMaxWidth()
-                                .padding(start = if (isNarrow) 16.dp else 24.dp, end = 8.dp, top = 2.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = title ?: "",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = NijiiroFontFamily,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = if (isNarrow) 10.sp else 14.sp,
-                                    letterSpacing = (-0.5).sp
-                                ),
-                                color = Color.Black,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                        if (titleWeight > 0.05f) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(titleWeight)
+                                    .fillMaxWidth()
+                                    .padding(top = 2.dp)
+                                    .graphicsLayer { alpha = collapsedFraction },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = title ?: "",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontFamily = NijiiroFontFamily,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = if (isNarrow) 10.sp else 14.sp,
+                                        letterSpacing = (-0.5).sp
+                                    ),
+                                    color = Color.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
 
                         // Name area (Bottom part with White box on right)
                         Row(
                             modifier = Modifier
-                                .weight(0.45f)
+                                .weight(1f - titleWeight)
                                 .fillMaxWidth()
                         ) {
-                            Spacer(modifier = Modifier.weight(0.42f)) // Covers the black area on the left
+                            val spacerWeight = 0.42f * collapsedFraction
+                            if (spacerWeight > 0.05f) {
+                                Spacer(modifier = Modifier.weight(spacerWeight))
+                            }
                             Box(
                                 modifier = Modifier
-                                    .weight(0.58f)
+                                    .weight(1f - spacerWeight)
                                     .fillMaxSize(),
-                                contentAlignment = Alignment.TopCenter
+                                contentAlignment = if (collapsedFraction < 0.5f) Alignment.Center else Alignment.BottomCenter
                             ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = if (collapsedFraction > 0.8f) 4.dp else 0.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    if (collapsedFraction < 0.8f) {
+                                        Text(
+                                            text = title ?: "",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontFamily = NijiiroFontFamily,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = if (isNarrow) 9.sp else 12.sp,
+                                                letterSpacing = 0.sp
+                                            ),
+                                            color = Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f)),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.padding(bottom = 2.dp)
+                                        )
+                                    }
 
-                                Box(contentAlignment = Alignment.Center) {
-                                    val fontSize = if (isNarrow) 14.sp else 19.sp
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth().offset(y = if (collapsedFraction > 0.8f) (-4).dp else 0.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        val fontSize = if (isNarrow) {
+                                            if (collapsedFraction > 0.8f) 11.sp else 13.sp
+                                        } else {
+                                            if (collapsedFraction > 0.8f) 14.sp else 17.sp
+                                        }
+                                        val nameText = name ?: "Chargement..."
 
+                                        // "Border/Stroke" layer
+                                        Text(
+                                            text = nameText,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.Center,
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontSize = fontSize,
+                                                fontWeight = FontWeight.Black,
+                                                fontFamily = NijiiroFontFamily,
+                                                drawStyle = Stroke(
+                                                    miter = 10f,
+                                                    width = 12f,
+                                                    join = StrokeJoin.Round
+                                                )
+                                            ),
+                                            color = Color.Black,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            softWrap = false
+                                        )
+                                        // "Main" layer
+                                        Text(
+                                            text = nameText,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.Center,
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontSize = fontSize,
+                                                fontWeight = FontWeight.Black,
+                                                fontFamily = NijiiroFontFamily
+                                            ),
+                                            color = Color.White,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            softWrap = false
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp)
+                    ) {
+                        val titleWeight = 0.5f * collapsedFraction
+                        // Title area (Top colored section)
+                        if (titleWeight > 0.05f) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(titleWeight)
+                                    .fillMaxWidth()
+                                    .padding(top = 2.dp)
+                                    .graphicsLayer { alpha = collapsedFraction },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = title ?: "",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontFamily = NijiiroFontFamily,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = if (isNarrow) 10.sp else 12.sp,
+                                    ),
+                                    color = Color.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+
+                        // Name area (Bottom white section)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f - titleWeight)
+                                .fillMaxSize()
+                                .padding(bottom = 2.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                if (collapsedFraction < 0.8f) {
+                                    Text(
+                                        text = title ?: "",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontFamily = NijiiroFontFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = if (isNarrow) 9.sp else 12.sp,
+                                            letterSpacing = 0.sp
+                                        ),
+                                        color = Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f)),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.padding(bottom = 2.dp)
+                                    )
+                                }
+
+                                val fontSize = if (isNarrow) {
+                                    if (collapsedFraction > 0.8f) 11.sp else 13.sp
+                                } else {
+                                    if (collapsedFraction > 0.8f) 14.sp else 17.sp
+                                }
+                                val nameText = name ?: ""
+
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().offset(y = if (collapsedFraction > 0.8f) (-4).dp else 0.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
                                     // "Border/Stroke" layer
                                     Text(
-                                        text = name ?: "Chargement...",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        text = nameText,
+                                        textAlign = TextAlign.Center,
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontSize = fontSize,
                                             fontWeight = FontWeight.Black,
@@ -291,11 +440,14 @@ fun TaikoPlayerDetailsContent(
                                         ),
                                         color = Color.Black,
                                         maxLines = 1,
-                                        overflow = TextOverflow.Visible,
+                                        overflow = TextOverflow.Ellipsis,
+                                        softWrap = false
                                     )
                                     // "Main" layer
                                     Text(
-                                        text = name ?: "Chargement...",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        text = nameText,
+                                        textAlign = TextAlign.Center,
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontSize = fontSize,
                                             fontWeight = FontWeight.Black,
@@ -304,79 +456,9 @@ fun TaikoPlayerDetailsContent(
                                         color = Color.White,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-
+                                        softWrap = false
                                     )
                                 }
-                            }
-                        }
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        // Title area (Top colored section)
-                        Box(
-                            modifier = Modifier
-                                .weight(0.5f)
-                                .fillMaxWidth()
-                                .padding(top = 2.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = title ?: "",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = NijiiroFontFamily,
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = if (isNarrow) 10.sp else 12.sp,
-                                ),
-                                color = Color.Black,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-
-                        // Name area (Bottom white section)
-                        Box(
-                            modifier = Modifier
-                                .weight(0.5f)
-                                .fillMaxSize()
-                                .padding(bottom = 2.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val fontSize = if (isNarrow) 17.sp else 21.sp
-
-                            Box(contentAlignment = Alignment.Center) {
-                                // "Border/Stroke" layer
-                                Text(
-                                    modifier = Modifier.offset(y = (-4).dp),
-                                    text = name ?: "",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        drawStyle = Stroke(
-                                            miter = 10f,
-                                            width = 12f,
-                                            join = StrokeJoin.Round
-                                        )
-                                    ),
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Visible
-                                )
-                                // "Main" layer
-                                Text(
-                                    modifier = Modifier.offset(y = (-4).dp),
-                                    text = name ?: "",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily
-                                    ),
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
                             }
                         }
                     }

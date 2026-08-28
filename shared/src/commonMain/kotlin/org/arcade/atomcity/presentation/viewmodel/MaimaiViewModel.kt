@@ -144,7 +144,7 @@ class MaimaiViewModel(
                         progressInfo?.state == "running" ||
                         progressInfo?.state == "blocked"
 
-                if (workActive && progressInfo != null) {
+                if (workActive) {
                     applyImportWorkerStatus(
                         ImportWorkerStatus(
                             isActive = true,
