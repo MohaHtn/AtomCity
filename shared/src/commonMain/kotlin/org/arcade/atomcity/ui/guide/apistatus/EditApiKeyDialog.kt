@@ -17,6 +17,60 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
+fun EditTaikoCredentialsDialog(
+    onDismiss: () -> Unit,
+    onSaveCredentials: (String, String) -> Unit,
+    existingAccessCode: String?,
+    existingPassword: String?
+) {
+    var accessCode by remember { mutableStateOf(existingAccessCode ?: "") }
+    var password by remember { mutableStateOf(existingPassword ?: "") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Identifiants Taiko no Tatsujin",
+                style = MaterialTheme.typography.titleMedium
+            )
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = accessCode,
+                    onValueChange = { accessCode = it },
+                    label = { Text("Access Code") },
+                    placeholder = { Text("Exemple : 012E58B3B4D780AD") },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Mot de passe") },
+                    placeholder = { Text("Votre mot de passe") },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSaveCredentials(accessCode, password) },
+                enabled = accessCode.isNotBlank() && password.isNotBlank()
+            ) {
+                Text("Enregistrer")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Annuler")
+            }
+        }
+    )
+}
+
+@Composable
 fun EditApiKeyDialog(
     title: String,
     existingApiKey: String?,

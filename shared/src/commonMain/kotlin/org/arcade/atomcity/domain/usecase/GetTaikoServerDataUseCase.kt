@@ -51,8 +51,11 @@ class GetTaikoServerDataUseCase(private val repository: ITaikoServerRepository) 
     ): Flow<TaikoServerLeaderboardResponse?> =
         repository.getSongLeaderboardFlow(songId, baid, difficulty, page, limit)
 
-    suspend fun login(loginRequest: Map<String, String>): TaikoServerAuthResponse =
+    suspend fun login(loginRequest: TaikoLoginRequest): TaikoServerAuthResponse =
         repository.login(loginRequest)
+
+    suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String): TaikoServerUserSettingsResponse =
+        repository.updateUserSettings(baid, settings, authToken)
 
     suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse =
         repository.changePassword(passwordRequest)

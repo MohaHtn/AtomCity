@@ -65,8 +65,15 @@ class TaikoServerRepository(private val client: TaikoServerClient) : ITaikoServe
         emit(client.getSongLeaderboard(songId, baid, difficulty, page, limit))
     }
 
-    override suspend fun login(loginRequest: Map<String, String>): TaikoServerAuthResponse =
+    override suspend fun login(loginRequest: TaikoLoginRequest): TaikoServerAuthResponse =
         client.login(loginRequest)
+
+    override suspend fun updateUserSettings(
+        baid: Int,
+        settings: TaikoServerUserSettingsResponse,
+        authToken: String
+    ): TaikoServerUserSettingsResponse =
+        client.updateUserSettings(baid, settings, authToken)
 
     override suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse =
         client.changePassword(passwordRequest)

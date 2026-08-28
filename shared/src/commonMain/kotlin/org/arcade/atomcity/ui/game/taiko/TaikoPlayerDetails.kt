@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,16 +58,22 @@ fun TaikoPlayerDetailsContent(
     taikoViewModel: TaikoViewModel? = null,
     userSettings: org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse? = null
 ) {
-    BoxWithConstraints(
+    val density = LocalDensity.current
+    var componentWidth by remember { mutableStateOf(0.dp) }
+
+    Box(
         modifier = Modifier
-            .fillMaxWidth().offset(y = (-4).dp)
+            .fillMaxWidth()
             .padding(horizontal = 4.dp, vertical = 2.dp)
+            .onSizeChanged { size ->
+                componentWidth = with(density) { size.width.toDp() }
+            }
             .background(
                 color = MaterialTheme.colorScheme.surface.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 0.7f)),
                 shape = RoundedCornerShape(16.dp),
             )
     ) {
-        val isNarrow = maxWidth < 260.dp
+        val isNarrow = componentWidth < 260.dp && componentWidth > 0.dp
         val avatarSize = if (isNarrow) {
             lerp(80.dp, 56.dp, collapsedFraction)
         } else {

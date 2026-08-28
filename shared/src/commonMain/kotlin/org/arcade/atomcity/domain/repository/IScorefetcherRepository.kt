@@ -31,4 +31,6 @@ interface IScorefetcherRepository {
     fun getMostPlayed(limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false): Flow<List<MaimaiMostPlayedEntry>>
     fun getMostPlayedByHash(keyHash: String? = null, limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false): Flow<List<MaimaiMostPlayedEntry>>
     suspend fun removeApiKey(apiKey: String): Flow<DeleteApiKeyResponse>
+    suspend fun addTaikoUser(baid: Int): Boolean
+    fun getTaikoUsers(): Flow<List<org.arcade.atomcity.data.remote.TaikoUser>>
 }

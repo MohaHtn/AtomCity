@@ -20,6 +20,7 @@ interface ITaikoServerRepository {
     fun getDanBestDataFlow(userNumber: String): Flow<TaikoServerDanBestDataResponse?>
     fun getUserFlow(userNumber: String): Flow<TaikoServerUserResponse?>
     fun getSongLeaderboardFlow(songId: String, baid: String, difficulty: Int, page: Int, limit: Int): Flow<TaikoServerLeaderboardResponse?>
-    suspend fun login(loginRequest: Map<String, String>): TaikoServerAuthResponse
+    suspend fun login(loginRequest: TaikoLoginRequest): TaikoServerAuthResponse
+    suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String): TaikoServerUserSettingsResponse
     suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse
 }

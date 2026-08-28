@@ -5,6 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -62,10 +63,17 @@ class TaikoServerClient(private val client: HttpClient, private val baseUrl: Str
             parameter("limit", limit)
         }.body()
 
-    suspend fun login(loginRequest: Map<String, String>): TaikoServerAuthResponse =
+    suspend fun login(loginRequest: TaikoLoginRequest): TaikoServerAuthResponse =
         client.post("${baseUrl}api/Auth/Login") {
             contentType(ContentType.Application.Json)
             setBody(loginRequest)
+        }.body()
+
+    suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String): TaikoServerUserSettingsResponse =
+        client.post("${baseUrl}api/UserSettings/$baid") {
+            contentType(ContentType.Application.Json)
+            header("Authorization", "Bearer $authToken")
+            setBody(settings)
         }.body()
 
     suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse =

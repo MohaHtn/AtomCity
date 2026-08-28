@@ -43,10 +43,26 @@ fun TaikoScoresDetails(
     onBackClick: () -> Unit
 ) {
     val scoresData by taikoViewModel.scoresData.collectAsState()
+    val communityScores by taikoViewModel.communityScores.collectAsState()
+    val taikoUsers by taikoViewModel.taikoUsers.collectAsState()
     val isLoading by taikoViewModel.isLoading.collectAsState()
 
     val filteredScores = remember(scoresData, songId) {
         scoresData?.songHistoryData?.filter { it.songId == songId } ?: emptyList()
+    }
+
+    val communityBestScores = remember(communityScores, songId) {
+        communityScores.mapNotNull { (baid, history) ->
+            val bestScore = history.songHistoryData
+                .filter { it.songId == songId }
+                .maxByOrNull { it.score ?: 0 }
+            
+            if (bestScore != null) {
+                baid to bestScore
+            } else {
+                null
+            }
+        }.sortedByDescending { it.second.score ?: 0 }
     }
 
     val songInfo = filteredScores.firstOrNull()
@@ -202,6 +218,78 @@ fun TaikoScoresDetails(
                                         }
                                     }
                                     
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        if ((score.comboCount ?: 0) > 0) {
+                                            Text(
+                                                text = "COMBO ${score.comboCount}",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                        Text(
+                                            text = formatPlayDate(score.playTime.toString()),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color.White.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (communityBestScores.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "SCORES DES AUTRES JOUEURS D'ATOM CITY",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    items(communityBestScores) { (baid, score) ->
+                        val user = taikoUsers.find { it.baid == baid }
+                        
+                        LaunchedEffect(baid, user?.nickname) {
+                            if (user?.nickname == null) {
+                                taikoViewModel.fetchUserNickname(baid)
+                            }
+                        }
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = setDifficultyColorBackground(score.difficulty).copy(containerColor = getDifficultyColor(score.difficulty).copy(alpha = 0.6f)),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = user?.nickname ?: "Joueur $baid",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = score.score.toString(),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Black
+                                        )
+                                        Text(
+                                            text = displayDifficultyName(score.difficulty),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color.White.copy(alpha = 0.8f)
+                                        )
+                                    }
                                     Column(horizontalAlignment = Alignment.End) {
                                         if ((score.comboCount ?: 0) > 0) {
                                             Text(

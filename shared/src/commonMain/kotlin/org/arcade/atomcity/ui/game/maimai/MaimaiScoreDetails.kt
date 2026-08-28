@@ -57,6 +57,9 @@ fun MaimaiScoresDetails(
     onBackClick: () -> Unit,
     onHistoryClick: (Int) -> Unit = {}
 ) {
+    val song = scoreEntry?.song
+    val songName = song?.name
+    val songArtist = song?.artist
     val difficultyColor = getJacketBorderColor(scoreEntry?.difficultyLevel?.value)
     
     val difficultyRepository: IDifficultyRepository = koinInject()
@@ -93,10 +96,32 @@ fun MaimaiScoresDetails(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Détails du Score",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                    )
+                    Column {
+                        Text(
+                            text = songName?.jp ?: "Détails du Score",
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        if (songName?.en != null && songName.en != songName.jp) {
+                            Text(
+                                text = songName.en ?: "",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        val artistJp = songArtist?.jp
+                        val artistEn = songArtist?.en
+                        Text(
+                            text = artistJp ?: artistEn ?: "",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -130,10 +155,7 @@ fun MaimaiScoresDetails(
                 }
             }
         } else {
-            val song = scoreEntry.song
             val diffLevel = scoreEntry.difficultyLevel
-            val songName = song?.name
-            val songArtist = song?.artist
             Column(
                 modifier = Modifier
                     .padding(innerPadding)

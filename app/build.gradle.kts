@@ -103,6 +103,7 @@ kotlin {
 
 dependencies {
     implementation(project(":shared"))
+    
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)

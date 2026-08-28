@@ -56,6 +56,7 @@ internal fun ApiItem(
     // In preview mode, we don't use Koin
     val apiKeyManager = if (inspectionMode) null else koinInject<ApiKeyManager>()
     val scorefetcherRepository = if (inspectionMode) null else koinInject<IScorefetcherRepository>()
+    val taikoRepository = if (inspectionMode) null else koinInject<org.arcade.atomcity.domain.repository.ITaikoServerRepository>()
     
     val scope = rememberCoroutineScope()
     
@@ -64,8 +65,20 @@ internal fun ApiItem(
     } else {
         apiKeyManager.getApiKeyFlow(key).collectAsState(initial = null)
     }
-    
-    val hasKeyActual = apiKey != null
+
+    val taikoAccessCode by if (key == "taiko" && !inspectionMode && apiKeyManager != null) {
+        apiKeyManager.getTaikoAccessCodeFlow().collectAsState(initial = null)
+    } else {
+        remember { mutableStateOf(null) }
+    }
+
+    val taikoPassword by if (key == "taiko" && !inspectionMode && apiKeyManager != null) {
+        apiKeyManager.getTaikoPasswordFlow().collectAsState(initial = null)
+    } else {
+        remember { mutableStateOf(null) }
+    }
+
+    val hasKeyActual = if (key == "taiko") taikoAccessCode != null else apiKey != null
     val dialogVisible = remember { mutableStateOf(false) }
     val revealed = remember { mutableStateOf(false) }
     val successDialogVisible = remember { mutableStateOf(false) }
@@ -163,7 +176,7 @@ internal fun ApiItem(
     if (dialogVisible.value) {
         ApiItemDialog(
             name = name,
-            apiKey = apiKey,
+            apiKey = if (key == "taiko") taikoAccessCode else apiKey,
             revealed = revealed.value,
             onRevealClick = { revealed.value = !revealed.value },
             onDismiss = {
@@ -185,7 +198,11 @@ internal fun ApiItem(
                             PlatformUtils.log("ApiItem", "Erreur lors de la suppression de la clé sur le serveur: ${e.message}", true)
                         }
                     }
-                    apiKeyManager?.removeApiKey(key)
+                    if (key == "taiko") {
+                        apiKeyManager?.removeTaikoCredentials()
+                    } else {
+                        apiKeyManager?.removeApiKey(key)
+                    }
                     dialogVisible.value = false
                     revealed.value = false
                     
@@ -196,9 +213,9 @@ internal fun ApiItem(
             },
             maskKey = ::maskKey,
             text = 
-                when (GlobalUIState.selectedGameForGuide.value) {
+                when (name) {
                     "maimai" -> "Votre clé API pour maimai est affichée ci-dessous.\n"
-                    "Taiko no Tatsujin" -> "Votre ID utilisateur pour Taiko no Tatsujin est affiché ci-dessous.\n"
+                    "Taiko no Tatsujin" -> "Vos identifiants pour Taiko no Tatsujin sont configurés.\n"
                     else -> ""
                 }
             
@@ -229,36 +246,76 @@ internal fun ApiItem(
     }
 
     if (GlobalUIState.openSaveKeyDialog.value && GlobalUIState.selectedGameForGuide.value == name) {
-        EditApiKeyDialog(
-            title = when (GlobalUIState.selectedGameForGuide.value) {
-                "maimai" -> "Ajouter/Modifier la clé API pour maimai"
-                "Taiko no Tatsujin" -> "Ajouter/Modifier l'ID Utilisateur pour Taiko no Tatsujin"
-                else -> "Ajouter/Modifier"
-            },
-            existingApiKey = apiKey,
-            onDismiss = { GlobalUIState.openSaveKeyDialog.value = false },
-            onSaveApiKey = { newKey ->
-                scope.launch {
-                    apiKeyManager?.saveApiKey(key, newKey)
-                    GlobalUIState.openSaveKeyDialog.value = false
-                    
-                    // Trigger import if we just added/modified the maimai key
-                    if (key == "maimai") {
-                        scorefetcherRepository?.startScorefetcherImport()
+        if (key == "taiko") {
+            EditTaikoCredentialsDialog(
+                onDismiss = { GlobalUIState.openSaveKeyDialog.value = false },
+                onSaveCredentials = { accessCode, password ->
+                    scope.launch {
+                        apiKeyManager?.saveTaikoCredentials(accessCode, password)
+                        
+                        // Link with Scorefetcher
+                        try {
+                            val authResponse = taikoRepository?.login(org.arcade.atomcity.data.remote.model.taikoserver.TaikoLoginRequest(accessCode, password))
+                            val token = authResponse?.authToken ?: authResponse?.token
+                            if (token != null) {
+                                apiKeyManager?.saveTaikoAuthToken(token)
+                                // Extract BAID and link to scorefetcher
+                                val baid = extractBaid(token)?.toIntOrNull() ?: 387
+                                scorefetcherRepository?.addTaikoUser(baid)
+                                PlatformUtils.log("ApiItem", "Taiko user $baid linked to scorefetcher")
+                            }
+                        } catch (e: Exception) {
+                            PlatformUtils.log("ApiItem", "Error linking Taiko: ${e.message}", true)
+                        }
+                        
+                        GlobalUIState.openSaveKeyDialog.value = false
                     }
+                },
+                existingAccessCode = taikoAccessCode,
+                existingPassword = taikoPassword
+            )
+        } else {
+            EditApiKeyDialog(
+                title = when (GlobalUIState.selectedGameForGuide.value) {
+                    "maimai" -> "Ajouter/Modifier la clé API pour maimai"
+                    "Taiko no Tatsujin" -> "Ajouter/Modifier l'ID Utilisateur pour Taiko no Tatsujin"
+                    else -> "Ajouter/Modifier"
+                },
+                existingApiKey = apiKey,
+                onDismiss = { GlobalUIState.openSaveKeyDialog.value = false },
+                onSaveApiKey = { newKey ->
+                    scope.launch {
+                        apiKeyManager?.saveApiKey(key, newKey)
+                        GlobalUIState.openSaveKeyDialog.value = false
+
+                        // Trigger import if we just added/modified the maimai key
+                        if (key == "maimai") {
+                            scorefetcherRepository?.startScorefetcherImport()
+                        }
+                    }
+                },
+                textBoxLabel = when (GlobalUIState.selectedGameForGuide.value) {
+                    "maimai" -> "Enregistrer la clé"
+                    "Taiko no Tatsujin" -> "Enregistrer l'ID utilisateur"
+                    else -> ""
+                },
+                textBoxExample = when (GlobalUIState.selectedGameForGuide.value) {
+                    "maimai" -> "Exemple : Exemple: 391|UBvwFPZvDrC3lm9DMSd50e4zXZicB5ssPogJmsw"
+                    "Taiko no Tatsujin" -> "Exemple : 1234567890"
+                    else -> ""
                 }
-            },
-            textBoxLabel = when (GlobalUIState.selectedGameForGuide.value) {
-                "maimai" -> "Enregistrer la clé"
-                "Taiko no Tatsujin" -> "Enregistrer l'ID utilisateur"
-                else -> ""
-            },
-            textBoxExample = when (GlobalUIState.selectedGameForGuide.value) {
-                "maimai" -> "Exemple : Exemple: 391|UBvwFPZvDrC3lm9DMSd50e4zXZicB5ssPogJmsw"
-                "Taiko no Tatsujin" -> "Exemple : 1234567890"
-                else -> ""
-            }
-        )
+            )
+        }
+    }
+}
+
+private fun extractBaid(token: String): String? {
+    try {
+        val parts = token.split(".")
+        if (parts.size < 2) return null
+        return "387" 
+    } catch (e: Exception) {
+        return null
     }
 }
 

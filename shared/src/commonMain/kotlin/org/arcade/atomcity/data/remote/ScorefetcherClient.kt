@@ -43,6 +43,17 @@ data class DeleteApiKeyResponse(
     val message: String,
 )
 
+@Serializable
+data class TaikoAddUserRequest(
+    val baid: Int
+)
+
+@Serializable
+data class TaikoUser(
+    val baid: Int,
+    val nickname: String? = null
+)
+
 class ScorefetcherClient(
     private val client: HttpClient, 
     private val apiKey: String,
@@ -95,6 +106,26 @@ class ScorefetcherClient(
         client.delete("${baseUrl}apikeys/$keyHash") {
             addApiKey()
         }.body()
+
+    suspend fun addTaikoUser(baid: Int): HttpResponse =
+        client.post("${baseUrl}taiko/adduser") {
+            addApiKey()
+            contentType(ContentType.Application.Json)
+            setBody(TaikoAddUserRequest(baid))
+        }
+
+    suspend fun getTaikoUsers(): List<TaikoUser> {
+        val response: HttpResponse = client.get("${baseUrl}taiko/users") {
+            addApiKey()
+            header("Accept", "application/json")
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            emptyList()
+        } else {
+            val baids: List<Int> = response.body()
+            baids.map { TaikoUser(baid = it) }
+        }
+    }
 
     suspend fun get30BestCharts(hashKey: String): List<PlayerBest30Response> {
         val response: HttpResponse = client.get("${baseUrl}scores/top") {

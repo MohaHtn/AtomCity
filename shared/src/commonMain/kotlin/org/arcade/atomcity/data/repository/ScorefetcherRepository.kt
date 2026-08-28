@@ -17,6 +17,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.Scorefet
 import org.arcade.atomcity.data.remote.DeleteApiKeyResponse
 import org.arcade.atomcity.data.remote.ApiKeyRequest
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
+import io.ktor.http.HttpStatusCode
 import org.arcade.atomcity.data.cache.DataCache
 import org.arcade.atomcity.utils.PlatformUtils
 import kotlinx.coroutines.flow.map
@@ -319,6 +320,25 @@ class ScorefetcherRepository(
             emit(scorefetcherClient.deleteApiKey(keyHash))
         } catch (e: Exception) {
             // Handle error appropriately
+        }
+    }
+
+    override suspend fun addTaikoUser(baid: Int): Boolean {
+        return try {
+            val response = scorefetcherClient.addTaikoUser(baid)
+            response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Created
+        } catch (e: Exception) {
+            PlatformUtils.log("ScorefetcherRepository", "Error adding Taiko user: ${e.message}", true)
+            false
+        }
+    }
+
+    override fun getTaikoUsers(): Flow<List<org.arcade.atomcity.data.remote.TaikoUser>> = flow {
+        try {
+            emit(scorefetcherClient.getTaikoUsers())
+        } catch (e: Exception) {
+            PlatformUtils.log("ScorefetcherRepository", "Error fetching Taiko users: ${e.message}", true)
+            emit(emptyList())
         }
     }
 }

@@ -25,6 +25,27 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    suspend fun saveTaikoCredentials(accessCode: String, password: String) {
+        dataStore.edit { preferences ->
+            preferences[stringPreferencesKey("taiko_access_code")] = accessCode.trim()
+            preferences[stringPreferencesKey("taiko_password")] = password.trim()
+        }
+    }
+
+    suspend fun saveTaikoAuthToken(token: String) {
+        dataStore.edit { preferences ->
+            preferences[stringPreferencesKey("taiko_auth_token")] = token
+        }
+    }
+
+    fun getTaikoAccessCodeFlow(): Flow<String?> = dataStore.data.map { it[stringPreferencesKey("taiko_access_code")] }
+    fun getTaikoPasswordFlow(): Flow<String?> = dataStore.data.map { it[stringPreferencesKey("taiko_password")] }
+    fun getTaikoAuthTokenFlow(): Flow<String?> = dataStore.data.map { it[stringPreferencesKey("taiko_auth_token")] }
+
+    suspend fun getTaikoAccessCode(): String? = getTaikoAccessCodeFlow().firstOrNull()
+    suspend fun getTaikoPassword(): String? = getTaikoPasswordFlow().firstOrNull()
+    suspend fun getTaikoAuthToken(): String? = getTaikoAuthTokenFlow().firstOrNull()
+
     fun getApiKeyFlow(gameName: String): Flow<String?> {
         val key = stringPreferencesKey(gameName)
         return dataStore.data.map { preferences ->
@@ -44,6 +65,14 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
         val key = stringPreferencesKey(gameName)
         dataStore.edit { preferences ->
             preferences.remove(key)
+        }
+    }
+
+    suspend fun removeTaikoCredentials() {
+        dataStore.edit { preferences ->
+            preferences.remove(stringPreferencesKey("taiko_access_code"))
+            preferences.remove(stringPreferencesKey("taiko_password"))
+            preferences.remove(stringPreferencesKey("taiko_auth_token"))
         }
     }
 

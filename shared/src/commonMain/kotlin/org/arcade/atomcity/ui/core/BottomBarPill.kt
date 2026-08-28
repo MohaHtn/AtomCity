@@ -19,6 +19,7 @@ fun BottomBarPill(
     currentPage: Int,
     isLoading: Boolean = false,
     hasNextPage: Boolean = true,
+    showPagination: Boolean = true,
     onPageChange: (Int) -> Unit,
     onMenuClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -27,19 +28,21 @@ fun BottomBarPill(
     NavigationBar {
         NavigationBarItem(
             selected = false,
-            enabled = !isLoading && currentPage != 1,
+            enabled = showPagination && !isLoading && currentPage != 1,
             onClick = {
-                if (currentPage > 1) {
+                if (showPagination && currentPage > 1) {
                     onPageChange(currentPage - 1)
                 }
             },
             icon = {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Page précédente"
-                )
+                if (showPagination) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Page précédente"
+                    )
+                }
             },
-            label = { Text("") }
+            label = { if (showPagination) Text("") }
         )
         
         NavigationBarItem(
@@ -97,15 +100,21 @@ fun BottomBarPill(
         
         NavigationBarItem(
             selected = false,
-            enabled = !isLoading && hasNextPage,
-            onClick = { onPageChange(currentPage + 1) },
-            icon = {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "Page suivante"
-                )
+            enabled = showPagination && !isLoading && hasNextPage,
+            onClick = { 
+                if (showPagination) {
+                    onPageChange(currentPage + 1) 
+                }
             },
-            label = { Text("") }
+            icon = {
+                if (showPagination) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Page suivante"
+                    )
+                }
+            },
+            label = { if (showPagination) Text("") }
         )
     }
 }

@@ -68,5 +68,12 @@ data class TaikoServerLeaderboardEntry(
 data class TaikoServerAuthResponse(
     val success: Boolean = false,
     val message: String? = null,
-    val token: String? = null
+    val token: String? = null,
+    val authToken: String? = null
+)
+
+@Serializable
+data class TaikoLoginRequest(
+    val accessCode: String,
+    val password: String
 )

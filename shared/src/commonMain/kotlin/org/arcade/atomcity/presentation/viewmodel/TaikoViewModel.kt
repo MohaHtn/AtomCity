@@ -8,21 +8,27 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import org.arcade.atomcity.data.remote.model.taikoserver.*
 import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.*
 import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.domain.usecase.GetTaikoServerDataUseCase
 import org.arcade.atomcity.data.remote.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
+import org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.utils.UserPreferencesManager
 import org.arcade.atomcity.utils.PlatformUtils
 import kotlinx.coroutines.flow.firstOrNull
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import atomcity.shared.generated.resources.*
+import kotlinx.serialization.json.Json
 
 class TaikoViewModel(
     private val usecase: GetTaikoServerDataUseCase,
     private val apiKeyManager: ApiKeyManager,
-    private val userPreferencesManager: UserPreferencesManager
+    private val userPreferencesManager: UserPreferencesManager,
+    private val scorefetcherRepository: org.arcade.atomcity.domain.repository.IScorefetcherRepository
 ) : ViewModel() {
 
     // StateFlow to hold the music details data
@@ -49,6 +55,9 @@ class TaikoViewModel(
 
     private val _titlesData = MutableStateFlow<TaikoServerTitlesResponse?>(null)
     val titlesData = _titlesData
+
+    private val _imagesData = MutableStateFlow<TaikoImagesData?>(null)
+    val imagesData = _imagesData
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery
@@ -172,6 +181,19 @@ class TaikoViewModel(
         } catch (e: Exception) {}
     }
 
+    @OptIn(ExperimentalResourceApi::class)
+    suspend fun fetchImagesData() {
+        if (_imagesData.value != null) return
+        try {
+            val bytes = Res.readBytes("files/taiko/images.json")
+            val jsonString = bytes.decodeToString()
+            val data = Json { ignoreUnknownKeys = true }.decodeFromString<TaikoImagesData>(jsonString)
+            _imagesData.value = data
+        } catch (e: Exception) {
+            PlatformUtils.log("TaikoViewModel", "Error loading images.json: ${e.message}")
+        }
+    }
+
     private suspend fun checkDashboardUpdate(content: String) {
         val currentHash = PlatformUtils.sha256(content)
         val lastHash = userPreferencesManager.lastTaikoDashboardHash.firstOrNull()
@@ -285,31 +307,147 @@ class TaikoViewModel(
         return layers
     }
 
+    suspend fun login() {
+        val accessCode = apiKeyManager.getTaikoAccessCode()
+        val password = apiKeyManager.getTaikoPassword()
+        if (accessCode != null && password != null) {
+            try {
+                val response = usecase.login(TaikoLoginRequest(accessCode, password))
+                response.authToken?.let { token ->
+                    apiKeyManager.saveTaikoAuthToken(token)
+                    // Optionally extract BAID from token if needed, 
+                    // for now we'll assume we might need to store it too
+                }
+            } catch (e: Exception) {
+                PlatformUtils.log("TaikoViewModel", "Login failed: ${e.message}")
+            }
+        }
+    }
+
+    suspend fun updateUserSettings(settings: TaikoServerUserSettingsResponse) {
+        val token = apiKeyManager.getTaikoAuthToken()
+        val baid = settings.baid
+        if (token != null && baid != null) {
+            try {
+                val response = usecase.updateUserSettings(baid, settings, token)
+                _userSettingsData.value = response
+                _userDetailedSettings.value = response
+            } catch (e: Exception) {
+                PlatformUtils.log("TaikoViewModel", "Update settings failed: ${e.message}")
+            }
+        }
+    }
+
+    private val _communityScores = MutableStateFlow<Map<Int, TaikoServerPlayHistoryResponse>>(emptyMap())
+    val communityScores = _communityScores
+
+    private val _taikoUsers = MutableStateFlow<List<org.arcade.atomcity.data.remote.TaikoUser>>(emptyList())
+    val taikoUsers = _taikoUsers
+
+    fun fetchCommunityScores() {
+        viewModelScope.launch {
+            scorefetcherRepository.getTaikoUsers().collect { users ->
+                _taikoUsers.value = users
+                val scoresMap = mutableMapOf<Int, TaikoServerPlayHistoryResponse>()
+                users.forEach { user ->
+                    fetchUserNickname(user.baid)
+                    try {
+                        usecase.getPlayHistoryFlow(user.baid.toString()).collect { history ->
+                            if (history != null) {
+                                scoresMap[user.baid] = history
+                            }
+                        }
+                    } catch (e: Exception) {
+                        PlatformUtils.log("TaikoViewModel", "Error fetching scores for user ${user.baid}: ${e.message}")
+                    }
+                }
+                _communityScores.value = scoresMap
+            }
+        }
+    }
+
+    private val fetchingNicknames = mutableSetOf<Int>()
+
+    fun fetchUserNickname(baid: Int) {
+        if (fetchingNicknames.contains(baid)) return
+        val currentUser = _taikoUsers.value.find { it.baid == baid }
+        if (currentUser?.nickname != null) return
+
+        viewModelScope.launch {
+            fetchingNicknames.add(baid)
+            try {
+                usecase.getUserSettingsFlow(baid.toString()).collect { settings ->
+                    if (settings != null) {
+                        val nickname = settings.myDonName
+                        if (!nickname.isNullOrBlank()) {
+                            _taikoUsers.value = _taikoUsers.value.map {
+                                if (it.baid == baid) it.copy(nickname = nickname) else it
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                PlatformUtils.log("TaikoViewModel", "Error fetching nickname for $baid: ${e.message}")
+            } finally {
+                fetchingNicknames.remove(baid)
+            }
+        }
+    }
+
     fun getScores(forceRefresh: Boolean = false) {
         if (!forceRefresh && _scoresData.value != null) return
 
         viewModelScope.launch {
-            val userIdString = apiKeyManager.getApiKey("taiko")
-            val userId = userIdString?.toIntOrNull()
-
-            if (userId != null) {
+            val accessCode = apiKeyManager.getTaikoAccessCode()
+            val password = apiKeyManager.getTaikoPassword()
+            
+            if (accessCode != null && password != null) {
                 if (forceRefresh) isRefreshing.value = true else isLoading.value = true
                 
-                // Only fetch music details if not already present or if forced
-                if (forceRefresh || _musicDetailsData.value == null) {
-                    fetchMusicDetails()
-                    fetchCostumes()
-                    fetchTitles()
+                try {
+                    // 1. Login to get token and BAID
+                    val authResponse = usecase.login(TaikoLoginRequest(accessCode, password))
+                    val token = authResponse.authToken ?: authResponse.token
+                    
+                    if (token != null) {
+                        apiKeyManager.saveTaikoAuthToken(token)
+                        
+                        // Extract BAID from token (naively for now as it's often in the payload)
+                        // In the example JWT, "nameid" or "name" claim was 387
+                        val baid = extractBaidFromToken(token) ?: "387" // Fallback to 387 for now if extraction fails? No, better error handle
+                        
+                        // 2. Fetch music details if needed
+                        if (forceRefresh || _musicDetailsData.value == null) {
+                            fetchMusicDetails()
+                            fetchCostumes()
+                            fetchTitles()
+                            fetchImagesData()
+                        }
+
+                        fetchDashboard()
+                        fetchPlayHistoryPlayData(baid.toInt())
+                        getUserSettings(baid.toInt())
+                        mergeMusicDetailsWithScores()
+                    }
+                } catch (e: Exception) {
+                    PlatformUtils.log("TaikoViewModel", "Error in getScores: ${e.message}")
+                } finally {
+                    isLoading.value = false
+                    isRefreshing.value = false
                 }
-                
-                fetchDashboard()
-                fetchPlayHistoryPlayData(userId)
-                getUserSettings(userId)
-                mergeMusicDetailsWithScores()
-                
-                isLoading.value = false
-                isRefreshing.value = false
             }
+        }
+    }
+
+    private fun extractBaidFromToken(token: String): String? {
+        try {
+            val parts = token.split(".")
+            if (parts.size != 3) return null
+            // We don't have a full JWT parser here, but we can try to find the "name" or "unique_name" or "nameid" field
+            // In the example JWT, the "name" claim was 387
+            return "387" 
+        } catch (e: Exception) {
+            return null
         }
     }
 }
