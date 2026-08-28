@@ -291,6 +291,7 @@ fun TaikoScores(
 
         if (showDashboardDialog && dashboardData != null) {
             AlertDialog(
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(0.8f),
                 onDismissRequest = {
                 showDashboardDialog = false
                 taikoViewModel.dismissDashboard()
@@ -298,13 +299,6 @@ fun TaikoScores(
                     taikoViewModel.setShowDashboardPreference(false)
                 }
             },
-                title = {
-                    Text(
-                        text = "DASHBOARD",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                },
                 text = {
                     Column(
                         modifier = Modifier
@@ -313,7 +307,7 @@ fun TaikoScores(
                     ) {
                         MarkdownText(text = dashboardData!!)
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
