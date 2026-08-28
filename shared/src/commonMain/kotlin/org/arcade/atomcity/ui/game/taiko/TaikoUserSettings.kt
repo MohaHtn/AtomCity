@@ -2,19 +2,23 @@ package org.arcade.atomcity.ui.game.taiko
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -22,10 +26,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData
 import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerTitlesResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
@@ -52,6 +57,7 @@ fun TaikoUserSettings(
     var isSaving by remember { mutableStateOf(false) }
 
     var showDialogFor by remember { mutableStateOf<String?>(null) }
+    var showTitleSearchDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         taikoViewModel.fetchImagesData()
@@ -95,7 +101,7 @@ fun TaikoUserSettings(
                                 isSaving = false
                                 if (success) {
                                     onBackClick()
-                                    taikoViewModel.showSnackbar("Paramètres enregistrés")
+                                    taikoViewModel.showSnackbar("Paramètres enregistrés.")
                                 } else {
                                     snackbarHostState.showSnackbar("Erreur lors de l'enregistrement")
                                 }
@@ -131,7 +137,7 @@ fun TaikoUserSettings(
                         .verticalScroll(rememberScrollState())
                 ) {
                     val nameplateUrls = taikoViewModel.getNameplateUrls(data)
-                    ProfileHeader(data, imagesData, titles, nameplateUrls)
+                    ProfileHeader(data, imagesData, nameplateUrls)
                     
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -150,7 +156,12 @@ fun TaikoUserSettings(
                             label = { Text("Titre") },
                             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                             shape = RoundedCornerShape(50),
-                            singleLine = true
+                            singleLine = true,
+                            trailingIcon = {
+                                IconButton(onClick = { showTitleSearchDialog = true }) {
+                                    Icon(Icons.Default.Search, contentDescription = "Rechercher un titre")
+                                }
+                            }
                         )
 
                         val titleName = titles?.get(data.titlePlateId.toString())?.titleNameEN ?: data.title ?: "Inconnu"
@@ -388,6 +399,124 @@ fun TaikoUserSettings(
             }
         )
     }
+
+    if (showTitleSearchDialog) {
+        TitleSelectionDialog(
+            titles = titles,
+            onDismiss = { showTitleSearchDialog = false },
+            onSelect = { selectedTitle ->
+                localSettings?.let { current ->
+                    localSettings = current.copy(title = selectedTitle)
+                }
+                showTitleSearchDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun TitleSelectionDialog(
+    titles: TaikoServerTitlesResponse?,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit
+) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredTitles = remember(searchQuery, titles) {
+        titles?.values?.filter {
+            (it.titleName?.contains(searchQuery, ignoreCase = true) == true ||
+            it.titleNameEN?.contains(searchQuery, ignoreCase = true) == true) &&
+            it.titleId != 0
+        }?.sortedBy { it.titleId } ?: emptyList()
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
+                .padding(16.dp),
+            shape = RoundedCornerShape(32.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Choisir un titre",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    placeholder = { Text("Rechercher un titre...") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(20.dp),
+                )
+
+                LazyColumn(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(filteredTitles) { title ->
+                        Surface(
+                            onClick = { onSelect(title.titleNameEN ?: title.titleName ?: "") },
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            ListItem(
+                                headlineContent = { 
+                                    Text(
+                                        title.titleNameEN ?: title.titleName ?: "",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    ) 
+                                },
+                                supportingContent = { 
+                                    Text(
+                                        "ID: ${title.titleId}", 
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    ) 
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.End),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text("Fermer", fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
+                }
+            }
+        }
+    }
 }
 
 fun extractId(filename: String): Int {
@@ -481,46 +610,72 @@ fun SelectionDialog(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                contentPadding = PaddingValues(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxHeight(0.7f)
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.75f)
+                .padding(16.dp),
+            shape = RoundedCornerShape(32.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp)
             ) {
-                items(items) { item ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .clickable { onSelect(item) },
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            if (item == "Normal") {
-                                Text("Normal")
-                            } else {
-                                val url = buildImageUrl(type, item)
-                                AsyncImage(
-                                    model = url,
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Fit
-                                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.padding(bottom = 20.dp)
+                )
+
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
+                    contentPadding = PaddingValues(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(items) { item ->
+                        Surface(
+                            onClick = { onSelect(item) },
+                            shape = RoundedCornerShape(24.dp),
+                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                            modifier = Modifier.aspectRatio(1f),
+                        ) {
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                if (item == "Normal") {
+                                    Text("Normal", fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.bodyMedium)
+                                } else {
+                                    val url = buildImageUrl(type, item)
+                                    AsyncImage(
+                                        model = url,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize().padding(12.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
                             }
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.End),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text("Fermer", fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
+                }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Annuler") }
         }
-    )
+    }
 }
 
 fun buildImageUrl(type: String, filename: String?): String? {
@@ -727,7 +882,6 @@ fun findPlateFilename(id: Int?, imagesData: TaikoImagesData?): String? {
 fun ProfileHeader(
     settings: TaikoServerUserSettingsResponse,
     imagesData: TaikoImagesData?,
-    titles: TaikoServerTitlesResponse?,
     nameplateUrls: List<String>
 ) {
     Card(
@@ -787,7 +941,7 @@ fun ProfileHeader(
             // Nameplate Preview Area
             TaikoNameplate(
                 name = settings.myDonName,
-                title = titles?.get(settings.titlePlateId.toString())?.titleNameEN ?: settings.title ?: "",
+                title = settings.title,
                 nameplateUrls = nameplateUrls,
                 collapsedFraction = 1f,
                 modifier = Modifier
