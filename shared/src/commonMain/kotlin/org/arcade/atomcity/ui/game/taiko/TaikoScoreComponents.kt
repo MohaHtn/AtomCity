@@ -4,6 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,7 +25,8 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun TaikoScoreItem(
     score: TaikoServerHistoryEntry,
-    onNavigateToRoute: (String) -> Unit
+    onNavigateToRoute: (String) -> Unit,
+    onFavoriteToggle: (Int) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -47,9 +51,24 @@ fun TaikoScoreItem(
                 contentScale = ContentScale.Fit,
                 alpha = 0.3f
             )
+            IconButton(
+                onClick = { score.songId?.let { onFavoriteToggle(it) } },
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 8.dp)
+                    .size(40.dp)
+            ) {
+                Icon(
+                    imageVector = if (score.isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorite",
+                    tint = if (score.isFavorite == true) Color.Red else Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
             Column(
                 modifier = Modifier
                     .padding(16.dp)
+                    .padding(start = 40.dp)
                     .fillMaxWidth()
             ) {
                 Row(

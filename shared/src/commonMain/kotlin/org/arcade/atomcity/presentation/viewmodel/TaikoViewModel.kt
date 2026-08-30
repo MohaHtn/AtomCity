@@ -62,8 +62,25 @@ class TaikoViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery
 
-    val filteredScores: StateFlow<List<org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry>> = combine(scoresData, _searchQuery) { scores, query ->
-        if (query.isBlank()) {
+    private val _showOnlyFavorites = MutableStateFlow(false)
+    val showOnlyFavorites = _showOnlyFavorites
+
+    val favoriteSongIds = userPreferencesManager.favoriteSongIds.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet()
+    )
+
+    fun onToggleShowOnlyFavorites() {
+        _showOnlyFavorites.value = !_showOnlyFavorites.value
+    }
+
+    fun toggleFavorite(songId: Int) {
+        viewModelScope.launch {
+            userPreferencesManager.toggleFavoriteSong(songId)
+        }
+    }
+
+    val filteredScores: StateFlow<List<org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry>> = combine(scoresData, _searchQuery, favoriteSongIds, _showOnlyFavorites) { scores, query, favorites, onlyFavs ->
+        val list = if (query.isBlank()) {
             scores?.songHistoryData ?: emptyList()
         } else {
             scores?.songHistoryData?.filter { score ->
@@ -76,6 +93,12 @@ class TaikoViewModel(
                 score.musicArtistCN?.contains(query, ignoreCase = true) == true ||
                 score.musicArtistKO?.contains(query, ignoreCase = true) == true
             } ?: emptyList()
+        }
+
+        list.map { score ->
+            score.copy(isFavorite = favorites.contains(score.songId))
+        }.filter { 
+            if (onlyFavs) it.isFavorite == true else true
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -268,18 +291,21 @@ class TaikoViewModel(
     }
 
     fun getDonColor(colorIndex: Int?): Color {
-        // Basic guess for Taiko colors - needs actual mapping
-        return when (colorIndex) {
-            0 -> Color(0xFFF84828) // Red
-            1 -> Color(0xFFF8B800) // Yellow
-            2 -> Color(0xFF60B048) // Green
-            3 -> Color(0xFF0098D8) // Blue
-            4 -> Color(0xFFE85888) // Pink
-            5 -> Color(0xFF8840A8) // Purple
-            6 -> Color(0xFFFFFFFF) // White
-            7 -> Color(0xFF000000) // Black
-            else -> Color.Gray
-        }
+        val colors = listOf(
+            "#F84828", "#68C0C0", "#DC1500", "#F8F0E0", "#009687", "#00BF87",
+            "#00FF9A", "#66FFC2", "#FFFFFF", "#690000", "#FF0000", "#FF6666",
+            "#FFB3B3", "#00BCC2", "#00F7FF", "#66FAFF", "#B3FDFF", "#E4E4E4",
+            "#993800", "#FF5E00", "#FF9E78", "#FFCFB3", "#005199", "#0088FF",
+            "#66B8FF", "#B3DBFF", "#B9B9B9", "#B37700", "#FFAA00", "#FFCC66",
+            "#FFE2B3", "#000C80", "#0019FF", "#6675FF", "#B3BAFF", "#858585",
+            "#B39B00", "#FFDD00", "#FFFF00", "#FFFF71", "#2B0080", "#5500FF",
+            "#9966FF", "#CCB3FF", "#505050", "#38A100", "#78C900", "#B3FF00",
+            "#DCFF8A", "#610080", "#C400FF", "#DC66FF", "#EDB3FF", "#232323",
+            "#006600", "#00B800", "#00FF00", "#8AFF9E", "#990059", "#FF0095",
+            "#FF66BF", "#FFB3DF", "#000000"
+        )
+        val hex = if (colorIndex != null && colorIndex in colors.indices) colors[colorIndex] else "#F84828"
+        return Color(hex.removePrefix("#").toLong(16) or 0xFF000000L)
     }
 
     fun getNameplateUrls(settings: TaikoServerUserSettingsResponse?): List<String> {

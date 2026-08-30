@@ -54,10 +54,12 @@ fun TaikoNameplate(
                 .fillMaxSize()
                 .alpha(nameplateBackgroundAlpha)
         ) {
-            val baseNameplates = nameplateUrls.filterNot { it.contains("AprilFool") }
-            val aprilFoolNameplates = nameplateUrls.filter { it.contains("AprilFool") }
+            val danPlates = nameplateUrls.filter { it.contains("nameplate_dan") }
+            val specialPlates = nameplateUrls.filter { it.contains("AprilFool") || it.contains("Toho") }
+            val basePlates = nameplateUrls.filterNot { it.contains("nameplate_dan") || it.contains("AprilFool") || it.contains("Toho") }
 
-            baseNameplates.forEach { url ->
+            // 1. Draw base plates (FillBounds) - includes nameplate.webp and colored frames
+            basePlates.forEach { url ->
                 AsyncImage(
                     model = url,
                     contentDescription = null,
@@ -66,17 +68,27 @@ fun TaikoNameplate(
                 )
             }
 
-            aprilFoolNameplates.forEach { url ->
+            // 2. Draw special plates (Maintain aspect ratio, allow overflow for characters)
+            specialPlates.forEach { url ->
                 AsyncImage(
                     model = url,
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize()
-                        .graphicsLayer {
-                            translationY = -18f
-                            clip = false
-                        }
+                        .offset(y=12.dp)
+                        .wrapContentHeight(unbounded = true, align = Alignment.CenterVertically)
                         .zIndex(1f),
+                    contentScale = ContentScale.FillWidth,
+                    alignment = Alignment.BottomCenter
+                )
+            }
+
+            // 3. Draw Dan overlay (Always on top)
+            danPlates.forEach { url ->
+                AsyncImage(
+                    model = url,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize().zIndex(2f),
                     contentScale = ContentScale.FillBounds
                 )
             }

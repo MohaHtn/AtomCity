@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,6 +48,9 @@ fun TaikoScoresDetails(
     val communityScores by taikoViewModel.communityScores.collectAsState()
     val taikoUsers by taikoViewModel.taikoUsers.collectAsState()
     val isLoading by taikoViewModel.isLoading.collectAsState()
+    val favoriteSongIds by taikoViewModel.favoriteSongIds.collectAsState()
+
+    val isFavorite = favoriteSongIds.contains(songId)
 
     val filteredScores = remember(scoresData, songId) {
         scoresData?.songHistoryData?.filter { it.songId == songId } ?: emptyList()
@@ -99,6 +104,15 @@ fun TaikoScoresDetails(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { taikoViewModel.toggleFavorite(songId) }) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = if (isFavorite) Color.Red else LocalContentColor.current
+                        )
                     }
                 }
             )

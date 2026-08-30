@@ -1,6 +1,7 @@
 package org.arcade.atomcity.ui.game.taiko
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,6 +34,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.FilterQuality
 import coil3.compose.AsyncImage
 import kotlin.math.roundToInt
@@ -41,6 +45,20 @@ import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerCos
 import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerTitlesResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+
+val CostumeColors = listOf(
+    "#F84828", "#68C0C0", "#DC1500", "#F8F0E0", "#009687", "#00BF87",
+    "#00FF9A", "#66FFC2", "#FFFFFF", "#690000", "#FF0000", "#FF6666",
+    "#FFB3B3", "#00BCC2", "#00F7FF", "#66FAFF", "#B3FDFF", "#E4E4E4",
+    "#993800", "#FF5E00", "#FF9E78", "#FFCFB3", "#005199", "#0088FF",
+    "#66B8FF", "#B3DBFF", "#B9B9B9", "#B37700", "#FFAA00", "#FFCC66",
+    "#FFE2B3", "#000C80", "#0019FF", "#6675FF", "#B3BAFF", "#858585",
+    "#B39B00", "#FFDD00", "#FFFF00", "#FFFF71", "#2B0080", "#5500FF",
+    "#9966FF", "#CCB3FF", "#505050", "#38A100", "#78C900", "#B3FF00",
+    "#DCFF8A", "#610080", "#C400FF", "#DC66FF", "#EDB3FF", "#232323",
+    "#006600", "#00B800", "#00FF00", "#8AFF9E", "#990059", "#FF0095",
+    "#FF66BF", "#FFB3DF", "#000000"
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -141,7 +159,15 @@ fun TaikoUserSettings(
                         .verticalScroll(rememberScrollState())
                 ) {
                     val nameplateUrls = taikoViewModel.getNameplateUrls(data)
-                    ProfileHeader(data, imagesData, nameplateUrls)
+                    ProfileHeader(data, imagesData, nameplateUrls, taikoViewModel)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingSection("Don-chan") {
+                        ColorPickerRow("Visage", data.faceColor ?: 0) { localSettings = data.copy(faceColor = it) }
+                        ColorPickerRow("Corps", data.bodyColor ?: 0) { localSettings = data.copy(bodyColor = it) }
+                        ColorPickerRow("Membres", data.limbColor ?: 0) { localSettings = data.copy(limbColor = it) }
+                    }
                     
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -180,6 +206,8 @@ fun TaikoUserSettings(
                         SettingToggle("Montrer le Dan sur la nameplate", data.isDisplayDanOnNamePlate ?: false) {
                             localSettings = data.copy(isDisplayDanOnNamePlate = it)
                         }
+
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -191,6 +219,13 @@ fun TaikoUserSettings(
                         val faceName = costumes?.find { it.costumeId == data.face && it.costumeType == "face" }?.costumeNameEN?.let { if (it == "Plain Don") "Défaut" else it } ?: "ID: ${data.face}"
                         val puchiName = costumes?.find { it.costumeId == data.puchi && it.costumeType == "puchi" }?.costumeNameEN?.let { if (it == "Plain Don") "Défaut" else it } ?: "ID: ${data.puchi}"
 
+                        val isKigurumiSelected = (data.kigurumi ?: 0) > 0
+
+                        if (isKigurumiSelected) {
+                            InfoCard("Si vous mettez un Kigurumi, la tête et le corps seront désactivés. De même, vous risquez de ne pas voir les couleurs choisies plus haut.")
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -201,8 +236,20 @@ fun TaikoUserSettings(
                             ) {
                                 val itemModifier = Modifier.weight(1f)
                                 ExpressiveGridItem("Kigurumi", kigurumiName, buildImageUrl("kigurumi", findFilename("kigurumi", data.kigurumi, imagesData)), onClick = { showDialogFor = "kigurumi" }, modifier = itemModifier)
-                                ExpressiveGridItem("Tête", headName, buildImageUrl("head", findFilename("head", data.head, imagesData)), onClick = { showDialogFor = "head" }, modifier = itemModifier)
-                                ExpressiveGridItem("Corps", bodyName, buildImageUrl("body", findFilename("body", data.body, imagesData)), onClick = { showDialogFor = "body" }, modifier = itemModifier)
+                                ExpressiveGridItem(
+                                    label = "Tête",
+                                    value = if (isKigurumiSelected) "N/A" else headName,
+                                    imageUrl = if (isKigurumiSelected) null else buildImageUrl("head", findFilename("head", data.head, imagesData)),
+                                    onClick = { if (!isKigurumiSelected) showDialogFor = "head" },
+                                    modifier = itemModifier.then(if (isKigurumiSelected) Modifier.alpha(0.5f) else Modifier)
+                                )
+                                ExpressiveGridItem(
+                                    label = "Corps",
+                                    value = if (isKigurumiSelected) "N/A" else bodyName,
+                                    imageUrl = if (isKigurumiSelected) null else buildImageUrl("body", findFilename("body", data.body, imagesData)),
+                                    onClick = { if (!isKigurumiSelected) showDialogFor = "body" },
+                                    modifier = itemModifier.then(if (isKigurumiSelected) Modifier.alpha(0.5f) else Modifier)
+                                )
                             }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -396,10 +443,19 @@ fun TaikoUserSettings(
             type = type,
             costumes = costumes,
             onDismiss = { showDialogFor = null },
+            taikoViewModel = taikoViewModel,
+            settings = localSettings,
             onSelect = { selectedValue ->
                 localSettings?.let { current ->
                     localSettings = when (type) {
-                        "kigurumi" -> current.copy(kigurumi = extractId(selectedValue))
+                        "kigurumi" -> {
+                            val id = extractId(selectedValue)
+                            if (id > 0) {
+                                current.copy(kigurumi = id, head = 0, body = 0)
+                            } else {
+                                current.copy(kigurumi = id)
+                            }
+                        }
                         "head" -> current.copy(head = extractId(selectedValue))
                         "body" -> current.copy(body = extractId(selectedValue))
                         "face" -> current.copy(face = extractId(selectedValue))
@@ -628,7 +684,9 @@ fun SelectionDialog(
     type: String,
     costumes: List<TaikoServerCostume>? = null,
     onDismiss: () -> Unit,
-    onSelect: (String) -> Unit
+    onSelect: (String) -> Unit,
+    taikoViewModel: TaikoViewModel,
+    settings: TaikoServerUserSettingsResponse?
 ) {
     var searchQuery by remember { mutableStateOf("") }
     
@@ -694,18 +752,33 @@ fun SelectionDialog(
                 }
 
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(if (type == "speed") 2 else 3),
+                    columns = GridCells.Fixed(
+                        when (type) {
+                            "speed" -> 2
+                            "title" -> 2 // Back to two columns
+                            else -> 3
+                        }
+                    ),
                     contentPadding = PaddingValues(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.weight(1f)
                 ) {
                     items(filteredItems) { item ->
+                        val id = extractId(item)
+                        val isNameplate = type == "title"
+                        
                         Surface(
                             onClick = { onSelect(item) },
                             shape = RoundedCornerShape(24.dp),
                             color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-                            modifier = Modifier.aspectRatio(if (type == "speed") 1.1f else 0.85f),
+                            modifier = Modifier.aspectRatio(
+                                when (type) {
+                                    "speed" -> 1.1f
+                                    "title" -> 2.5f // Ratio for two columns
+                                    else -> 0.85f
+                                }
+                            ),
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxSize().padding(8.dp),
@@ -733,16 +806,51 @@ fun SelectionDialog(
                                             }
                                         }
                                     } else {
-                                        val url = buildImageUrl(type, item)
-                                        AsyncImage(
-                                            model = url,
-                                            contentDescription = null,
-                                            modifier = Modifier.fillMaxSize().then(
-                                                if (type == "puchi") Modifier.scale(2.2f).offset( y= -(10).dp, x= (12).dp) else Modifier
-                                            ),
-                                            contentScale = ContentScale.Fit,
-                                            filterQuality = if (type == "speed" || type == "random") FilterQuality.None else FilterQuality.Low
-                                        )
+                                        val isPlain = id == 0
+                                        
+                                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                            if (isPlain && settings != null) {
+                                                if (type == "body") {
+                                                    AsyncImage(
+                                                        model = taikoViewModel.getMaskImageUrl("body", "body", id),
+                                                        contentDescription = null,
+                                                        modifier = Modifier.fillMaxSize(),
+                                                        contentScale = ContentScale.Fit,
+                                                        colorFilter = ColorFilter.tint(taikoViewModel.getDonColor(settings.bodyColor))
+                                                    )
+                                                } else if (type == "face") {
+                                                    AsyncImage(
+                                                        model = taikoViewModel.getMaskImageUrl("body", "face", id),
+                                                        contentDescription = null,
+                                                        modifier = Modifier.fillMaxSize(),
+                                                        contentScale = ContentScale.Fit,
+                                                        colorFilter = ColorFilter.tint(taikoViewModel.getDonColor(settings.faceColor))
+                                                    )
+                                                } else if (type == "head") {
+                                                    AsyncImage(
+                                                        model = taikoViewModel.getMaskImageUrl("head", "head", id),
+                                                        contentDescription = null,
+                                                        modifier = Modifier.fillMaxSize(),
+                                                        contentScale = ContentScale.Fit,
+                                                        colorFilter = ColorFilter.tint(taikoViewModel.getDonColor(settings.bodyColor))
+                                                    )
+                                                }
+                                            }
+
+                                            AsyncImage(
+                                                model = if (isNameplate) {
+                                                    buildImageUrl("title", item)
+                                                } else {
+                                                    taikoViewModel.getCostumeImageUrl(type, id)
+                                                },
+                                                contentDescription = null,
+                                                modifier = Modifier.fillMaxSize().then(
+                                                    if (type == "puchi") Modifier.scale(2.2f).offset( y= -(10).dp, x= (12).dp) else Modifier
+                                                ),
+                                                contentScale = if (isNameplate) ContentScale.FillWidth else ContentScale.Fit,
+                                                filterQuality = if (type == "speed" || type == "random") FilterQuality.None else FilterQuality.Low
+                                            )
+                                        }
                                     }
                                 }
                                 
@@ -844,7 +952,7 @@ fun getAchievementDisplayDifficultyName(id: Int?): String = when (id) {
     2 -> "Normal"
     3 -> "Difficile"
     4 -> "Oni"
-    5 -> "Ura"
+    5 -> "Oni/Ura"
     else -> "Désactivé"
 }
 
@@ -1010,7 +1118,8 @@ fun findPlateFilename(id: Int?, imagesData: TaikoImagesData?): String? {
 fun ProfileHeader(
     settings: TaikoServerUserSettingsResponse,
     imagesData: TaikoImagesData?,
-    nameplateUrls: List<String>
+    nameplateUrls: List<String>,
+    taikoViewModel: TaikoViewModel
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -1032,22 +1141,74 @@ fun ProfileHeader(
 
                 // Character
                 Box(modifier = Modifier.size(140.dp), contentAlignment = Alignment.Center) {
-                    settings.body?.let { id ->
-                        val url = buildImageUrl("body", findFilename("body", id, imagesData))
-                        AsyncImage(model = url, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+                    val isKigurumi = (settings.kigurumi ?: 0) > 0
+                    val faceColor = taikoViewModel.getDonColor(settings.faceColor)
+                    val bodyColor = taikoViewModel.getDonColor(settings.bodyColor)
+                    val limbColor = taikoViewModel.getDonColor(settings.limbColor)
+
+                    val bodyId = settings.body ?: 0
+                    val faceId = settings.face ?: 0
+                    val headId = settings.head ?: 0
+
+                    if (!isKigurumi) {
+                        // 1. Color Masks (Bottom)
+                        if (bodyId == 0) {
+                            AsyncImage(
+                                model = taikoViewModel.getMaskImageUrl("body", "body", 0),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit,
+                                colorFilter = ColorFilter.tint(bodyColor)
+                            )
+                        }
+                        if (faceId == 0) {
+                            AsyncImage(
+                                model = taikoViewModel.getMaskImageUrl("body", "face", 0),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit,
+                                colorFilter = ColorFilter.tint(faceColor)
+                            )
+                        }
+                        if (headId == 0) {
+                            AsyncImage(
+                                model = taikoViewModel.getMaskImageUrl("head", "head", 0),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit,
+                                colorFilter = ColorFilter.tint(bodyColor)
+                            )
+                        }
+
+                        // 2. Base Assets (Top)
+                        AsyncImage(
+                            model = taikoViewModel.getCostumeImageUrl("body", bodyId),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
+                        )
+                        AsyncImage(
+                            model = taikoViewModel.getCostumeImageUrl("face", faceId),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
+                        )
+                        AsyncImage(
+                            model = taikoViewModel.getCostumeImageUrl("head", headId),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
+                        )
                     }
-                    settings.face?.let { id ->
-                        val url = buildImageUrl("face", findFilename("face", id, imagesData))
-                        AsyncImage(model = url, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
-                    }
-                    settings.head?.let { id ->
-                        val url = buildImageUrl("head", findFilename("head", id, imagesData))
-                        AsyncImage(model = url, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
-                    }
-                    settings.kigurumi?.let { id ->
-                        if (id > 0) {
-                            val url = buildImageUrl("kigurumi", findFilename("kigurumi", id, imagesData))
-                            AsyncImage(model = url, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+
+                    if (isKigurumi) {
+                        settings.kigurumi?.let { id ->
+                            AsyncImage(
+                                model = taikoViewModel.getCostumeImageUrl("kigurumi", id),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit
+                            )
                         }
                     }
 
@@ -1198,6 +1359,97 @@ fun SettingItem(label: String, value: String, onClick: (() -> Unit)? = null) {
         Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
     }
 }
+
+@Composable
+fun ColorPickerRow(label: String, selectedIndex: Int, onColorSelected: (Int) -> Unit) {
+    val haptic = LocalHapticFeedback.current
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp, bottom = 4.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                .padding(horizontal = 8.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            androidx.compose.foundation.lazy.LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                items(CostumeColors.size) { index ->
+                    val color = Color(parseColor(CostumeColors[index]))
+                    Surface(
+                        onClick = { 
+                            onColorSelected(index)
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        },
+                        modifier = Modifier.size(28.dp),
+                        shape = CircleShape,
+                        color = color,
+                        border = if (selectedIndex == index) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+                    ) {
+                        if (selectedIndex == index) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Default.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = if (isColorDark(color)) Color.White else Color.Black
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun parseColor(hex: String): Long {
+    return hex.removePrefix("#").toLong(16) or 0xFF000000L
+}
+
+fun isColorDark(color: Color): Boolean {
+    val luminance = 0.299 * color.red + 0.587 * color.green + 0.114 * color.blue
+    return luminance < 0.5
+}
+
+@Composable
+fun InfoCard(message: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.infoContainer().copy(alpha = 0.2f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.infoColor(),
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.infoColor(),
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun ColorScheme.infoContainer(): Color = tertiaryContainer
+
+@Composable
+fun ColorScheme.infoColor(): Color = tertiary
 
 @Composable
 fun SettingToggle(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {

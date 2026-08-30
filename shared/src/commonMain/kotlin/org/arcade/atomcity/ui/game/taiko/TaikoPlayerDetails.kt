@@ -114,53 +114,72 @@ fun TaikoPlayerDetailsContent(
                 contentAlignment = Alignment.CenterStart
             ) {
                 if (taikoViewModel != null && userSettings != null) {
-                    val avatarImageModifier = Modifier.fillMaxHeight()
+                    val avatarImageModifier = Modifier.fillMaxSize()
+                    val isKigurumi = (userSettings.kigurumi ?: 0) > 0
+                    val faceColor = taikoViewModel.getDonColor(userSettings.faceColor)
+                    val bodyColor = taikoViewModel.getDonColor(userSettings.bodyColor)
+                    val limbColor = taikoViewModel.getDonColor(userSettings.limbColor)
 
-                    AsyncImage(
-                        model = taikoViewModel.getMaskImageUrl("body", "body", 0),
-                        contentDescription = null,
-                        modifier = avatarImageModifier,
-                        contentScale = ContentScale.Fit,
-                        colorFilter = ColorFilter.tint(taikoViewModel.getDonColor(userSettings.bodyColor))
-                    )
+                    val bodyId = userSettings.body ?: 0
+                    val faceId = userSettings.face ?: 0
+                    val headId = userSettings.head ?: 0
 
-                    AsyncImage(
-                        model = taikoViewModel.getMaskImageUrl("body", "face", 0),
-                        contentDescription = null,
-                        modifier = avatarImageModifier,
-                        contentScale = ContentScale.Fit,
-                        colorFilter = ColorFilter.tint(taikoViewModel.getDonColor(userSettings.faceColor))
-                    )
+                    if (!isKigurumi) {
+                        // 1. Color Masks (Bottom)
+                        if (bodyId == 0) {
+                            AsyncImage(
+                                model = taikoViewModel.getMaskImageUrl("body", "body", 0),
+                                contentDescription = null,
+                                modifier = avatarImageModifier,
+                                contentScale = ContentScale.Fit,
+                                colorFilter = ColorFilter.tint(bodyColor)
+                            )
+                        }
+                        if (faceId == 0) {
+                            AsyncImage(
+                                model = taikoViewModel.getMaskImageUrl("body", "face", 0),
+                                contentDescription = null,
+                                modifier = avatarImageModifier,
+                                contentScale = ContentScale.Fit,
+                                colorFilter = ColorFilter.tint(faceColor)
+                            )
+                        }
+                        if (headId == 0) {
+                            AsyncImage(
+                                model = taikoViewModel.getMaskImageUrl("head", "head", 0),
+                                contentDescription = null,
+                                modifier = avatarImageModifier,
+                                contentScale = ContentScale.Fit,
+                                colorFilter = ColorFilter.tint(bodyColor)
+                            )
+                        }
 
-
-                    if (userSettings.face != null && userSettings.face != 0) {
+                        // 2. Base Assets (Top) - Contain Outlines and White parts
+                        // We draw body first, then face features, then head
                         AsyncImage(
-                            model = taikoViewModel.getCostumeImageUrl("face", userSettings.face),
+                            model = taikoViewModel.getCostumeImageUrl("body", bodyId),
+                            contentDescription = null,
+                            modifier = avatarImageModifier,
+                            contentScale = ContentScale.Fit
+                        )
+                        AsyncImage(
+                            model = taikoViewModel.getCostumeImageUrl("face", faceId),
+                            contentDescription = null,
+                            modifier = avatarImageModifier,
+                            contentScale = ContentScale.Fit
+                        )
+                        AsyncImage(
+                            model = taikoViewModel.getCostumeImageUrl("head", headId),
                             contentDescription = null,
                             modifier = avatarImageModifier,
                             contentScale = ContentScale.Fit
                         )
                     }
 
-                    if (userSettings.kigurumi != null && userSettings.kigurumi != 0) {
-                        AsyncImage(
-                            model = taikoViewModel.getCostumeImageUrl("kigurumi", userSettings.kigurumi),
-                            contentDescription = null,
-                            modifier = avatarImageModifier,
-                            contentScale = ContentScale.Fit
-                        )
-                    } else {
-                        if (userSettings.body != null && userSettings.body != 0) {
+                    if (isKigurumi) {
+                        userSettings.kigurumi?.let { id ->
                             AsyncImage(
-                                model = taikoViewModel.getCostumeImageUrl("body", userSettings.body),
-                                contentDescription = null,
-                                modifier = avatarImageModifier,
-                                contentScale = ContentScale.Fit
-                            )
-                        }
-                        if (userSettings.head != null && userSettings.head != 0) {
-                            AsyncImage(
-                                model = taikoViewModel.getCostumeImageUrl("head", userSettings.head),
+                                model = taikoViewModel.getCostumeImageUrl("kigurumi", id),
                                 contentDescription = null,
                                 modifier = avatarImageModifier,
                                 contentScale = ContentScale.Fit

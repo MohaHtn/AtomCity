@@ -11,6 +11,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -50,6 +52,7 @@ fun TaikoScores(
     val isRefreshing by taikoViewModel.isRefreshing.collectAsState()
     val filteredScores by taikoViewModel.filteredScores.collectAsState()
     val searchQuery by taikoViewModel.searchQuery.collectAsState()
+    val showOnlyFavorites by taikoViewModel.showOnlyFavorites.collectAsState()
     val dashboardData by taikoViewModel.dashboardData.collectAsState()
     val showDashboardTrigger by taikoViewModel.showDashboardTrigger.collectAsState()
     val currentPage by taikoViewModel._currentPage.collectAsState()
@@ -143,7 +146,9 @@ fun TaikoScores(
                     Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
                         SearchBar(
                             query = searchQuery,
-                            onQueryChange = taikoViewModel::onSearchQueryChange
+                            onQueryChange = taikoViewModel::onSearchQueryChange,
+                            showOnlyFavorites = showOnlyFavorites,
+                            onToggleFavorites = taikoViewModel::onToggleShowOnlyFavorites
                         )
                     }
                 }
@@ -182,7 +187,11 @@ fun TaikoScores(
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                 } else {
-                    MyScoresList(filteredScores, onNavigateToRoute)
+                    MyScoresList(
+                        scores = filteredScores,
+                        onNavigateToRoute = onNavigateToRoute,
+                        onFavoriteToggle = taikoViewModel::toggleFavorite
+                    )
                 }
             }
         }
@@ -227,7 +236,9 @@ fun TaikoScores(
 @Composable
 private fun SearchBar(
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
+    showOnlyFavorites: Boolean,
+    onToggleFavorites: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -244,6 +255,13 @@ private fun SearchBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
+            IconButton(onClick = onToggleFavorites) {
+                Icon(
+                    imageVector = if (showOnlyFavorites) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favoris",
+                    tint = if (showOnlyFavorites) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Icon(
                 Icons.Default.Search,
                 contentDescription = null,
@@ -282,14 +300,15 @@ private fun SearchBar(
 @Composable
 private fun MyScoresList(
     scores: List<TaikoServerHistoryEntry>,
-    onNavigateToRoute: (String) -> Unit
+    onNavigateToRoute: (String) -> Unit,
+    onFavoriteToggle: (Int) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
         items(scores.size) { index ->
-            TaikoScoreItem(scores[index], onNavigateToRoute)
+            TaikoScoreItem(scores[index], onNavigateToRoute, onFavoriteToggle)
         }
     }
 }
