@@ -853,7 +853,6 @@ fun SelectionDialog(
                 ) {
                     items(filteredItems) { item ->
                         val id = extractId(item)
-                        val isNameplate = type == "title"
                         
                         Surface(
                             onClick = { onSelect(item) },
@@ -925,8 +924,8 @@ fun SelectionDialog(
                                             }
 
                                             AsyncImage(
-                                                model = if (isNameplate) {
-                                                    buildImageUrl("title", item)
+                                                model = if (type == "title" || type == "speed" || type == "random") {
+                                                    buildImageUrl(type, item)
                                                 } else {
                                                     taikoViewModel.getCostumeImageUrl(type, id)
                                                 },
