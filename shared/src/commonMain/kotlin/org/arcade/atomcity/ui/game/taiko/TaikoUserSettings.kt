@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -37,6 +38,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
@@ -98,13 +100,25 @@ fun TaikoUserSettings(
         },
         topBar = {
             TopAppBar(
-                title = { taikoViewModel.userSettingsData.value?.myDonName?.let {
-                    Text(
-                        text = it,
-                        maxLines = 1, 
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium,
-                ) }},
+                title = {
+                    taikoViewModel.userSettingsData.value?.myDonName?.let {
+                        Column {
+                            Text(
+                                text = "Profil du joueur",
+                                maxLines = 1,
+                                fontWeight = FontWeight.Bold,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            Text(
+                                text = it,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
@@ -159,19 +173,29 @@ fun TaikoUserSettings(
                         .verticalScroll(rememberScrollState())
                 ) {
                     val nameplateUrls = taikoViewModel.getNameplateUrls(data)
-                    ProfileHeader(data, imagesData, nameplateUrls, taikoViewModel)
+                    SettingSection("Prévisualisation de Don-chan"){
+                        ProfileHeader(
+                            data,
+                            imagesData,
+                            nameplateUrls,
+                            taikoViewModel,
+                            titleFontSize = 14.sp,
+                            nameFontSize = 14.sp)
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        InfoCard("Les couleurs sont utilisables uniquement si vous avez sélectionné aucun kigurumi. Les couleurs des membres sont uniquement visible en jeu.")
 
-                    SettingSection("Don-chan") {
                         ColorPickerRow("Visage", data.faceColor ?: 0) { localSettings = data.copy(faceColor = it) }
                         ColorPickerRow("Corps", data.bodyColor ?: 0) { localSettings = data.copy(bodyColor = it) }
-                        ColorPickerRow("Membres", data.limbColor ?: 0) { localSettings = data.copy(limbColor = it) }
+                        ColorPickerRow("Membres (Non visible sur la prévisualisation)", data.limbColor ?: 0) { localSettings = data.copy(limbColor = it) }
+
+                        SettingToggle("Montrer le Dan sur la nameplate", data.isDisplayDanOnNamePlate ?: false) {
+                            localSettings = data.copy(isDisplayDanOnNamePlate = it)
+                        }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    SettingSection("Profil") {
+                    SettingSection("Profil de jeu") {
                         OutlinedTextField(
                             value = data.myDonName ?: "",
                             onValueChange = { localSettings = data.copy(myDonName = it) },
@@ -203,9 +227,7 @@ fun TaikoUserSettings(
                             modifier = Modifier.fillMaxWidth().height(120.dp)
                         )
 
-                        SettingToggle("Montrer le Dan sur la nameplate", data.isDisplayDanOnNamePlate ?: false) {
-                            localSettings = data.copy(isDisplayDanOnNamePlate = it)
-                        }
+
 
                         Spacer(modifier = Modifier.height(12.dp))
                     }
@@ -499,7 +521,8 @@ fun TitleSelectionDialog(
     val filteredTitles = remember(searchQuery, titles) {
         titles?.values?.filter {
             (it.titleName?.contains(searchQuery, ignoreCase = true) == true ||
-            it.titleNameEN?.contains(searchQuery, ignoreCase = true) == true) &&
+            it.titleNameEN?.contains(searchQuery, ignoreCase = true) == true ||
+            it.titleId?.toString()?.contains(searchQuery) == true) &&
             it.titleId != 0
         }?.sortedBy { it.titleId } ?: emptyList()
     }
@@ -513,7 +536,7 @@ fun TitleSelectionDialog(
                 .fillMaxWidth()
                 .fillMaxHeight(0.85f)
                 .padding(16.dp),
-            shape = RoundedCornerShape(32.dp),
+            shape = RoundedCornerShape(28.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 6.dp
         ) {
@@ -522,19 +545,27 @@ fun TitleSelectionDialog(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 20.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
                     Text(
                         text = "Choisir un titre",
                         style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
@@ -542,52 +573,108 @@ fun TitleSelectionDialog(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                    placeholder = { Text("Rechercher un titre...") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    placeholder = { Text("Nom ou ID...") },
+                    leadingIcon = { 
+                        Icon(
+                            Icons.Default.Search, 
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        ) 
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(
+                                    Icons.Default.Clear,
+                                    contentDescription = "Effacer",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    },
                     singleLine = true,
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                    )
                 )
 
-                LazyColumn(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(filteredTitles) { title ->
-                        Surface(
-                            onClick = { onSelect(title.titleNameEN ?: title.titleName ?: "") },
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            ListItem(
-                                headlineContent = { 
-                                    Text(
-                                        title.titleNameEN ?: title.titleName ?: "",
-                                        fontWeight = FontWeight.Bold,
-                                        style = MaterialTheme.typography.bodyLarge
-                                    ) 
-                                },
-                                supportingContent = { 
-                                    Text(
-                                        "ID: ${title.titleId}", 
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    ) 
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            )
+                if (filteredTitles.isEmpty() && searchQuery.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "Aucun titre trouvé",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(vertical = 4.dp)
+                    ) {
+                        items(filteredTitles) { title ->
+                            Surface(
+                                onClick = { onSelect(title.titleNameEN ?: title.titleName ?: "") },
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                                modifier = Modifier.fillMaxWidth(),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                            ) {
+                                ListItem(
+                                    leadingContent = {
+                                        Surface(
+                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                            shape = RoundedCornerShape(8.dp),
+                                        ) {
+                                            Text(
+                                                text = title.titleId.toString(),
+                                                style = MaterialTheme.typography.labelLarge,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            )
+                                        }
+                                    },
+                                    headlineContent = {
+                                        Text(
+                                            title.titleNameEN ?: title.titleName ?: "",
+                                            fontWeight = FontWeight.Medium,
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                    },
+                                    supportingContent = if (title.titleRarity != null && title.titleRarity > 0) {
+                                        {
+                                            Text(
+                                                "Rareté ${title.titleRarity}",
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                            )
+                                        }
+                                    } else null,
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                                )
+                            }
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                TextButton(
+                Button(
                     onClick = onDismiss,
-                    modifier = Modifier.align(Alignment.End),
-                    shape = RoundedCornerShape(20.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 ) {
-                    Text("Fermer", fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
+                    Text("Fermer", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -775,7 +862,7 @@ fun SelectionDialog(
                             modifier = Modifier.aspectRatio(
                                 when (type) {
                                     "speed" -> 1.1f
-                                    "title" -> 2.5f // Ratio for two columns
+                                    "title" -> 1.8f // Slightly taller to avoid cutting with labels
                                     else -> 0.85f
                                 }
                             ),
@@ -847,7 +934,7 @@ fun SelectionDialog(
                                                 modifier = Modifier.fillMaxSize().then(
                                                     if (type == "puchi") Modifier.scale(2.2f).offset( y= -(10).dp, x= (12).dp) else Modifier
                                                 ),
-                                                contentScale = if (isNameplate) ContentScale.FillWidth else ContentScale.Fit,
+                                                contentScale = ContentScale.Fit,
                                                 filterQuality = if (type == "speed" || type == "random") FilterQuality.None else FilterQuality.Low
                                             )
                                         }
@@ -1119,7 +1206,9 @@ fun ProfileHeader(
     settings: TaikoServerUserSettingsResponse,
     imagesData: TaikoImagesData?,
     nameplateUrls: List<String>,
-    taikoViewModel: TaikoViewModel
+    taikoViewModel: TaikoViewModel,
+    titleFontSize: TextUnit? = null,
+    nameFontSize: TextUnit? = null
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -1129,18 +1218,18 @@ fun ProfileHeader(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             // Character Preview Area
             Box(
-                modifier = Modifier.fillMaxWidth().height(180.dp),
+                modifier = Modifier.fillMaxWidth().height(220.dp),
                 contentAlignment = Alignment.Center
             ) {
                 // Background decoration circle
                 Surface(
-                    modifier = Modifier.size(140.dp),
+                    modifier = Modifier.size(180.dp),
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                 ) {}
 
                 // Character
-                Box(modifier = Modifier.size(140.dp), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.size(180.dp), contentAlignment = Alignment.Center) {
                     val isKigurumi = (settings.kigurumi ?: 0) > 0
                     val faceColor = taikoViewModel.getDonColor(settings.faceColor)
                     val bodyColor = taikoViewModel.getDonColor(settings.bodyColor)
@@ -1221,7 +1310,7 @@ fun ProfileHeader(
                                 contentDescription = "Puchi",
                                 modifier = Modifier
                                     //.offset(x = -(30).dp, y = (10).dp)
-                                    .size(150.dp)
+                                    .size(180.dp)
                                     .padding(bottom = 4.dp, end = 4.dp),
                                 contentScale = ContentScale.Fit
                             )
@@ -1238,8 +1327,15 @@ fun ProfileHeader(
                 collapsedFraction = 1f,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp)
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .wrapContentHeight()
+                    .padding(horizontal = 48.dp, vertical = 8.dp),
+                isNarrow = true,
+                titleOffsetX = 0.dp,
+                titleOffsetY = 0.dp,
+                nameOffsetX = 0.dp,
+                nameOffsetY = 0.dp,
+                titleFontSize = titleFontSize,
+                nameFontSize = nameFontSize
             )
         }
     }

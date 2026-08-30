@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import atomcity.shared.generated.resources.*
 import coil3.compose.AsyncImage
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
@@ -89,10 +90,10 @@ fun TaikoScores(
                     Box(modifier = Modifier.fillMaxWidth()) {
                         AsyncImage(
                             model = Res.getUri("files/taiko/header.jpg"),
-                            contentDescription = null,
+                            contentDescription = "Taiko no Tatsujin screen header.",
                             modifier = Modifier.matchParentSize(),
                             contentScale = ContentScale.Crop,
-                            alpha = (1f - collapsedFraction * 0.7f).coerceIn(0f, 1f)
+                            alpha = (1f - collapsedFraction * 0.8f).coerceIn(0f, 1f)
                         )
 
                         val shadowAlpha = (1f - collapsedFraction).coerceIn(0f, 1f)
@@ -100,11 +101,11 @@ fun TaikoScores(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(80.dp)
+                                .height(90.dp)
                                 .background(
                                     brush = Brush.verticalGradient(
                                         colors = listOf(
-                                            Color.Black.copy(alpha = 0.6f * shadowAlpha),
+                                            Color.Black.copy(alpha = 0.9f * shadowAlpha),
                                             Color.Transparent
                                         )
                                     )
@@ -115,12 +116,12 @@ fun TaikoScores(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(80.dp)
+                                .height(90.dp)
                                 .background(
                                     brush = Brush.verticalGradient(
                                         colors = listOf(
                                             Color.Transparent,
-                                            Color.Black.copy(alpha = 0.6f * shadowAlpha)
+                                            Color.Black.copy(alpha = 0.9f * shadowAlpha)
                                         )
                                     )
                                 )
@@ -129,9 +130,18 @@ fun TaikoScores(
 
                         LargeTopAppBar(
                             title = {
+                                val titleOffsetX = lerp(0.dp, 0.dp, collapsedFraction)
+                                val titleOffsetY = lerp(0.dp, 0.dp, collapsedFraction)
+                                val nameOffsetX = lerp(0.dp, 0.dp, collapsedFraction)
+                                val nameOffsetY = lerp(0.dp, -(2).dp, collapsedFraction)
+
                                 TaikoPlayerDetails(
                                     taikoViewModel = taikoViewModel,
-                                    collapsedFraction = collapsedFraction
+                                    collapsedFraction = collapsedFraction,
+                                    titleOffsetX = titleOffsetX,
+                                    titleOffsetY = titleOffsetY,
+                                    nameOffsetX = nameOffsetX,
+                                    nameOffsetY = nameOffsetY
                                 )
                             },
                             colors = TopAppBarDefaults.largeTopAppBarColors(

@@ -17,6 +17,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -31,17 +33,23 @@ fun TaikoNameplate(
     collapsedFraction: Float = 0f,
     modifier: Modifier = Modifier,
     isNarrow: Boolean = false,
-    textModifier: Modifier = Modifier.padding(horizontal = 12.dp)
+    textModifier: Modifier = Modifier.padding(horizontal = 12.dp),
+    titleOffsetX: Dp = 0.dp,
+    titleOffsetY: Dp = 0.dp,
+    nameOffsetX: Dp = 0.dp,
+    nameOffsetY: Dp = 0.dp,
+    titleFontSize: TextUnit? = null,
+    nameFontSize: TextUnit? = null
 ) {
     Box(
-        modifier = modifier
+        modifier = modifier.offset(y=-(8).dp)
     ) {
         val nameplateBackgroundAlpha = collapsedFraction.coerceIn(0f, 1f)
         val nameplateDarkOverlayAlpha = ((1f - collapsedFraction) * 0.15f).coerceIn(0f, 0.15f)
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .matchParentSize()
                 .padding(8.dp)
                 .background(
                     color = Color.Black.copy(alpha = nameplateDarkOverlayAlpha),
@@ -51,20 +59,24 @@ fun TaikoNameplate(
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .wrapContentHeight()
                 .alpha(nameplateBackgroundAlpha)
         ) {
             val danPlates = nameplateUrls.filter { it.contains("nameplate_dan") }
             val specialPlates = nameplateUrls.filter { it.contains("AprilFool") || it.contains("Toho") }
             val basePlates = nameplateUrls.filterNot { it.contains("nameplate_dan") || it.contains("AprilFool") || it.contains("Toho") }
 
-            // 1. Draw base plates (FillBounds) - includes nameplate.webp and colored frames
+            // 1. Draw base plates (Standard size, defines the box height)
             basePlates.forEach { url ->
                 AsyncImage(
                     model = url,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    contentScale = ContentScale.FillWidth,
+                    alignment = Alignment.BottomCenter
                 )
             }
 
@@ -74,9 +86,8 @@ fun TaikoNameplate(
                     model = url,
                     contentDescription = null,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .offset(y=12.dp)
-                        .wrapContentHeight(unbounded = true, align = Alignment.CenterVertically)
+                        .matchParentSize()
+                        .wrapContentHeight(unbounded = true, align = Alignment.Bottom)
                         .zIndex(1f),
                     contentScale = ContentScale.FillWidth,
                     alignment = Alignment.BottomCenter
@@ -88,19 +99,25 @@ fun TaikoNameplate(
                 AsyncImage(
                     model = url,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize().zIndex(2f),
-                    contentScale = ContentScale.FillBounds
+                    modifier = Modifier
+                        .matchParentSize()
+                        .wrapContentHeight(unbounded = true, align = Alignment.Bottom)
+                        .zIndex(2f),
+                    contentScale = ContentScale.FillWidth,
+                    alignment = Alignment.BottomCenter
                 )
             }
         }
 
         val isDanPlate = nameplateUrls.any { it.contains("nameplate_dan") }
 
+        val textContainerModifier = Modifier
+            .matchParentSize()
+            .then(textModifier)
+
         if (isDanPlate) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(textModifier)
+                modifier = textContainerModifier
             ) {
                 val titleWeight = 0.55f * collapsedFraction
                 // Title area (Teal top part)
@@ -110,7 +127,8 @@ fun TaikoNameplate(
                             .weight(titleWeight)
                             .fillMaxWidth()
                             .padding(top = 2.dp)
-                            .graphicsLayer { alpha = collapsedFraction },
+                            .graphicsLayer { alpha = collapsedFraction }
+                            .offset(x = titleOffsetX, y = titleOffsetY),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -118,13 +136,13 @@ fun TaikoNameplate(
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = NijiiroFontFamily,
                                 fontWeight = FontWeight.Black,
-                                fontSize = if (isNarrow) 10.sp else 14.sp,
+                                fontSize = titleFontSize ?: (if (isNarrow) 10.sp else 14.sp),
                                 letterSpacing = 0.sp
                             ),
                             color = Color.Black,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.offset(y = -(2.5).dp)
+                            modifier = Modifier.offset(y = -(4).dp)
                         )
                     }
                 }
@@ -155,25 +173,25 @@ fun TaikoNameplate(
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontFamily = NijiiroFontFamily,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = if (isNarrow) 10.sp else 14.sp,
+                                        fontSize = titleFontSize ?: (if (isNarrow) 10.sp else 14.sp),
                                         letterSpacing = 0.sp
                                     ),
                                     color = Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f)),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.padding(bottom = 2.dp).offset(y = (1).dp)
+                                    modifier = Modifier.padding(bottom = 2.dp).offset(x = titleOffsetX, y = titleOffsetY + -(1).dp)
                                 )
                             }
 
                             Box(
-                                modifier = Modifier.fillMaxWidth().offset(y = if (collapsedFraction > 0.8f) (-4).dp else 0.dp),
+                                modifier = Modifier.fillMaxWidth().offset(x = nameOffsetX, y = nameOffsetY + (if (collapsedFraction > 0.8f) (-4).dp else 0.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                val fontSize = if (isNarrow) {
+                                val fontSize = nameFontSize ?: (if (isNarrow) {
                                     if (collapsedFraction > 0.8f) 11.sp else 13.sp
                                 } else {
                                     if (collapsedFraction > 0.8f) 14.sp else 17.sp
-                                }
+                                })
                                 val nameText = name ?: ""
 
                                 // "Border/Stroke" layer
@@ -218,11 +236,9 @@ fun TaikoNameplate(
             }
         } else {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(textModifier)
+                modifier = textContainerModifier
             ) {
-                val titleWeight = 0.5f * collapsedFraction
+                val titleWeight = 0.55f * collapsedFraction
                 // Title area (Top colored section)
                 if (titleWeight > 0.05f) {
                     Box(
@@ -230,21 +246,22 @@ fun TaikoNameplate(
                             .weight(titleWeight)
                             .fillMaxWidth()
                             .padding(top = 2.dp)
-                            .graphicsLayer { alpha = collapsedFraction },
+                            .graphicsLayer { alpha = collapsedFraction }
+                            .offset(x = titleOffsetX, y = titleOffsetY),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = title ?: "",
-                            modifier = Modifier.offset(y = -(1).dp),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = NijiiroFontFamily,
                                 fontWeight = FontWeight.Black,
-                                fontSize = if (isNarrow) 10.sp else 14.sp,
+                                fontSize = titleFontSize ?: (if (isNarrow) 10.sp else 14.sp),
                                 letterSpacing = 0.sp
                             ),
                             color = Color.Black,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.offset(y = -(4).dp)
                         )
                     }
                 }
@@ -253,12 +270,11 @@ fun TaikoNameplate(
                 Box(
                     modifier = Modifier
                         .weight(1f - titleWeight)
-                        .fillMaxSize()
-                        .padding(bottom = 2.dp),
-                    contentAlignment = Alignment.Center
+                        .fillMaxSize(),
+                    contentAlignment = if (collapsedFraction < 0.5f) Alignment.Center else Alignment.BottomCenter
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = if (collapsedFraction > 0.8f) 4.dp else 0.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         if (collapsedFraction < 0.8f) {
@@ -267,30 +283,30 @@ fun TaikoNameplate(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontFamily = NijiiroFontFamily,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = if (isNarrow) 10.sp else 12.sp,
+                                    fontSize = titleFontSize ?: (if (isNarrow) 10.sp else 14.sp),
                                     letterSpacing = 0.sp
                                 ),
                                 color = Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f)),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.padding(bottom = 2.dp)
+                                modifier = Modifier.padding(bottom = 2.dp).offset(x = titleOffsetX, y = titleOffsetY + -(1).dp)
                             )
                         }
 
-                        val fontSize = if (isNarrow) {
+                        val fontSize = nameFontSize ?: (if (isNarrow) {
                             if (collapsedFraction > 0.8f) 11.sp else 13.sp
                         } else {
                             if (collapsedFraction > 0.8f) 14.sp else 17.sp
-                        }
+                        })
                         val nameText = name ?: ""
 
                         Box(
-                            modifier = Modifier.fillMaxWidth().offset(y = if (collapsedFraction > 0.8f) (-4).dp else 0.dp),
+                            modifier = Modifier.fillMaxWidth().offset(x = nameOffsetX, y = nameOffsetY + (if (collapsedFraction > 0.8f) (-4).dp else 0.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             // "Border/Stroke" layer
                             Text(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().offset(y=-(2).dp),
                                 text = nameText,
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.titleMedium.copy(
@@ -310,7 +326,7 @@ fun TaikoNameplate(
                             )
                             // "Main" layer
                             Text(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().offset(y=-(2).dp),
                                 text = nameText,
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.titleMedium.copy(

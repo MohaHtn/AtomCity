@@ -21,6 +21,8 @@ import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
@@ -32,7 +34,13 @@ import org.arcade.atomcity.ui.theme.NijiiroFontFamily
 fun TaikoPlayerDetails(
     taikoViewModel: TaikoViewModel,
     collapsedFraction: Float,
-    textColor: Color = MaterialTheme.colorScheme.onSurface
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    titleOffsetX: Dp = 0.dp,
+    titleOffsetY: Dp = 0.dp,
+    nameOffsetX: Dp = 0.dp,
+    nameOffsetY: Dp = 0.dp,
+    titleFontSize: TextUnit? = null,
+    nameFontSize: TextUnit? = null
 ) {
     val userSettings by taikoViewModel.userDetailedSettings.collectAsState()
     val nameplateUrls = taikoViewModel.getNameplateUrls(userSettings)
@@ -44,7 +52,13 @@ fun TaikoPlayerDetails(
         collapsedFraction = collapsedFraction,
         textColor = textColor,
         taikoViewModel = taikoViewModel,
-        userSettings = userSettings
+        userSettings = userSettings,
+        titleOffsetX = titleOffsetX,
+        titleOffsetY = titleOffsetY,
+        nameOffsetX = nameOffsetX,
+        nameOffsetY = nameOffsetY,
+        titleFontSize = titleFontSize,
+        nameFontSize = nameFontSize
     )
 }
 
@@ -56,7 +70,13 @@ fun TaikoPlayerDetailsContent(
     collapsedFraction: Float,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
     taikoViewModel: TaikoViewModel? = null,
-    userSettings: org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse? = null
+    userSettings: org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse? = null,
+    titleOffsetX: Dp = 0.dp,
+    titleOffsetY: Dp = 0.dp,
+    nameOffsetX: Dp = 0.dp,
+    nameOffsetY: Dp = 0.dp,
+    titleFontSize: TextUnit? = null,
+    nameFontSize: TextUnit? = null
 ) {
     val density = LocalDensity.current
     var componentWidth by remember { mutableStateOf(0.dp) }
@@ -64,7 +84,8 @@ fun TaikoPlayerDetailsContent(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 2.dp)
+            .offset(x = -(6.5).dp)
+            .padding(horizontal = 2.dp, vertical = 2.dp)
             .onSizeChanged { size ->
                 componentWidth = with(density) { size.width.toDp() }
             }
@@ -81,16 +102,24 @@ fun TaikoPlayerDetailsContent(
         }
 
         Row {
-            Column( modifier = Modifier.align(Alignment.CenterVertically).padding(8.dp)){
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .padding(start = 8.dp, end = 4.dp, top = 2.dp, bottom = 2.dp)
+            ) {
                 Text(
-                    text = "Taiko ",
+                    text = "Taiko",
                     fontWeight = FontWeight.Bold,
                     color = textColor,
+                    fontSize = lerp(25.sp, 16.sp, collapsedFraction),
+                    lineHeight = lerp(16.sp, 12.sp, collapsedFraction)
                 )
                 Text(
-                    text = "no Tatstujin",
+                    text = "no Tatsujin",
                     fontWeight = FontWeight.Bold,
                     color = textColor,
+                    fontSize = lerp(25.sp, 16.sp, collapsedFraction),
+                    lineHeight = lerp(16.sp, 12.sp, collapsedFraction)
                 )
             }
 
@@ -98,8 +127,8 @@ fun TaikoPlayerDetailsContent(
             ){
                 VerticalDivider(
                     modifier = Modifier
-                        .height(36.dp)
-                        .padding(horizontal = 8.dp),
+                        .height(lerp(36.dp, 24.dp, collapsedFraction))
+                        .padding(horizontal = 4.dp),
                     thickness = 2.dp,
                     color = Color.Black
                 )
@@ -217,8 +246,15 @@ fun TaikoPlayerDetailsContent(
                 collapsedFraction = collapsedFraction,
                 modifier = Modifier
                     .weight(1f)
-                    .height(avatarSize),
-                isNarrow = isNarrow
+                    .height(avatarSize)
+                    .offset(y = lerp(8.dp, 12.dp, collapsedFraction)),
+                isNarrow = isNarrow,
+                titleOffsetX = titleOffsetX,
+                titleOffsetY = titleOffsetY,
+                nameOffsetX = nameOffsetX,
+                nameOffsetY = nameOffsetY,
+                titleFontSize = titleFontSize,
+                nameFontSize = nameFontSize
             )
         }
     }
