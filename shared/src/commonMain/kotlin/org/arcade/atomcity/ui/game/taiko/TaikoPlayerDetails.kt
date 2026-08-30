@@ -172,7 +172,10 @@ fun TaikoPlayerDetailsContent(
                         AsyncImage(
                             model = taikoViewModel.getCostumeImageUrl("puchi", userSettings.puchi),
                             contentDescription = null,
-                            modifier = avatarImageModifier,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(bottom = 4.dp, end = 4.dp)
+                                .align(Alignment.Center),
                             contentScale = ContentScale.Fit
                         )
                     }

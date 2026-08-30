@@ -70,6 +70,7 @@ kotlin {
             implementation(libs.compose.navigation)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+            implementation(libs.coil.gif)
             
             implementation(composeDeps.runtime)
             implementation(composeDeps.foundation)
@@ -86,9 +87,11 @@ kotlin {
             implementation(project.dependencies.platform(libs.androidx.compose.bom))
             implementation(libs.androidx.ui.tooling)
             implementation(libs.androidx.ui.tooling.preview)
+            implementation(libs.coil.gif)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.coil.gif)
         }
     }
 }

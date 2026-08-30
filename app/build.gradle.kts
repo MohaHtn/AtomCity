@@ -1,7 +1,6 @@
-import java.util.Properties
-import com.github.triplet.gradle.androidpublisher.ResolutionStrategy
-import com.github.triplet.gradle.play.PlayPublisherExtension
 import com.android.build.api.dsl.ApplicationExtension
+import com.github.triplet.gradle.androidpublisher.ResolutionStrategy
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -86,6 +85,7 @@ extensions.configure<ApplicationExtension> {
 
 play {
     enabled.set(!isGitHubActions)
+    track.set("beta")
     resolutionStrategy.set(ResolutionStrategy.AUTO)
 
     if (!isGitHubActions) {

@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,15 +29,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.FilterQuality
 import coil3.compose.AsyncImage
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData
+import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerCostume
 import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerTitlesResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
-import org.arcade.atomcity.utils.formatPlayDate
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,7 +107,7 @@ fun TaikoUserSettings(
                                     onBackClick()
                                     taikoViewModel.showSnackbar("Paramètres enregistrés.")
                                 } else {
-                                    snackbarHostState.showSnackbar("Erreur lors de l'enregistrement")
+                                    snackbarHostState.showSnackbar("Erreur lors de l'enregistrement.")
                                 }
                             }
                         }
@@ -172,16 +176,20 @@ fun TaikoUserSettings(
                             onClick = { showDialogFor = "title" },
                             modifier = Modifier.fillMaxWidth().height(120.dp)
                         )
+
+                        SettingToggle("Montrer le Dan sur la nameplate", data.isDisplayDanOnNamePlate ?: false) {
+                            localSettings = data.copy(isDisplayDanOnNamePlate = it)
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     SettingSection("Costume") {
-                        val kigurumiName = costumes?.find { it.costumeId == data.kigurumi && it.costumeType == "kigurumi" }?.costumeNameEN ?: "ID: ${data.kigurumi}"
-                        val headName = costumes?.find { it.costumeId == data.head && it.costumeType == "head" }?.costumeNameEN ?: "ID: ${data.head}"
-                        val bodyName = costumes?.find { it.costumeId == data.body && it.costumeType == "body" }?.costumeNameEN ?: "ID: ${data.body}"
-                        val faceName = costumes?.find { it.costumeId == data.face && it.costumeType == "face" }?.costumeNameEN ?: "ID: ${data.face}"
-                        val puchiName = costumes?.find { it.costumeId == data.puchi && it.costumeType == "puchi" }?.costumeNameEN ?: "ID: ${data.puchi}"
+                        val kigurumiName = costumes?.find { it.costumeId == data.kigurumi && it.costumeType == "kigurumi" }?.costumeNameEN?.let { if (it == "Plain Don") "Défaut" else it } ?: "ID: ${data.kigurumi}"
+                        val headName = costumes?.find { it.costumeId == data.head && it.costumeType == "head" }?.costumeNameEN?.let { if (it == "Plain Don") "Défaut" else it } ?: "ID: ${data.head}"
+                        val bodyName = costumes?.find { it.costumeId == data.body && it.costumeType == "body" }?.costumeNameEN?.let { if (it == "Plain Don") "Défaut" else it } ?: "ID: ${data.body}"
+                        val faceName = costumes?.find { it.costumeId == data.face && it.costumeType == "face" }?.costumeNameEN?.let { if (it == "Plain Don") "Défaut" else it } ?: "ID: ${data.face}"
+                        val puchiName = costumes?.find { it.costumeId == data.puchi && it.costumeType == "puchi" }?.costumeNameEN?.let { if (it == "Plain Don") "Défaut" else it } ?: "ID: ${data.puchi}"
 
                         Column(
                             modifier = Modifier.fillMaxWidth(),
@@ -214,13 +222,11 @@ fun TaikoUserSettings(
                         SettingToggle("Montrer le panel des succès", data.isDisplayAchievement ?: false) {
                             localSettings = data.copy(isDisplayAchievement = it)
                         }
-                        SettingToggle("Montrer le Dan sur la nameplate", data.isDisplayDanOnNamePlate ?: false) {
-                            localSettings = data.copy(isDisplayDanOnNamePlate = it)
-                        }
+
                         SettingToggle("Afficher les musques SouUchi", data.isDisplaySouUchi ?: false) {
                             localSettings = data.copy(isDisplaySouUchi = it)
                         }
-                        SettingToggle("Voix", data.isVoiceOn ?: true) {
+                        SettingToggle("Activer la voix de Don-chan en jeu", data.isVoiceOn ?: true) {
                             localSettings = data.copy(isVoiceOn = it)
                         }
 
@@ -249,7 +255,7 @@ fun TaikoUserSettings(
 
                         SettingDropdown(
                             label = "Mode recherche : Difficulté",
-                            description = "Propose le menu de filtre de la diffculté choisie.",
+                            description = "Propose le menu de filtre de la difficulté choisie.",
                             selectedOption = getCourseName(data.difficultySettingCourse),
                             options = listOf("Désactivé", "Configurer à chaque fois", "Normal", "Difficile", "Oni", "Ura"),
                             onOptionSelected = { localSettings = data.copy(difficultySettingCourse = findDifficultySettingCourse(it)) }
@@ -279,7 +285,7 @@ fun TaikoUserSettings(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 val itemModifier = Modifier.weight(1f)
-                                ExpressiveGridItem("Vitesse", getSpeedName(play.speed), buildImageUrl("speed", findFilename("speed", play.speed, imagesData)), onClick = { showDialogFor = "speed" }, modifier = itemModifier)
+                                ExpressiveGridItem("Vitesse", getSpeedName(play.speed), buildImageUrl("speed", findFilename("speed", play.speed, imagesData)), type = "speed", onClick = { showDialogFor = "speed" }, modifier = itemModifier)
                                 
                                 val randomImg = when(play.randomType) {
                                     1 -> "Random_Whimsical.png"
@@ -290,7 +296,7 @@ fun TaikoUserSettings(
                                     1 -> "Capricieux"
                                     2 -> "Chaotique"
                                     else -> "Normal"
-                                }, if (randomImg != null) buildImageUrl("random", randomImg) else null, onClick = { showDialogFor = "random" }, modifier = itemModifier)
+                                }, if (randomImg != null) buildImageUrl("random", randomImg) else null, type = "random", onClick = { showDialogFor = "random" }, modifier = itemModifier)
                             }
                             
                             Spacer(modifier = Modifier.height(12.dp))
@@ -306,7 +312,7 @@ fun TaikoUserSettings(
                                 label = "Son des tambours",
                                 selectedOption = getToneName(data.toneId),
                                 options = listOf(
-                                    "Taiko", "Festival", "Dogs & Cats", "Deluxe Taiko", "Drumset",
+                                    "Taiko", "Festival", "Dogs & Cats", "Taiko Deluxe", "Drumset",
                                     "Tambourine", "Wadadon", "Clapping", "Conga", "8-bit Taiko",
                                     "Heave-ho", "Mecha Don", "Funassyi", "Rap", "Hosogai",
                                     "Akemi", "Synth Drum", "Shuriken", "Bubble Pop", "Electric Guitar"
@@ -372,10 +378,23 @@ fun TaikoUserSettings(
             else -> emptyList()
         }
 
+        val dialogTitle = when (type) {
+            "kigurumi" -> "Choisir le Kigurumi"
+            "head" -> "Choisir la tête"
+            "body" -> "Choisir le corps"
+            "face" -> "Choisir le visage"
+            "puchi" -> "Choisir le Puchi"
+            "speed" -> "Choisir la vitesse"
+            "title" -> "Choisir la plaque de titre"
+            "random" -> "Choisir le mode aléatoire"
+            else -> "Choisir $type"
+        }
+
         SelectionDialog(
-            title = "Choisir $type",
+            title = dialogTitle,
             items = items,
             type = type,
+            costumes = costumes,
             onDismiss = { showDialogFor = null },
             onSelect = { selectedValue ->
                 localSettings?.let { current ->
@@ -607,9 +626,31 @@ fun SelectionDialog(
     title: String,
     items: List<String>,
     type: String,
+    costumes: List<TaikoServerCostume>? = null,
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    
+    val filteredItems = remember(items, searchQuery, costumes, type) {
+        if (searchQuery.isBlank()) {
+            items
+        } else {
+            items.filter { item ->
+                val id = extractId(item)
+                val idStr = id.toString()
+                val costume = costumes?.find { it.costumeId == id && it.costumeType == type }
+                val name = costume?.costumeName ?: ""
+                val nameEn = costume?.costumeNameEN ?: ""
+                
+                idStr.contains(searchQuery, ignoreCase = true) ||
+                name.contains(searchQuery, ignoreCase = true) ||
+                nameEn.contains(searchQuery, ignoreCase = true) ||
+                getItemDisplayName(type, item).contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -617,7 +658,7 @@ fun SelectionDialog(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.75f)
+                .fillMaxHeight(0.85f)
                 .padding(16.dp),
             shape = RoundedCornerShape(32.dp),
             color = MaterialTheme.colorScheme.surface,
@@ -630,33 +671,104 @@ fun SelectionDialog(
                     text = title,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.ExtraBold,
-                    modifier = Modifier.padding(bottom = 20.dp)
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
 
+                if (type != "speed" && type != "random") {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        placeholder = { Text("Rechercher...") },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Effacer")
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(20.dp),
+                    )
+                }
+
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
+                    columns = GridCells.Fixed(if (type == "speed") 2 else 3),
                     contentPadding = PaddingValues(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    items(items) { item ->
+                    items(filteredItems) { item ->
                         Surface(
                             onClick = { onSelect(item) },
                             shape = RoundedCornerShape(24.dp),
                             color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-                            modifier = Modifier.aspectRatio(1f),
+                            modifier = Modifier.aspectRatio(if (type == "speed") 1.1f else 0.85f),
                         ) {
-                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                if (item == "Normal") {
-                                    Text("Normal", fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.bodyMedium)
-                                } else {
-                                    val url = buildImageUrl(type, item)
-                                    AsyncImage(
-                                        model = url,
-                                        contentDescription = null,
-                                        modifier = Modifier.fillMaxSize().padding(12.dp),
-                                        contentScale = ContentScale.Fit
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center, 
+                                    modifier = Modifier.weight(1f).fillMaxWidth()
+                                ) {
+                                    if (item == "Normal") {
+                                        Surface(
+                                            modifier = Modifier.size(42.dp),
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                            border = BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    "OFF",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.ExtraBold,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        val url = buildImageUrl(type, item)
+                                        AsyncImage(
+                                            model = url,
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize().then(
+                                                if (type == "puchi") Modifier.scale(2.2f).offset( y= -(10).dp, x= (12).dp) else Modifier
+                                            ),
+                                            contentScale = ContentScale.Fit,
+                                            filterQuality = if (type == "speed" || type == "random") FilterQuality.None else FilterQuality.Low
+                                        )
+                                    }
+                                }
+                                
+                                val id = extractId(item)
+                                val costume = costumes?.find { it.costumeId == id && it.costumeType == type }
+                                val rawName = costume?.costumeNameEN ?: costume?.costumeName
+                                val name = if (rawName == "Plain Don") "Défaut" else rawName
+
+                                Text(
+                                    text = name ?: getItemDisplayName(type, item),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    maxLines = 2,
+                                    minLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(top = 4.dp).fillMaxWidth()
+                                )
+                                
+                                if (name != null) {
+                                    Text(
+                                        text = "ID: $id",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                        textAlign = TextAlign.Center
                                     )
                                 }
                             }
@@ -687,6 +799,22 @@ fun buildImageUrl(type: String, filename: String?): String? {
         "title" -> "${baseUrl}Nameplates/$filename"
         "random" -> "${baseUrl}$filename"
         else -> "${baseUrl}$filename"
+    }
+}
+
+fun getItemDisplayName(type: String, item: String): String {
+    return when (type) {
+        "speed" -> "Vitesse ${getSpeedName(extractId(item))}"
+        "random" -> when(item) {
+            "Random_Whimsical.png" -> "Capricieux"
+            "Random_Messy.png" -> "Chaotique"
+            else -> "Normal"
+        }
+        "kigurumi", "head", "body", "face", "puchi" -> "ID: ${extractId(item)}"
+        "title" -> if (item.startsWith("nameplate_")) {
+            item.substringAfter("nameplate_").substringBefore(".").replace("_", " ")
+        } else "Défaut"
+        else -> item
     }
 }
 
@@ -746,7 +874,7 @@ fun findTone(id: String?): Int? = when (id){
     "Taiko" -> 0
     "Festival" -> 1
     "Dogs & Cats" -> 2
-    "Deluxe Taiko" -> 3
+    "Taiko Deluxe" -> 3
     "Drumset" -> 4
     "Tambourine" -> 5
     "Wadadon" -> 6
@@ -898,22 +1026,9 @@ fun ProfileHeader(
                 // Background decoration circle
                 Surface(
                     modifier = Modifier.size(140.dp),
-                    shape = androidx.compose.foundation.shape.CircleShape,
+                    shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                 ) {}
-
-                // Puchi
-                settings.puchi?.let { id ->
-                    val url = buildImageUrl("puchi", findFilename("puchi", id, imagesData))
-                    if (url != null) {
-                        AsyncImage(
-                            model = url,
-                            contentDescription = null,
-                            modifier = Modifier.size(70.dp).align(Alignment.BottomEnd).padding(end = 20.dp, bottom = 10.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-                }
 
                 // Character
                 Box(modifier = Modifier.size(140.dp), contentAlignment = Alignment.Center) {
@@ -933,6 +1048,22 @@ fun ProfileHeader(
                         if (id > 0) {
                             val url = buildImageUrl("kigurumi", findFilename("kigurumi", id, imagesData))
                             AsyncImage(model = url, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+                        }
+                    }
+
+                    // Puchi integrated (animation from source)
+                    settings.puchi?.let { id ->
+                        val url = buildImageUrl("puchi", findFilename("puchi", id, imagesData))
+                        if (url != null) {
+                            AsyncImage(
+                                model = url,
+                                contentDescription = "Puchi",
+                                modifier = Modifier
+                                    //.offset(x = -(30).dp, y = (10).dp)
+                                    .size(150.dp)
+                                    .padding(bottom = 4.dp, end = 4.dp),
+                                contentScale = ContentScale.Fit
+                            )
                         }
                     }
                 }
@@ -982,7 +1113,8 @@ fun ExpressiveGridItem(
     value: String,
     imageUrl: String?,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    type: String? = null
 ) {
     Card(
         onClick = onClick,
@@ -1020,8 +1152,25 @@ fun ExpressiveGridItem(
                         model = imageUrl,
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
+                        contentScale = if (type == "speed" || type == "random") ContentScale.Fit else ContentScale.Fit,
+                        filterQuality = if (type == "speed" || type == "random") FilterQuality.None else FilterQuality.Low
                     )
+                } else if (type == "random") {
+                    Surface(
+                        modifier = Modifier.size(40.dp),
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                "OFF",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                        }
+                    }
                 }
             }
 

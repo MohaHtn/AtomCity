@@ -107,11 +107,12 @@ fun TaikoNameplate(
                                 fontFamily = NijiiroFontFamily,
                                 fontWeight = FontWeight.Black,
                                 fontSize = if (isNarrow) 10.sp else 14.sp,
-                                letterSpacing = (-0.5).sp
+                                letterSpacing = 0.sp
                             ),
                             color = Color.Black,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.offset(y = -(2.5).dp)
                         )
                     }
                 }
@@ -142,13 +143,13 @@ fun TaikoNameplate(
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontFamily = NijiiroFontFamily,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = if (isNarrow) 9.sp else 12.sp,
+                                        fontSize = if (isNarrow) 10.sp else 14.sp,
                                         letterSpacing = 0.sp
                                     ),
                                     color = Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f)),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.padding(bottom = 2.dp)
+                                    modifier = Modifier.padding(bottom = 2.dp).offset(y = (1).dp)
                                 )
                             }
 
@@ -161,12 +162,12 @@ fun TaikoNameplate(
                                 } else {
                                     if (collapsedFraction > 0.8f) 14.sp else 17.sp
                                 }
-                                val nameText = name ?: "Chargement..."
+                                val nameText = name ?: ""
 
                                 // "Border/Stroke" layer
                                 Text(
                                     text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth().offset(y=-(2).dp),
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontSize = fontSize,
@@ -186,7 +187,7 @@ fun TaikoNameplate(
                                 // "Main" layer
                                 Text(
                                     text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth().offset(y=-(2).dp),
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontSize = fontSize,
@@ -222,10 +223,12 @@ fun TaikoNameplate(
                     ) {
                         Text(
                             text = title ?: "",
+                            modifier = Modifier.offset(y = -(1).dp),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = NijiiroFontFamily,
                                 fontWeight = FontWeight.Black,
-                                fontSize = if (isNarrow) 10.sp else 12.sp,
+                                fontSize = if (isNarrow) 10.sp else 14.sp,
+                                letterSpacing = 0.sp
                             ),
                             color = Color.Black,
                             maxLines = 1,
@@ -252,7 +255,7 @@ fun TaikoNameplate(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontFamily = NijiiroFontFamily,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = if (isNarrow) 9.sp else 12.sp,
+                                    fontSize = if (isNarrow) 10.sp else 12.sp,
                                     letterSpacing = 0.sp
                                 ),
                                 color = Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f)),
