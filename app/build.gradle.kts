@@ -5,8 +5,13 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.ksp)
     id("com.github.triplet.play") version "4.1.1"
+}
+
+compose.resources {
+    publicResClass = true
 }
 
 val isGitHubActions = providers

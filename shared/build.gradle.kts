@@ -69,7 +69,7 @@ kotlin {
             implementation(composeDeps.foundation)
             implementation(composeDeps.material3)
             implementation(composeDeps.ui)
-            implementation(composeDeps.components.resources)
+            api(composeDeps.components.resources)
             implementation(composeDeps.components.uiToolingPreview)
         }
         androidMain.dependencies {
@@ -87,6 +87,15 @@ kotlin {
             implementation(libs.coil.gif)
         }
     }
+}
+
+val copyComposeResourcesToAndroidAssets by tasks.registering(Copy::class) {
+    from("src/commonMain/composeResources")
+    into("src/androidMain/assets/composeResources/atomcity.shared.generated.resources")
+}
+
+afterEvaluate {
+    tasks.findByName("preBuild")?.dependsOn("copyComposeResourcesToAndroidAssets")
 }
 
 dependencies {

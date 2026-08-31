@@ -23,6 +23,9 @@ import kotlinx.coroutines.flow.firstOrNull
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import atomcity.shared.generated.resources.*
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import io.ktor.util.decodeBase64String
 
 class TaikoViewModel(
     private val usecase: GetTaikoServerDataUseCase,
@@ -478,14 +481,33 @@ class TaikoViewModel(
     }
 
     private fun extractBaidFromToken(token: String): String? {
-        try {
+        return try {
             val parts = token.split(".")
-            if (parts.size != 3) return null
-            // We don't have a full JWT parser here, but we can try to find the "name" or "unique_name" or "nameid" field
-            // In the example JWT, the "name" claim was 387
-            return "387" 
+            if (parts.size < 2) return null
+            val payload = parts[1]
+
+            val base64 = payload
+                .replace('-', '+')
+                .replace('_', '/')
+
+            val paddedBase64 = when (base64.length % 4) {
+                2 -> "$base64=="
+                3 -> "$base64="
+                else -> base64
+            }
+
+            val decodedString = paddedBase64.decodeBase64String()
+            val jsonElement = Json.parseToJsonElement(decodedString)
+            val jsonObject = jsonElement.jsonObject
+
+            val baid = jsonObject["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]?.jsonPrimitive?.content
+
+            PlatformUtils.log("TaikoViewModel", "Decoded BAID: $baid")
+            baid
+
         } catch (e: Exception) {
-            return null
+            PlatformUtils.log("TaikoViewModel", "Error extracting BAID from token: ${e.message}")
+            null
         }
     }
 }

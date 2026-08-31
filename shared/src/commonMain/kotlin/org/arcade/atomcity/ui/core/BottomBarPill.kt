@@ -68,7 +68,7 @@ fun BottomBarPill(
             onClick = onHomeClick,
             icon = {
                 Icon(
-                    painter = painterResource(Res.drawable.stadia_controller_24px),
+                    painter = painterResource(Res.drawable.ic_stadia_controller),
                     contentDescription = "Jeux"
                 )
             },
