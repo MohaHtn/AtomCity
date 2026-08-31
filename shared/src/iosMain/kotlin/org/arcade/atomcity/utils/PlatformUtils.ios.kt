@@ -14,7 +14,8 @@ import platform.UIKit.UIImpactFeedbackGenerator
 import platform.UIKit.UIImpactFeedbackStyle
 import platform.UIKit.UISelectionFeedbackGenerator
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asSkiaImage
+import androidx.compose.ui.graphics.asSkiaBitmap
+import org.jetbrains.skia.Image
 import org.jetbrains.skia.EncodedImageFormat
 import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIApplication
@@ -63,7 +64,8 @@ actual object PlatformUtils {
 
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
     actual fun shareImage(bitmap: ImageBitmap, context: Any?) {
-        val skiaImage = bitmap.asSkiaImage()
+        val skiaBitmap = bitmap.asSkiaBitmap()
+        val skiaImage = Image.makeFromBitmap(skiaBitmap)
         val encodedData = skiaImage.encodeToData(EncodedImageFormat.WEBP, 80) ?: return
         val bytes = encodedData.bytes
         

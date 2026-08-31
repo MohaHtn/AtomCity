@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.room) apply false
-    id("com.android.library") version libs.versions.agp.get() apply false
+    alias(libs.plugins.androidMultiplatformLibrary) apply false
 }
 
 group = "org.arcade.atomcity"

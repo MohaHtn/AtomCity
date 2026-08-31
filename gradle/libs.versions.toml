@@ -1,9 +1,9 @@
 [versions]
 accompanistCoil = "0.16.0"
 accompanistSvg = "<version>"
-agp = "9.3.1"
+agp = "9.0.0"
 compose-multiplatform = "1.7.3"
-kotlin = "2.2.10"
+kotlin = "2.4.10"
 kotlinxSerialization = "1.8.0"
 kotlinx-datetime = "0.6.0"
 ktor = "3.1.0"
@@ -12,7 +12,7 @@ coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-kotlinGradlePlugin = "2.2.10"
+kotlinGradlePlugin = "2.4.10"
 lifecycleRuntimeKtx = "2.9.1"
 activityCompose = "1.10.1"
 composeBom = "2025.01.01"
@@ -34,7 +34,7 @@ datastorePreferences = "1.2.0-alpha02"
 moshi = "1.15.2"
 coreSplashscreen = "1.2.0"
 roomCompiler = "2.7.2"
-ksp = "2.3.6"
+ksp = "2.3.11"
 roomCompilerVersion = "2.5.2"
 workRuntimeKtx = "2.10.0"
 runtime = "1.7.3"
@@ -122,4 +122,5 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 room = { id = "androidx.room", version.ref = "roomCompiler" }

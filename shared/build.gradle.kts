@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.kotlin.compose)
-    id("com.android.library")
+    alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
 }
@@ -16,25 +16,18 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
-android {
-    namespace = "org.arcade.atomcity.shared"
-    compileSdk = 36
-    defaultConfig {
-        minSdk = 24
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        compose = true
-    }
-}
-
 kotlin {
-    androidTarget {
+    android {
+        namespace = "org.arcade.atomcity.shared"
+        compileSdk = 36
+        minSdk = 24
+        
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        }
+        
+        androidResources {
+            enable = true
         }
     }
     
