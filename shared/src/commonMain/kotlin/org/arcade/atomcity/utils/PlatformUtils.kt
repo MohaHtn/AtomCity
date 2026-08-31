@@ -11,6 +11,8 @@ expect object PlatformUtils {
     fun hapticTick()
     fun hapticImpact()
     fun shareImage(bitmap: androidx.compose.ui.graphics.ImageBitmap, context: Any? = null)
+    fun encrypt(text: String): String
+    fun decrypt(encryptedText: String): String
 }
 
 @Composable

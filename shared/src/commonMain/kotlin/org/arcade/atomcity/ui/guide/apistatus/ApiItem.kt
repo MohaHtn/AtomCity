@@ -45,6 +45,10 @@ import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.utils.PlatformUtils
 import org.koin.compose.koinInject
+import io.ktor.util.decodeBase64String
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 @Composable
 internal fun ApiItem(
@@ -260,7 +264,7 @@ internal fun ApiItem(
                             if (token != null) {
                                 apiKeyManager?.saveTaikoAuthToken(token)
                                 // Extract BAID and link to scorefetcher
-                                val baid = extractBaid(token)?.toIntOrNull() ?: 387
+                                val baid = extractBaid(token)?.toIntOrNull() ?: throw Exception("Impossible d'extraire le BAID du token")
                                 scorefetcherRepository?.addTaikoUser(baid)
                                 PlatformUtils.log("ApiItem", "Taiko user $baid linked to scorefetcher")
                             }
@@ -310,12 +314,33 @@ internal fun ApiItem(
 }
 
 private fun extractBaid(token: String): String? {
-    try {
+    return try {
         val parts = token.split(".")
         if (parts.size < 2) return null
-        return "387" 
+        val payload = parts[1]
+
+        val base64 = payload
+            .replace('-', '+')
+            .replace('_', '/')
+
+        val paddedBase64 = when (base64.length % 4) {
+            2 -> "$base64=="
+            3 -> "$base64="
+            else -> base64
+        }
+
+        val decodedString = paddedBase64.decodeBase64String()
+        val jsonElement = Json.parseToJsonElement(decodedString)
+        val jsonObject = jsonElement.jsonObject
+
+        val baid = jsonObject["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]?.jsonPrimitive?.content
+
+        PlatformUtils.log("ApiItem", "Decoded BAID: $baid")
+        baid
+
     } catch (e: Exception) {
-        return null
+        PlatformUtils.log("ApiItem", "Error extracting BAID from token: ${e.message}")
+        null
     }
 }
 

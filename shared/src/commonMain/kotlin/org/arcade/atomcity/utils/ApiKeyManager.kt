@@ -26,26 +26,26 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
     suspend fun saveApiKey(gameName: String, apiKey: String) {
         val key = stringPreferencesKey(gameName)
         dataStore.edit { preferences ->
-            preferences[key] = apiKey.trim()
+            preferences[key] = PlatformUtils.encrypt(apiKey.trim())
         }
     }
 
     suspend fun saveTaikoCredentials(accessCode: String, password: String) {
         dataStore.edit { preferences ->
-            preferences[stringPreferencesKey("taiko_access_code")] = accessCode.trim()
-            preferences[stringPreferencesKey("taiko_password")] = password.trim()
+            preferences[stringPreferencesKey("taiko_access_code")] = PlatformUtils.encrypt(accessCode.trim())
+            preferences[stringPreferencesKey("taiko_password")] = PlatformUtils.encrypt(password.trim())
         }
     }
 
     suspend fun saveTaikoAuthToken(token: String) {
         dataStore.edit { preferences ->
-            preferences[stringPreferencesKey("taiko_auth_token")] = token
+            preferences[stringPreferencesKey("taiko_auth_token")] = PlatformUtils.encrypt(token)
         }
     }
 
-    fun getTaikoAccessCodeFlow(): Flow<String?> = dataStore.data.map { it[stringPreferencesKey("taiko_access_code")] }
-    fun getTaikoPasswordFlow(): Flow<String?> = dataStore.data.map { it[stringPreferencesKey("taiko_password")] }
-    fun getTaikoAuthTokenFlow(): Flow<String?> = dataStore.data.map { it[stringPreferencesKey("taiko_auth_token")] }
+    fun getTaikoAccessCodeFlow(): Flow<String?> = dataStore.data.map { it[stringPreferencesKey("taiko_access_code")]?.let { PlatformUtils.decrypt(it) } }
+    fun getTaikoPasswordFlow(): Flow<String?> = dataStore.data.map { it[stringPreferencesKey("taiko_password")]?.let { PlatformUtils.decrypt(it) } }
+    fun getTaikoAuthTokenFlow(): Flow<String?> = dataStore.data.map { it[stringPreferencesKey("taiko_auth_token")]?.let { PlatformUtils.decrypt(it) } }
 
     suspend fun getTaikoAccessCode(): String? = getTaikoAccessCodeFlow().firstOrNull()
     suspend fun getTaikoPassword(): String? = getTaikoPasswordFlow().firstOrNull()
@@ -54,7 +54,7 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
     fun getApiKeyFlow(gameName: String): Flow<String?> {
         val key = stringPreferencesKey(gameName)
         return dataStore.data.map { preferences ->
-            preferences[key]
+            preferences[key]?.let { PlatformUtils.decrypt(it) }
         }
     }
 
@@ -62,7 +62,7 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
         if (gameName == null) return null
         val key = stringPreferencesKey(gameName)
         return dataStore.data.map { preferences ->
-            preferences[key]
+            preferences[key]?.let { PlatformUtils.decrypt(it) }
         }.firstOrNull()
     }
 

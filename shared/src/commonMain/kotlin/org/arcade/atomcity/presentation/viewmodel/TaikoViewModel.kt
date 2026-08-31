@@ -121,6 +121,8 @@ class TaikoViewModel(
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage
 
+    private var currentBaid: Int? = null
+
     fun showSnackbar(message: String) {
         _snackbarMessage.value = message
     }
@@ -353,18 +355,18 @@ class TaikoViewModel(
                 val response = usecase.login(TaikoLoginRequest(accessCode, password))
                 response.authToken?.let { token ->
                     apiKeyManager.saveTaikoAuthToken(token)
-                    // Optionally extract BAID from token if needed, 
-                    // for now we'll assume we might need to store it too
+                    currentBaid = extractBaidFromToken(token)?.toIntOrNull()
                 }
             } catch (e: Exception) {
                 PlatformUtils.log("TaikoViewModel", "Login failed: ${e.message}")
+                showSnackbar("Connexion échouée : ${e.message}")
             }
         }
     }
 
     suspend fun updateUserSettings(settings: TaikoServerUserSettingsResponse): Boolean {
         val token = apiKeyManager.getTaikoAuthToken()
-        val baid = settings.baid
+        val baid = currentBaid
         if (token != null && baid != null) {
             return try {
                 usecase.updateUserSettings(baid, settings, token)
@@ -373,6 +375,7 @@ class TaikoViewModel(
                 true
             } catch (e: Exception) {
                 PlatformUtils.log("TaikoViewModel", "Update settings failed: ${e.message}")
+                showSnackbar("Échec de l'enregistrement : ${e.message}")
                 false
             }
         }
@@ -453,9 +456,9 @@ class TaikoViewModel(
                     if (token != null) {
                         apiKeyManager.saveTaikoAuthToken(token)
                         
-                        // Extract BAID from token (naively for now as it's often in the payload)
-                        // In the example JWT, "nameid" or "name" claim was 387
-                        val baid = extractBaidFromToken(token) ?: "387" // Fallback to 387 for now if extraction fails? No, better error handle
+                        // Extract BAID from token
+                        currentBaid = extractBaidFromToken(token)?.toIntOrNull()
+                        val baid = currentBaid ?: throw Exception("Impossible d'extraire le BAID du token")
                         
                         // 2. Fetch music details if needed
                         if (forceRefresh || _musicDetailsData.value == null) {
@@ -466,12 +469,14 @@ class TaikoViewModel(
                         }
 
                         fetchDashboard()
-                        fetchPlayHistoryPlayData(baid.toInt())
-                        getUserSettings(baid.toInt())
+                        fetchPlayHistoryPlayData(baid)
+                        getUserSettings(baid)
                         mergeMusicDetailsWithScores()
                     }
                 } catch (e: Exception) {
-                    PlatformUtils.log("TaikoViewModel", "Error in getScores: ${e.message}")
+                    val errorMsg = e.message ?: "Erreur inconnue"
+                    PlatformUtils.log("TaikoViewModel", "Error in getScores: $errorMsg")
+                    showSnackbar("Erreur : $errorMsg")
                 } finally {
                     isLoading.value = false
                     isRefreshing.value = false
