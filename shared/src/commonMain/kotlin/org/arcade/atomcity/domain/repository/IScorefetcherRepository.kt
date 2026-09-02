@@ -24,6 +24,7 @@ interface IScorefetcherRepository {
     fun getProfiles(): Flow<Map<String, String?>>
     fun getRatings(): Flow<Map<String, Int?>>
     fun get30BestCharts(hashKey: String? = null): Flow<List<PlayerBest30Response>>
+    fun getTopUtageScores(hashKey: String? = null): Flow<List<PlayerBest30Response>>
     fun getChartHistory(songName: String, difficulty: String?): Flow<List<ChartHistoryResponse>>
     fun getBestPerPlayer(songName: String, difficulty: String?): Flow<List<BestPerPlayerResponse>>
     fun getPlayById(id: Int, keyHash: String): Flow<ScorefetcherApiData?>

@@ -18,7 +18,11 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.Scorefet
 import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.ScorefetcherPlayerDetailsResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.playerBest30Response.PlayerBest30Response
+import org.arcade.atomcity.data.remote.model.maimai.UtageData
+import atomcity.shared.generated.resources.Res
+import kotlinx.serialization.json.Json
 import org.arcade.atomcity.ui.core.GlobalUIState
+import org.arcade.atomcity.utils.PlatformUtils
 import kotlin.time.Duration.Companion.milliseconds
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -29,7 +33,8 @@ class MaimaiViewModel(
     private val profileUseCase: GetScorefetcherProfileUseCase,
     private val importUseCase: ScorefetcherImportUseCase,
     private val analyticsUseCase: GetScorefetcherAnalyticsUseCase,
-    private val jacketUseCase: GetScorefetcherJacketUseCase
+    private val jacketUseCase: GetScorefetcherJacketUseCase,
+    private val json: Json
 ) : ViewModel() {
 
    // StateFlow to hold the plays data
@@ -55,6 +60,10 @@ class MaimaiViewModel(
     private val _maimaiBestScores = MutableStateFlow<List<PlayerBest30Response>>(emptyList())
     val maimaiBestScores: StateFlow<List<PlayerBest30Response>> = _maimaiBestScores
 
+    // StateFlow to hold the maimai utage scores
+    private val _maimaiUtageScores = MutableStateFlow<List<PlayerBest30Response>>(emptyList())
+    val maimaiUtageScores: StateFlow<List<PlayerBest30Response>> = _maimaiUtageScores
+
     // StateFlow to hold the chart history
     private val _chartHistory = MutableStateFlow<List<ChartHistoryResponse>>(emptyList())
     val chartHistory: StateFlow<List<ChartHistoryResponse>> = _chartHistory
@@ -70,6 +79,10 @@ class MaimaiViewModel(
     // StateFlow to hold most played charts
     private val _mostPlayedCharts = MutableStateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry>>(emptyList())
     val mostPlayedCharts: StateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry>> = _mostPlayedCharts
+
+    // StateFlow to hold Utage static data
+    private val _utageStaticData = MutableStateFlow<UtageData?>(null)
+    val utageStaticData: StateFlow<UtageData?> = _utageStaticData
 
 
     // Expose the current page
@@ -94,6 +107,8 @@ class MaimaiViewModel(
     private val _isLoadingPlayer = MutableStateFlow(false)
     private val _isLoadingProfiles = MutableStateFlow(false)
     private val _isLoading30BestScores = MutableStateFlow(false)
+    private val _isLoadingUtageScores = MutableStateFlow(false)
+    val isLoadingUtageScores: StateFlow<Boolean> = _isLoadingUtageScores
     private val _isLoadingChartHistory = MutableStateFlow(false)
     private val _isLoadingPlayById = MutableStateFlow(false)
     val isLoadingPlayById: StateFlow<Boolean> = _isLoadingPlayById
@@ -111,6 +126,7 @@ class MaimaiViewModel(
     init {
         observeImportWorkerStatus()
         observeSearchQuery()
+        fetchUtageStaticData()
     }
 
     val isLoading: StateFlow<Boolean> = combine(
@@ -119,6 +135,7 @@ class MaimaiViewModel(
         _isLoadingPlayer,
         _isLoadingProfiles,
         _isLoading30BestScores,
+        _isLoadingUtageScores,
         _isLoadingChartHistory,
         _isLoadingPlayById,
         _isLoadingBestPerPlayer,
@@ -132,7 +149,8 @@ class MaimaiViewModel(
         _isLoadingChartHistory,
         _isLoadingPlayById,
         _isLoadingBestPerPlayer,
-        _isLoadingMostPlayed
+        _isLoadingMostPlayed,
+        _isLoadingUtageScores
     ) { loadings ->
         loadings.any { it }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -289,6 +307,37 @@ class MaimaiViewModel(
             } catch (e: Exception) {
                 // Log.e("ScorefetcherViewModel", "Error fetching 30 best scores: ${e.message}")
                 _isLoading30BestScores.value = false
+            }
+        }
+    }
+
+    fun fetchUtageScores() {
+        viewModelScope.launch {
+            try {
+                _isLoadingUtageScores.value = true
+                scoresUseCase.getTopUtageScores().collect {
+                    _maimaiUtageScores.value = it
+                    _isLoadingUtageScores.value = false
+                }
+            } catch (e: Exception) {
+                // Log.e("ScorefetcherViewModel", "Error fetching utage scores: ${e.message}")
+                _isLoadingUtageScores.value = false
+            }
+        }
+    }
+
+    @OptIn(org.jetbrains.compose.resources.ExperimentalResourceApi::class)
+    fun fetchUtageStaticData() {
+        viewModelScope.launch {
+            try {
+                val path = "files/maimai/utage/utage.json"
+                val bytes = Res.readBytes(path)
+                val content = bytes.decodeToString()
+                val data = json.decodeFromString<UtageData>(content)
+                _utageStaticData.value = data
+                PlatformUtils.log("MaimaiViewModel", "utage.json chargé avec succès", false)
+            } catch (e: Exception) {
+                PlatformUtils.log("MaimaiViewModel", "Erreur fatale utage.json: ${e.message}", true)
             }
         }
     }

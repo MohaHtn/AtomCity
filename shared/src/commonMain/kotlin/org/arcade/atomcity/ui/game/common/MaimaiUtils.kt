@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.game.common
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
@@ -38,16 +39,34 @@ fun selectRatingBackground(rating: Int?): Brush {
 }
 
 @Composable
-fun getDifficultyColorBackground(difficulty: String?): CardColors {
-    return when (difficulty) {
-        "easy" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFE1F5FE))
-        "basic" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF1F8E9))
-        "advanced" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFFF8E1))
-        "expert" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFFEBEE))
-        "master" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF3E5F5))
-        "remaster" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFCE4EC))
-        "utage" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF3E5F5))
-        else -> CardDefaults.elevatedCardColors()
+fun getDifficultyColorBackground(difficulty: String?, isDark: Boolean = isSystemInDarkTheme()): CardColors {
+    return if (isDark) {
+        getDifficultyColorBackgroundDark(difficulty)
+    } else {
+        when (difficulty?.replace(":", "")?.trim()?.lowercase()) {
+            "easy" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFE1F5FE))
+            "basic" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF1F8E9))
+            "advanced" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFFF8E1))
+            "expert" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFFEBEE))
+            "master" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF3E5F5))
+            "remaster" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFFCE4EC))
+            "utage", "宴" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFFF3E5F5))
+            else -> CardDefaults.elevatedCardColors()
+        }
+    }
+}
+
+@Composable
+fun getDifficultyColorBackgroundDark(difficulty: String?): CardColors {
+    return when (difficulty?.replace(":", "")?.trim()?.lowercase()) {
+        "easy" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFF0C1929))
+        "basic" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFF0F2414))
+        "advanced" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFF261F0E))
+        "expert" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFF2D1016))
+        "master" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFF220F2B))
+        "remaster" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFF2D0D20))
+        "utage", "宴" -> CardDefaults.elevatedCardColors(containerColor = Color(0xFF2B180F))
+        else -> CardDefaults.elevatedCardColors(containerColor = Color(0xFF161622))
     }
 }
 

@@ -57,6 +57,7 @@ fun MaimaiScores(
         Triple("maimaiBest30Scores", "30 Meilleurs scores", "Vos 30 meilleures performances"),
         Triple("maimaiMostPlayed", "Les plus joués", "Les morceaux les plus joués"),
         Triple("maimaiUsers", "Utilisateurs", "Consulter les utilisateurs enregistrés"),
+        Triple("maimaiUtageScreen", "Utage", "Consulter les scores des utage")
     )
 
     LaunchedEffect(currentPage) {

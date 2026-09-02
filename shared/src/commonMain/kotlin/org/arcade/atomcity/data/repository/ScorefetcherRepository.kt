@@ -168,6 +168,23 @@ class ScorefetcherRepository(
         }
     }
 
+    override fun getTopUtageScores(hashKey: String?): Flow<List<PlayerBest30Response>> = flow {
+        try {
+            val key = hashKey ?: PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")
+            if (key.isBlank()) {
+                emit(emptyList())
+                return@flow
+            }
+            val response = scorefetcherClient.getTopUtageScores(key)
+            response.forEach { entry ->
+                entry.jacketImageUrl = findJacketUrlBySongName(entry.songJson?.name?.jp) ?: findJacketUrlBySongName(entry.songJson?.name?.en)
+            }
+            emit(response)
+        } catch (e: Exception) {
+            emit(emptyList())
+        }
+    }
+
     override fun getChartHistory(songName: String, difficulty: String?): Flow<List<ChartHistoryResponse>> = flow {
         try {
             val key = PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")

@@ -13,7 +13,6 @@ import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.worker.AndroidImportWorkManager
 import org.arcade.atomcity.worker.ImportWorkManager
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -35,13 +34,5 @@ val appModule = module {
     viewModelOf(::TaikoViewModel)
 
     // From ScorefetcherViewModelModule
-    viewModel {
-        MaimaiViewModel(
-            scoresUseCase = get(),
-            profileUseCase = get(),
-            importUseCase = get(),
-            analyticsUseCase = get(),
-            jacketUseCase = get()
-        )
-    }
+    viewModelOf(::MaimaiViewModel)
 }

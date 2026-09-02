@@ -2,6 +2,7 @@ package org.arcade.atomcity.ui.game.maimai
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -9,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -61,9 +66,13 @@ fun MaimaiScoresDetails(
     val songName = song?.name
     val songArtist = song?.artist
     val difficultyColor = getJacketBorderColor(scoreEntry?.difficultyLevel?.value)
+    val isDark = isSystemInDarkTheme()
+    val textColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
+    val textSecondaryColor = if (isDark) Color.White.copy(alpha = 0.65f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
     
     val difficultyRepository: IDifficultyRepository = koinInject()
     var levelInfo by remember { mutableStateOf<LevelInfo?>(null) }
+    var showScoreInfoSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     val chartHistory by maimaiViewModel?.chartHistory?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
@@ -166,7 +175,9 @@ fun MaimaiScoresDetails(
             ) {
             ElevatedCard(
                 colors = getDifficultyColorBackground(diffLevel?.value),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, difficultyColor.copy(alpha = 0.25f), RoundedCornerShape(32.dp)),
                 shape = RoundedCornerShape(32.dp)
             ) {
                 Column(
@@ -184,11 +195,19 @@ fun MaimaiScoresDetails(
                             modifier = Modifier.weight(1f)
                         )
                         
-                        Text(
-                            text = formatPlayDate(scoreEntry.playDate),
-                            style = MaterialTheme.typography.labelLarge,
-                            modifier = Modifier.alpha(0.6f)
-                        )
+                        Surface(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = formatPlayDate(scoreEntry.playDate),
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                ),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -198,7 +217,17 @@ fun MaimaiScoresDetails(
                         Box(
                             modifier = Modifier
                                 .size(200.dp)
-                                .background(difficultyColor.copy(alpha = 0.1f), CircleShape)
+                                .background(
+                                    Brush.radialGradient(
+                                        listOf(
+                                            difficultyColor.copy(alpha = 0.25f),
+                                            difficultyColor.copy(alpha = 0.05f),
+                                            Color.Transparent
+                                        )
+                                    ),
+                                    CircleShape
+                                )
+                                .border(1.dp, difficultyColor.copy(alpha = 0.2f), CircleShape)
                         )
                         AsyncImage(
                             model = scoreEntry.jacketImageUrl,
@@ -218,7 +247,8 @@ fun MaimaiScoresDetails(
                         text = songName?.jp ?: "Unknown",
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Black,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = textColor
                         ),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
@@ -227,8 +257,8 @@ fun MaimaiScoresDetails(
                     if (songName?.en != null && songName.en != songName.jp) {
                         Text(
                             text = songName.en ?: "",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.alpha(0.5f).padding(top = 4.dp),
+                            style = MaterialTheme.typography.bodyLarge.copy(color = textSecondaryColor),
+                            modifier = Modifier.padding(top = 4.dp),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -242,16 +272,15 @@ fun MaimaiScoresDetails(
                         text = artistJp ?: artistEn ?: "",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
-                        ),
-                        modifier = Modifier.alpha(0.8f)
+                            textAlign = TextAlign.Center,
+                            color = textSecondaryColor
+                        )
                     )
                     
                     if (artistEn != null && artistEn != artistJp) {
                         Text(
                             text = artistEn,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.alpha(0.4f),
+                            style = MaterialTheme.typography.bodyMedium.copy(color = textSecondaryColor.copy(alpha = 0.5f)),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -281,7 +310,8 @@ fun MaimaiScoresDetails(
                             style = MaterialTheme.typography.displayLarge.copy(
                                 fontWeight = FontWeight.Black,
                                 fontSize = 56.sp,
-                                letterSpacing = (-2).sp
+                                letterSpacing = (-2).sp,
+                                color = textColor
                             )
                         )
                         Text(
@@ -292,9 +322,117 @@ fun MaimaiScoresDetails(
                             ),
                             modifier = Modifier.padding(bottom = 8.dp, start = 2.dp)
                         )
+
+                        val maxAchievement = scoreEntry.theoreticalMaxPercent?.let { "${it.format(2)}%" }
+                            ?: scoreEntry.maxScoreFormattedFixed 
+                            ?: scoreEntry.maxScore?.let { if (it <= 110.0) "${it.format(2)}%" else null }
+                        if (!maxAchievement.isNullOrBlank()) {
+                            val formattedMaxAch = if (maxAchievement.endsWith("%")) maxAchievement else "$maxAchievement%"
+                            Surface(
+                                color = difficultyColor.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.padding(bottom = 14.dp, start = 8.dp)
+                            ) {
+                                Text(
+                                    text = "MAX $formattedMaxAch",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = difficultyColor,
+                                        letterSpacing = 0.5.sp
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    val currentScoreStr = scoreEntry.scoreFormattedFixed
+                    val maxScoreStr = scoreEntry.theoreticalMaxScoreFormatted
+                        ?: if (scoreEntry.maxScore != null && scoreEntry.maxScore!! > 110.0) scoreEntry.maxScoreFormattedFixed else null
+
+                    if (currentScoreStr != null || maxScoreStr != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Surface(
+                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                if (currentScoreStr != null) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "SCORE ACTUEL",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 9.sp,
+                                                letterSpacing = 1.sp,
+                                                color = textSecondaryColor
+                                            )
+                                        )
+                                        Text(
+                                            text = currentScoreStr,
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontWeight = FontWeight.Black,
+                                                color = textColor
+                                            )
+                                        )
+                                    }
+                                }
+
+                                if (currentScoreStr != null && maxScoreStr != null) {
+                                    Text(
+                                        text = "•",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Black,
+                                            color = textSecondaryColor.copy(alpha = 0.5f)
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 12.dp)
+                                    )
+                                }
+
+                                if (maxScoreStr != null) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "SCORE MAX POSSIBLE",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 9.sp,
+                                                letterSpacing = 1.sp,
+                                                color = textSecondaryColor
+                                            )
+                                        )
+                                        Text(
+                                            text = maxScoreStr,
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontWeight = FontWeight.Black,
+                                                color = difficultyColor
+                                            )
+                                        )
+                                    }
+                                }
+
+                                IconButton(
+                                    onClick = { showScoreInfoSheet = true },
+                                    modifier = Modifier
+                                        .padding(start = 4.dp)
+                                        .size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Info,
+                                        contentDescription = "Détails du calcul",
+                                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Difficulty Badge with Level Info
                     MaimaiDifficultyBadge(
@@ -331,6 +469,13 @@ fun MaimaiScoresDetails(
                     )
 
                     // Table Header
+                    val columnHeaders = listOf(
+                        "PERFECT" to Color(0xFFFFD700),
+                        "GREAT" to Color(0xFFFF4081),
+                        "GOOD" to Color(0xFF00E676),
+                        "MISS" to Color(0xFFE57373)
+                    )
+
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -344,16 +489,23 @@ fun MaimaiScoresDetails(
                             ),
                             modifier = Modifier.weight(1.2f)
                         )
-                        listOf("PERFECT", "GREAT", "GOOD", "MISS").forEach {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                                ),
-                                modifier = Modifier.weight(1f),
-                                textAlign = TextAlign.Center
-                            )
+                        columnHeaders.forEach { (title, color) ->
+                            Surface(
+                                color = color.copy(alpha = 0.12f),
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier.weight(1f).padding(horizontal = 2.dp)
+                            ) {
+                                Text(
+                                    text = title,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 10.sp,
+                                        color = color
+                                    ),
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
 
@@ -463,6 +615,315 @@ fun MaimaiScoresDetails(
             }
         }
     }
+
+    if (showScoreInfoSheet && scoreEntry != null) {
+        val detail = scoreEntry.scoreDetail
+        val tapCount = (detail?.tap?.perfect ?: 0) + (detail?.tap?.great ?: 0) +
+                (detail?.tap?.good ?: 0) + (detail?.tap?.bad ?: 0)
+        val holdCount = (detail?.hold?.perfect ?: 0) + (detail?.hold?.great ?: 0) +
+                (detail?.hold?.good ?: 0) + (detail?.hold?.bad ?: 0)
+        val slideCount = (detail?.slide?.perfect ?: 0) + (detail?.slide?.great ?: 0) +
+                (detail?.slide?.good ?: 0) + (detail?.slide?.bad ?: 0)
+        val breakCount = (detail?.breakk?.perfect ?: 0) + (detail?.breakk?.great ?: 0) +
+                (detail?.breakk?.good ?: 0) + (detail?.breakk?.bad ?: 0)
+
+        val tapPts = tapCount * 500
+        val holdPts = holdCount * 1000
+        val slidePts = slideCount * 1500
+        val breakPts = (breakCount * 2500 * 1.04).toLong()
+        val totalPts = tapPts + holdPts + slidePts + breakPts
+
+        val basePts = (tapCount * 500) + (holdCount * 1000) + (slideCount * 1500) + (breakCount * 2500)
+
+        val breakBonusPts = breakCount * 2500 * 0.04
+
+        ModalBottomSheet(
+            onDismissRequest = { showScoreInfoSheet = false },
+            sheetState = rememberModalBottomSheetState()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = null,
+                        tint = difficultyColor
+                    )
+                    Text(
+                        text = "Calcul du score et du pourcentage maximal possible",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+
+                Text(
+                    text = "Le calcul du score se fait de la manière suivante :",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "($tapCount × 500) + ($holdCount × 1000) + ($slideCount × 1500) + ($breakCount × 2500 × 1,04)",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
+                        modifier = Modifier.padding(16.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "DÉTAIL PAR TYPE DE NOTE",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                val items = listOf(
+                    "Taps ($tapCount)" to "$tapCount × 500 = ${formatScoreValue(tapPts.toDouble())}",
+                    "Holds ($holdCount)" to "$holdCount × 1000 = ${formatScoreValue(holdPts.toDouble())}",
+                    "Slides ($slideCount)" to "$slideCount × 1500 = ${formatScoreValue(slidePts.toDouble())}",
+                    "Breaks ($breakCount)" to "$breakCount × 2500 × 1,04 = ${formatScoreValue(breakPts.toDouble())}"
+                )
+
+                items.forEach { (label, calc) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 3.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                        Text(
+                            text = calc,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "maimai donne 4% de bonus sur chaque BREAK, ce qui donne 100 points lors que la note est tapée parfaitement (soit 2500 points), d'ou le 1.04.",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                lineHeight = 18.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 16.dp),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Score MAX Théorique",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold)
+                    )
+                    Text(
+                        text = formatScoreValue(totalPts.toDouble()),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            color = difficultyColor
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "CALCUL DU POURCENTAGE MAXIMAL",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Le pourcentage maximal est le score avec les 4% de bonus BREAK sur le score moins ces 4% de bonus BREAK, " +
+                                    "ramené à 100, soit une différence de +${formatScoreValue(breakBonusPts)} points pour cette chart " +
+                                    "($breakCount × 100 pts). \n\nOn enlève ensuite 0,0045%, afin d'éviter des décimales infinies pendant le calcul en pourcentage " +
+                                    "(marge de troncature).",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                lineHeight = 18.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val maxPercent = scoreEntry.theoreticalMaxPercent
+
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "( ",
+                                style = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.onSurface)
+                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Score avec bonus BREAK de 4% (${formatScoreValue(totalPts.toDouble())})",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    textAlign = TextAlign.Center
+                                )
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(vertical = 4.dp).width(220.dp),
+                                    thickness = 1.5.dp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                )
+                                Text(
+                                    text = "Score sans bonus BREAK de 4% (${formatScoreValue(basePts.toDouble())})",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                            Text(
+                                text = " × 100 )",
+                                style = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.onSurface)
+                            )
+                        }
+
+                        Text(
+                            text = "- 0,0045%",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                            ),
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Pourcentage Max Théorique",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold)
+                    )
+                    Text(
+                        text = "${maxPercent?.format(2) ?: "0.00"}%",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            color = difficultyColor
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+    }
 }
 }
 
@@ -488,11 +949,19 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = formatPlayDate(historyEntry.playDate),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.alpha(0.5f)
-                )
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = formatPlayDate(historyEntry.playDate),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -551,11 +1020,19 @@ fun BestPerPlayerItem(b: BestPerPlayerResponse) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = formatPlayDate(b.playDate),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.alpha(0.5f)
-                )
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = formatPlayDate(b.playDate),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -632,12 +1109,16 @@ fun MaimaiScoreBadgeRow(scoreEntry: ScorefetcherApiData, modifier: Modifier = Mo
             )
         }
         if (scoreEntry.isAllPerfect == true) {
-            val allBreaksPerfect = (scoreEntry.scoreDetail?.breakk?.great ?: 0) == 0 &&
-                    (scoreEntry.scoreDetail?.breakk?.good ?: 0) == 0 &&
-                    (scoreEntry.scoreDetail?.breakk?.bad ?: 0) == 0
+            val maxScore = scoreEntry.theoreticalMaxScore ?: (if (scoreEntry.maxScore != null && scoreEntry.maxScore!! > 110.0) scoreEntry.maxScore else null)
+            val isApPlus = when {
+                scoreEntry.score != null && maxScore != null -> scoreEntry.score!! >= maxScore
+                else -> (scoreEntry.scoreDetail?.breakk?.great ?: 0) == 0 &&
+                        (scoreEntry.scoreDetail?.breakk?.good ?: 0) == 0 &&
+                        (scoreEntry.scoreDetail?.breakk?.bad ?: 0) == 0
+            }
             
             ScoreBadge(
-                text = if (allBreaksPerfect) "ALL PERFECT +" else "ALL PERFECT",
+                text = if (isApPlus) "ALL PERFECT +" else "ALL PERFECT",
                 containerColor = Color(0xFFE0F2F1),
                 contentColor = Color(0xFF00897B)
             )
@@ -675,7 +1156,7 @@ fun DetailRow(label: String, p: Int, gr: Int, gd: Int, m: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -687,21 +1168,21 @@ fun DetailRow(label: String, p: Int, gr: Int, gd: Int, m: Int) {
             modifier = Modifier.weight(1.2f)
         )
         
-        // Value columns with pill-shaped backgrounds
         listOf(
             p to Color(0xFFFFD700),     // Perfect - Gold
             gr to Color(0xFFFF4081),    // Great - Pink
             gd to Color(0xFF00E676),    // Good - Green
-            m to Color.Gray             // Miss - Gray
+            m to Color(0xFFE57373)      // Miss - Red
         ).forEach { (count, color) ->
             Box(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).padding(horizontal = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
                 if (count > 0) {
                     Surface(
-                        color = color.copy(alpha = 0.12f),
-                        shape = RoundedCornerShape(12.dp)
+                        color = color.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, color.copy(alpha = 0.25f))
                     ) {
                         Text(
                             text = count.toString(),
@@ -731,16 +1212,17 @@ fun GraphPlaceholder(difficultyColor: Color) {
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .border(1.dp, difficultyColor.copy(alpha = 0.15f), RoundedCornerShape(24.dp)),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
     ) {
         Box(modifier = Modifier.padding(24.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
             Text(
-                text = "Pour afficher les graphiques, faites au moins 3 essais de cette chart !",
+                text = "Pour afficher les graphiques de statistiques, faites au moins 3 essais de cette chart !",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = difficultyColor.copy(alpha = 0.7f)
@@ -778,23 +1260,21 @@ fun ScoreHistoryGraph(
         (minVal - padding).coerceAtLeast(0.0)
     }
 
-    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
-    var tooltipData by remember { mutableStateOf<Pair<ChartHistoryResponse, Offset>?>(null) }
+    var selectedIndex by remember(sortedHistory) { mutableStateOf(sortedHistory.lastIndex) }
     val haptic = LocalHapticFeedback.current
-
 
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(260.dp)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .border(1.dp, difficultyColor.copy(alpha = 0.15f), RoundedCornerShape(24.dp)),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = "PROGRESSION DU SCORE SUR LE TEMPS",
                 style = MaterialTheme.typography.labelLarge.copy(
@@ -802,40 +1282,102 @@ fun ScoreHistoryGraph(
                     letterSpacing = 2.sp,
                     color = difficultyColor
                 ),
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
+
+            // Systematic Top Tooltip
+            if (selectedIndex in sortedHistory.indices) {
+                val entry = sortedHistory[selectedIndex]
+                Surface(
+                    color = difficultyColor.copy(alpha = 0.12f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, difficultyColor.copy(alpha = 0.25f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(
+                                    text = formatPlayDate(entry.playDate),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+
+                            if (!entry.rank.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = entry.rank!!,
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = FontWeight.Black,
+                                        color = difficultyColor
+                                    )
+                                )
+                            }
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            val displayRating = entry.rating?.format(2) ?: entry.ratingFormatted ?: ""
+                            if (displayRating.isNotEmpty() && entry.difficultyLevel != "宴" && entry.difficultyLevelJson?.value?.lowercase() != "utage") {
+                                Text(
+                                    text = "Rating $displayRating  •  ",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                )
+                            }
+
+                            Text(
+                                text = "${((entry.achievement ?: 0.0) / 100.0).format(2)}%",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+                    }
+                }
+            }
 
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .padding(horizontal = 8.dp)
             ) {
                 Canvas(
                     modifier = Modifier
                         .fillMaxSize()
-                        .onGloballyPositioned { canvasSize = it.size }
                         .pointerInput(sortedHistory) {
                             detectTapGestures { offset ->
                                 val stepX = if (sortedHistory.size > 1) size.width.toFloat() / (sortedHistory.size - 1) else size.width.toFloat()
                                 val index = (offset.x / stepX).roundToInt().coerceIn(0, sortedHistory.size - 1)
-                                val entry = sortedHistory[index]
-                                val x = index.toFloat() * stepX
-                                val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
-                                tooltipData = entry to Offset(x, y)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                if (selectedIndex != index) {
+                                    selectedIndex = index
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
                             }
                         }
                         .pointerInput(sortedHistory) {
                             detectHorizontalDragGestures { change, _ ->
                                 val stepX = if (sortedHistory.size > 1) size.width.toFloat() / (sortedHistory.size - 1) else size.width.toFloat()
                                 val index = (change.position.x / stepX).roundToInt().coerceIn(0, sortedHistory.size - 1)
-                                val entry = sortedHistory[index]
-                                val x = index.toFloat() * stepX
-                                val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
-                                
-                                if (tooltipData?.first != entry) {
+                                if (selectedIndex != index) {
+                                    selectedIndex = index
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    tooltipData = entry to Offset(x, y)
                                 }
                             }
                         }
@@ -871,6 +1413,25 @@ fun ScoreHistoryGraph(
                         )
                     }
 
+                    // Draw Area Gradient Fill
+                    if (points.isNotEmpty()) {
+                        val fillPath = Path().apply {
+                            addPath(path)
+                            lineTo(points.last().x, height)
+                            lineTo(points.first().x, height)
+                            close()
+                        }
+                        drawPath(
+                            path = fillPath,
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    difficultyColor.copy(alpha = 0.25f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                    }
+
                     // Draw Path
                     drawPath(
                         path = path,
@@ -878,51 +1439,31 @@ fun ScoreHistoryGraph(
                         style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
                     )
 
-                    // Draw Points
-                    points.forEach { point ->
-                        drawCircle(
-                            color = Color.White,
-                            center = point,
-                            radius = 10.dp.toPx()
-                        )
-                        drawCircle(
-                            color = difficultyColor,
-                            center = point,
-                            radius = 7.dp.toPx()
+                    // Draw vertical guide line for selected point
+                    if (selectedIndex in points.indices) {
+                        val selectedPoint = points[selectedIndex]
+                        drawLine(
+                            color = difficultyColor.copy(alpha = 0.6f),
+                            start = Offset(selectedPoint.x, 0f),
+                            end = Offset(selectedPoint.x, height),
+                            strokeWidth = 1.5.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f)
                         )
                     }
-                }
 
-                // Tooltip / Overlay for selected point
-                tooltipData?.let { (entry, offset) ->
-                    Surface(
-                        modifier = Modifier.offset {
-                            IntOffset(
-                                (offset.x - 50.dp.toPx()).toInt().coerceIn(0, (canvasSize.width - 100.dp.toPx()).toInt()),
-                                (offset.y - 75.dp.toPx()).toInt().coerceAtLeast(0)
-                            )
-                        },
-                        color = difficultyColor,
-                        shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 4.dp
-                    ) {
-                        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                            Text(
-                                text = "${((entry.achievement ?: 0.0) / 100.0).format(2)}%",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.White
-                            )
-                            Text(
-                                text = formatPlayDate(entry.playDate),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.White.copy(alpha = 0.8f)
-                            )
+                    // Draw Points
+                    points.forEachIndexed { index, point ->
+                        if (index == selectedIndex) {
+                            drawCircle(color = Color.White, center = point, radius = 9.dp.toPx())
+                            drawCircle(color = difficultyColor, center = point, radius = 7.dp.toPx(), style = Stroke(width = 3.dp.toPx()))
+                        } else {
+                            drawCircle(color = Color.White, center = point, radius = 5.dp.toPx())
+                            drawCircle(color = difficultyColor, center = point, radius = 3.5.dp.toPx())
                         }
                     }
                 }
             }
         }
-
     }
 }
 
@@ -946,39 +1487,52 @@ fun RatingVsScoreGraph(
     }
 
     if (dataPoints.size < 3) {
-            GraphPlaceholder(difficultyColor)
-            return
+        GraphPlaceholder(difficultyColor)
+        return
     }
 
+    val (minAchievement, maxAchievement, xRange) = remember(dataPoints) {
+        val min = dataPoints.minOf { it.achievement!! }
+        val max = dataPoints.maxOf { it.achievement!! }
+        val diff = max - min
+        val padding = if (diff == 0.0) (if (max == 0.0) 100.0 else max * 0.1) else diff * 0.15
+        val minAdj = (min - padding).coerceAtLeast(0.0)
+        val maxAdj = max + padding
+        val range = if (maxAdj == minAdj) 100.0 else (maxAdj - minAdj)
+        Triple(minAdj, maxAdj, range)
+    }
 
-    val minAchievement = dataPoints.first().achievement!!
-    val maxAchievement = dataPoints.last().achievement!!
+    val (minRating, maxRating, yRange) = remember(dataPoints) {
+        val isUtage = dataPoints.any { it.difficultyLevel == "宴" || it.difficultyLevelJson?.value?.lowercase() == "utage" }
+        if (isUtage) {
+            Triple(0.0, 1.0, 1.0)
+        } else {
+            val min = dataPoints.minOf { it.rating!! }
+            val max = dataPoints.maxOf { it.rating!! }
+            val diff = max - min
+            val padding = if (diff == 0.0) (if (max == 0.0) 1.0 else max * 0.1) else diff * 0.15
+            val minAdj = (min - padding).coerceAtLeast(0.0)
+            val maxAdj = max + padding
+            val range = if (maxAdj == minAdj) 1.0 else (maxAdj - minAdj)
+            Triple(minAdj, maxAdj, range)
+        }
+    }
 
-    val isUtage = dataPoints.any { it.difficultyLevel == "宴" || it.difficultyLevelJson?.value?.lowercase() == "utage" }
-    val minRating = if (isUtage) 0.0 else dataPoints.minOf { it.rating!! }
-    val maxRating = if (isUtage) 1.0 else dataPoints.maxOf { it.rating!! }
-
-
-
-    val xRange = (maxAchievement - minAchievement).coerceAtLeast(100.0)
-    val yRange = (maxRating - minRating).coerceAtLeast(1.0)
-
-    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
-    var tooltipData by remember { mutableStateOf<Pair<ChartHistoryResponse, Offset>?>(null) }
+    var selectedIndex by remember(dataPoints) { mutableStateOf(dataPoints.lastIndex) }
     val haptic = LocalHapticFeedback.current
 
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(260.dp)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .border(1.dp, difficultyColor.copy(alpha = 0.15f), RoundedCornerShape(24.dp)),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = "PROGRESSION DU SCORE PARMI LES ESSAIS",
                 style = MaterialTheme.typography.labelLarge.copy(
@@ -986,39 +1540,106 @@ fun RatingVsScoreGraph(
                     letterSpacing = 2.sp,
                     color = difficultyColor
                 ),
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Box(modifier = Modifier.fillMaxSize()) {
+            // Systematic Top Tooltip
+            if (selectedIndex in dataPoints.indices) {
+                val entry = dataPoints[selectedIndex]
+                Surface(
+                    color = difficultyColor.copy(alpha = 0.12f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, difficultyColor.copy(alpha = 0.25f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(
+                                    text = formatPlayDate(entry.playDate),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+
+                            if (!entry.rank.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = entry.rank,
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = FontWeight.Black,
+                                        color = difficultyColor
+                                    )
+                                )
+                            }
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            val displayRating = entry.rating?.format(2) ?: entry.ratingFormatted ?: ""
+                            if (displayRating.isNotEmpty() && entry.difficultyLevel != "宴" && entry.difficultyLevelJson?.value?.lowercase() != "utage") {
+                                Text(
+                                    text = "Rating $displayRating  •  ",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                )
+                            }
+
+                            Text(
+                                text = "${((entry.achievement ?: 0.0) / 100.0).format(2)}%",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .padding(horizontal = 8.dp)
+            ) {
                 Canvas(
                     modifier = Modifier
                         .fillMaxSize()
-                        .onGloballyPositioned { canvasSize = it.size }
                         .pointerInput(dataPoints) {
                             detectTapGestures { offset ->
-                                val entry = dataPoints.minByOrNull { e ->
-                                    val x = ((e.achievement!! - minAchievement) / xRange * size.width).toFloat()
+                                val nearestIndex = dataPoints.indices.minByOrNull { i ->
+                                    val x = ((dataPoints[i].achievement!! - minAchievement) / xRange * size.width).toFloat()
                                     abs(offset.x - x)
-                                } ?: return@detectTapGestures
-                                val x = ((entry.achievement!! - minAchievement) / xRange * size.width).toFloat()
-                                val y = (size.height - (((entry.rating ?: 0.0) - minRating) / yRange * size.height)).toFloat()
-                                
-                                tooltipData = entry to Offset(x, y)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                } ?: selectedIndex
+                                if (selectedIndex != nearestIndex) {
+                                    selectedIndex = nearestIndex
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
                             }
                         }
                         .pointerInput(dataPoints) {
                             detectHorizontalDragGestures { change, _ ->
-                                val entry = dataPoints.minByOrNull { e ->
-                                    val x = ((e.achievement!! - minAchievement) / xRange * size.width).toFloat()
+                                val nearestIndex = dataPoints.indices.minByOrNull { i ->
+                                    val x = ((dataPoints[i].achievement!! - minAchievement) / xRange * size.width).toFloat()
                                     abs(change.position.x - x)
-                                } ?: return@detectHorizontalDragGestures
-                                val x = ((entry.achievement!! - minAchievement) / xRange * size.width).toFloat()
-                                val y = (size.height - (((entry.rating ?: 0.0) - minRating) / yRange * size.height)).toFloat()
-                                
-                                if (tooltipData?.first != entry) {
+                                } ?: selectedIndex
+                                if (selectedIndex != nearestIndex) {
+                                    selectedIndex = nearestIndex
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    tooltipData = entry to Offset(x, y)
                                 }
                             }
                         }
@@ -1026,13 +1647,16 @@ fun RatingVsScoreGraph(
                     val width = size.width
                     val height = size.height
 
-                    // Draw grid
+                    // Draw background grid lines
                     val gridLines = 5
                     for (i in 0..gridLines) {
-                        val x = width * i / gridLines
                         val y = height * i / gridLines
-                        drawLine(Color.Gray.copy(0.1f), Offset(x, 0f), Offset(x, height), 1.dp.toPx())
-                        drawLine(Color.Gray.copy(0.1f), Offset(0f, y), Offset(width, y), 1.dp.toPx())
+                        drawLine(
+                            color = Color.Gray.copy(alpha = 0.1f),
+                            start = Offset(0f, y),
+                            end = Offset(width, y),
+                            strokeWidth = 1.dp.toPx()
+                        )
                     }
 
                     val points = dataPoints.map { entry ->
@@ -1041,13 +1665,30 @@ fun RatingVsScoreGraph(
                         Offset(x, y)
                     }
 
-                    if (points.size > 1) {
+                    if (points.isNotEmpty()) {
                         val path = Path().apply {
                             moveTo(points.first().x, points.first().y)
                             for (i in 1 until points.size) {
                                 lineTo(points[i].x, points[i].y)
                             }
                         }
+
+                        val fillPath = Path().apply {
+                            addPath(path)
+                            lineTo(points.last().x, height)
+                            lineTo(points.first().x, height)
+                            close()
+                        }
+                        drawPath(
+                            path = fillPath,
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    difficultyColor.copy(alpha = 0.25f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+
                         drawPath(
                             path = path,
                             color = difficultyColor,
@@ -1055,41 +1696,26 @@ fun RatingVsScoreGraph(
                         )
                     }
 
-                    points.forEach { point ->
-                        drawCircle(Color.White, radius = 10.dp.toPx(), center = point)
-                        drawCircle(difficultyColor, radius = 7.dp.toPx(), center = point)
+                    // Draw vertical guide line for selected point
+                    if (selectedIndex in points.indices) {
+                        val selectedPoint = points[selectedIndex]
+                        drawLine(
+                            color = difficultyColor.copy(alpha = 0.6f),
+                            start = Offset(selectedPoint.x, 0f),
+                            end = Offset(selectedPoint.x, height),
+                            strokeWidth = 1.5.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f)
+                        )
                     }
-                }
 
-                // Tooltip
-                tooltipData?.let { (entry, offset) ->
-                    Surface(
-                        modifier = Modifier.offset {
-                            IntOffset(
-                                (offset.x - 50.dp.toPx()).toInt().coerceIn(0, (canvasSize.width - 100.dp.toPx()).toInt()),
-                                (offset.y - 60.dp.toPx()).toInt().coerceAtLeast(0)
-                            )
-                        },
-                        color = difficultyColor,
-                        shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 4.dp
-                    ) {
-                        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                            Text(
-                                text = "${((entry.achievement ?: 0.0) / 100.0).format(2)}%",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.White
-                            )
-                            if (entry.difficultyLevel != "宴" && entry.difficultyLevelJson?.value?.lowercase() != "utage") {
-                                val displayRating = entry.rating?.format(2) ?: entry.ratingFormatted
-                                if (!displayRating.isNullOrBlank()) {
-                                    Text(
-                                        text = "Rating : $displayRating",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = Color.White.copy(alpha = 0.8f)
-                                    )
-                                }
-                            }
+                    // Draw Points
+                    points.forEachIndexed { index, point ->
+                        if (index == selectedIndex) {
+                            drawCircle(color = Color.White, center = point, radius = 9.dp.toPx())
+                            drawCircle(color = difficultyColor, center = point, radius = 7.dp.toPx(), style = Stroke(width = 3.dp.toPx()))
+                        } else {
+                            drawCircle(color = Color.White, center = point, radius = 5.dp.toPx())
+                            drawCircle(color = difficultyColor, center = point, radius = 3.5.dp.toPx())
                         }
                     }
                 }
@@ -1117,6 +1743,11 @@ fun PersonalBestProgressionGraph(
         result.takeLast(20)
     }
 
+    if (pbHistory.size < 3) {
+        GraphPlaceholder(difficultyColor)
+        return
+    }
+
     val maxAchievement = remember(pbHistory) {
         val maxVal = pbHistory.maxOfOrNull { it.achievement ?: 0.0 } ?: 10000.0
         val minVal = pbHistory.minOfOrNull { it.achievement ?: 0.0 } ?: 0.0
@@ -1130,22 +1761,21 @@ fun PersonalBestProgressionGraph(
         (minVal - padding).coerceAtLeast(0.0)
     }
 
-    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
-    var tooltipData by remember { mutableStateOf<Pair<ChartHistoryResponse, Offset>?>(null) }
+    var selectedIndex by remember(pbHistory) { mutableStateOf(pbHistory.lastIndex) }
     val haptic = LocalHapticFeedback.current
 
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(260.dp)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .border(1.dp, difficultyColor.copy(alpha = 0.15f), RoundedCornerShape(24.dp)),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = "PROGRESSION DES RECORDS PERSONNELS",
                 style = MaterialTheme.typography.labelLarge.copy(
@@ -1153,40 +1783,102 @@ fun PersonalBestProgressionGraph(
                     letterSpacing = 2.sp,
                     color = difficultyColor
                 ),
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
+
+            // Systematic Top Tooltip
+            if (selectedIndex in pbHistory.indices) {
+                val entry = pbHistory[selectedIndex]
+                Surface(
+                    color = difficultyColor.copy(alpha = 0.12f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, difficultyColor.copy(alpha = 0.25f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(
+                                    text = formatPlayDate(entry.playDate),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+
+                            if (!entry.rank.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = entry.rank,
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = FontWeight.Black,
+                                        color = difficultyColor
+                                    )
+                                )
+                            }
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            val displayRating = entry.rating?.format(2) ?: entry.ratingFormatted ?: ""
+                            if (displayRating.isNotEmpty() && entry.difficultyLevel != "宴" && entry.difficultyLevelJson?.value?.lowercase() != "utage") {
+                                Text(
+                                    text = "Rating $displayRating  •  ",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                )
+                            }
+
+                            Text(
+                                text = "${((entry.achievement ?: 0.0) / 100.0).format(2)}%",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+                    }
+                }
+            }
 
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .padding(horizontal = 8.dp)
             ) {
                 Canvas(
                     modifier = Modifier
                         .fillMaxSize()
-                        .onGloballyPositioned { canvasSize = it.size }
                         .pointerInput(pbHistory) {
                             detectTapGestures { offset ->
                                 val stepX = if (pbHistory.size > 1) size.width.toFloat() / (pbHistory.size - 1) else size.width.toFloat()
                                 val index = (offset.x / stepX).roundToInt().coerceIn(0, pbHistory.size - 1)
-                                val entry = pbHistory[index]
-                                val x = index.toFloat() * stepX
-                                val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
-                                tooltipData = entry to Offset(x, y)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                if (selectedIndex != index) {
+                                    selectedIndex = index
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
                             }
                         }
                         .pointerInput(pbHistory) {
                             detectHorizontalDragGestures { change, _ ->
                                 val stepX = if (pbHistory.size > 1) size.width.toFloat() / (pbHistory.size - 1) else size.width.toFloat()
                                 val index = (change.position.x / stepX).roundToInt().coerceIn(0, pbHistory.size - 1)
-                                val entry = pbHistory[index]
-                                val x = index.toFloat() * stepX
-                                val y = size.height.toFloat() - (((entry.achievement ?: 0.0) - minAchievement) / (maxAchievement - minAchievement) * size.height.toFloat()).toFloat()
-                                
-                                if (tooltipData?.first != entry) {
+                                if (selectedIndex != index) {
+                                    selectedIndex = index
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    tooltipData = entry to Offset(x, y)
                                 }
                             }
                         }
@@ -1222,6 +1914,25 @@ fun PersonalBestProgressionGraph(
                         )
                     }
 
+                    // Draw Area Gradient Fill
+                    if (points.isNotEmpty()) {
+                        val fillPath = Path().apply {
+                            addPath(path)
+                            lineTo(points.last().x, height)
+                            lineTo(points.first().x, height)
+                            close()
+                        }
+                        drawPath(
+                            path = fillPath,
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    difficultyColor.copy(alpha = 0.25f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                    }
+
                     // Draw Path
                     drawPath(
                         path = path,
@@ -1229,55 +1940,26 @@ fun PersonalBestProgressionGraph(
                         style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
                     )
 
-                    // Draw Points
-                    points.forEach { point ->
-                        drawCircle(
-                            color = Color.White,
-                            center = point,
-                            radius = 10.dp.toPx()
-                        )
-                        drawCircle(
-                            color = difficultyColor,
-                            center = point,
-                            radius = 7.dp.toPx()
+                    // Draw vertical guide line for selected point
+                    if (selectedIndex in points.indices) {
+                        val selectedPoint = points[selectedIndex]
+                        drawLine(
+                            color = difficultyColor.copy(alpha = 0.6f),
+                            start = Offset(selectedPoint.x, 0f),
+                            end = Offset(selectedPoint.x, height),
+                            strokeWidth = 1.5.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f)
                         )
                     }
-                }
 
-                // Tooltip / Overlay for selected point
-                tooltipData?.let { (entry, offset) ->
-                    Surface(
-                        modifier = Modifier.offset {
-                            IntOffset(
-                                (offset.x - 50.dp.toPx()).toInt().coerceIn(0, (canvasSize.width - 100.dp.toPx()).toInt()),
-                                (offset.y - 75.dp.toPx()).toInt().coerceAtLeast(0)
-                            )
-                        },
-                        color = difficultyColor,
-                        shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 4.dp
-                    ) {
-                        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                            Text(
-                                text = "${((entry.achievement ?: 0.0) / 100.0).format(2)}%",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.White
-                            )
-                            Text(
-                                text = formatPlayDate(entry.playDate),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.White.copy(alpha = 0.8f)
-                            )
-                            if (entry.difficultyLevel != "宴" && entry.difficultyLevelJson?.value?.lowercase() != "utage") {
-                                val displayRating = entry.rating?.format(2) ?: entry.ratingFormatted
-                                if (!displayRating.isNullOrBlank()) {
-                                    Text(
-                                        text = "Rating : $displayRating",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = Color.White.copy(alpha = 0.8f)
-                                    )
-                                }
-                            }
+                    // Draw Points
+                    points.forEachIndexed { index, point ->
+                        if (index == selectedIndex) {
+                            drawCircle(color = Color.White, center = point, radius = 9.dp.toPx())
+                            drawCircle(color = difficultyColor, center = point, radius = 7.dp.toPx(), style = Stroke(width = 3.dp.toPx()))
+                        } else {
+                            drawCircle(color = Color.White, center = point, radius = 5.dp.toPx())
+                            drawCircle(color = difficultyColor, center = point, radius = 3.5.dp.toPx())
                         }
                     }
                 }

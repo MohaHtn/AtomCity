@@ -90,8 +90,11 @@ kotlin {
 }
 
 val copyComposeResourcesToAndroidAssets by tasks.registering(Copy::class) {
-    from("src/commonMain/composeResources")
-    into("src/androidMain/assets/composeResources/atomcity.shared.generated.resources")
+    group = "compose resources"
+    from(project.file("src/commonMain/composeResources"))
+    into(project.file("src/androidMain/assets/composeResources/atomcity.shared.generated.resources"))
+    includeEmptyDirs = false
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 afterEvaluate {

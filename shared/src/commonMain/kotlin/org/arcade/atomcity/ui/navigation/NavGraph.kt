@@ -31,6 +31,7 @@ import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.game.maimai.AtomCityUsers
 import org.arcade.atomcity.ui.game.taiko.TaikoUserSettings
 import org.arcade.atomcity.ui.game.taiko.TaikoScoresDetails
+import org.arcade.atomcity.ui.game.taiko.TaikoAtomCityUsers
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.arcade.atomcity.ui.game.maimai.MaimaiUtageScreen
@@ -181,6 +182,13 @@ fun AppNavigation(
                 )
             }
 
+            composable("taikoUsers") {
+                TaikoAtomCityUsers(
+                    taikoViewModel = taikoViewModel,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+
             composable(
                 route = "taikoScoresDetails/{songId}",
                 arguments = listOf(navArgument("songId") { type = NavType.IntType })
@@ -198,7 +206,8 @@ fun AppNavigation(
             ) {
                 MaimaiUtageScreen(
                     onBackClick = { navController.popBackStack() },
-                    viewModel = maimaiViewModel
+                    viewModel = maimaiViewModel,
+                    navController = navController
                 )
             }
         }

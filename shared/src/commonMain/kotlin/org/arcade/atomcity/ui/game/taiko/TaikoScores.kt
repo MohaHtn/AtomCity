@@ -68,7 +68,8 @@ fun TaikoScores(
     val collapsedFraction = scrollBehavior.state.collapsedFraction
 
     val extraItems = listOf(
-        Triple("taikoUserSettings", "Paramètres", "oue les paramètres")
+        Triple("taikoUserSettings", "Paramètres", "oue les paramètres"),
+        Triple("taikoUsers", "Utilisateurs", "Consulter les utilisateurs enregistrés")
     )
 
     LaunchedEffect(showDashboardTrigger) {

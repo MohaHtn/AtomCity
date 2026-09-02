@@ -1,0 +1,1279 @@
+{
+  "source": "https://silentblue.remywiki.com/maimai:Enkaijou",
+  "chart_attributes": {
+    "pre_dx": [
+      {
+        "description": "Ces attributs sont arrivés après la sortie de la première version de maimai."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/2/2b/Utage_attribute_hikari.png/100px-Utage_attribute_hikari.png",
+        "attribute": "光 (Hikari) (Lumière)",
+        "details_fr": "À l'exception des HOLD Notes, les notes des SLIDES et les TAP sont des notes BREAK."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/9/93/Utage_attribute_hoshi.png/100px-Utage_attribute_hoshi.png",
+        "attribute": "星 (Hoshi) (Étoile)",
+        "details_fr": "Les notes TAP et BREAK sont transformées en notes SLIDES, en forme d'étoile."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/6/61/Utage_attribute_sakasa.png/100px-Utage_attribute_sakasa.png",
+        "attribute": "逆 (Sakasa) (Inverse)",
+        "details_fr": "Les notes SLIDE (en forme d'étoile) apparaissent à la fin des SLIDE, au lieu du début."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/c/c3/Utage_attribute_kaku.png/100px-Utage_attribute_kaku.png",
+        "attribute": "覚 (Kaku) (Mémoriser)",
+        "details_fr": "Il faut mémoriser l'ordre d'apparition des slides. Tous les slides déjà apparus dans une section réapparaissent ensemble, mais peuvent ne pas répondre au toucher (selon la chanson) tant que le slide précédent n'a pas disparu. Le joueur doit tracer les slides dans le bon ordre."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/2/29/Utage_attribute_nade.png/100px-Utage_attribute_nade.png",
+        "attribute": "撫 (Nade) (Effacer, Coup de gomme)",
+        "details_fr": "Certains SLIDE n'ont pas de note étoile."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/5/5d/Utage_attribute_soku.png/100px-Utage_attribute_soku.png",
+        "attribute": "即 (Soku) (Instantané)",
+        "details_fr": "Le temps d'attente entre la note étoile et le SLIDE (d'un temps de BPM) est raccourci, voire totalement supprimé."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/7/79/Utage_attribute_kei.png/100px-Utage_attribute_kei.png",
+        "attribute": "傾 (Kei) (Incliné)",
+        "details_fr": "La chart originale est inclinée."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/8/8a/Utage_attribute_tako.png/100px-Utage_attribute_tako.png",
+        "attribute": "蛸 (Tako) (Pieuvre)",
+        "details_fr": "Plus de deux notes BOTH ou plus, nécessitant plus de deux mains. En réalité, ces charts peuvent être jouées en utilisant les avant-bras ou les coudes."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/6/6e/Utage_attribute_kanou.png/100px-Utage_attribute_kanou.png",
+        "attribute": "協 (Kyou) (Cooperation)",
+        "details_fr": "Il est recommandé, voire requis, de jouer à plusieurs sur la zone prévue pour un seul joueur. S'il s'agit d'une chart maimai DX BUDDiES, trois joueurs ou plus seront toujours nécessaires. Pour des raisons évidentes, le TRACK SKIP est désactivé."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/4/41/Utage_attribute_tai.png/100px-Utage_attribute_tai.png",
+        "attribute": "耐 (Tai) (Endurance)",
+        "details_fr": "Teste l'endurance du joueur à travers un pattern de notes exigeante en énergie, qui dure en général toute la chart. Souvent combiné avec le TRACK SKIP activé."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/0/01/Utage_attribute_utage.png/100px-Utage_attribute_utage.png",
+        "attribute": "宴 (Utage) (Banquet)",
+        "details_fr": "Pour les charts qui ne correspondent à aucun autre attribut."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/a/ac/Utage_attribute_kura.png",
+        "attribute": "蔵 (Kura) (Entrepôt)",
+        "details_fr": "蔵 fait référence à お蔵入り, littéralement « mis en entrepôt », c'est-à-dire abandonné/annulé. Les charts avec cet attribut étaient à l'origine destinées à être publiées comme charts normales, mais ont été abandonnées, souvent parce qu'elles étaient trop difficiles. (Des tips ajoutés sur l'écran de chargement dans maimai MiLK ont révélé que les concepteurs de charts doivent obtenir un rang S sur les charts non-Utage pour qu'elles soient publiées.)"
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/5/5f/Utage_attribute_kyo.png/100px-Utage_attribute_kyo.png",
+        "attribute": "狂 (Kyo) (Absurde)",
+        "details_fr": "Difficulté « folle », plus dure que les charts 宴 ou même 蔵."
+      }
+    ],
+    "post_dx": [
+      {
+        "description": "Ces attributs sont arrivés après la sortie de maimai DX."
+      },
+      {
+        "attribute": "回 (Tourner)",
+        "details_fr": "Une note de slide circulaire répétée est jouée par-dessus un chart normal."
+      },
+      {
+        "attribute": "右 (Migi) (À droite)",
+        "details_fr": "La chart entière est alignée sur le côté droit de l'écran."
+      },
+      {
+        "attribute": "奏 (Kana) (Jouer de la musique)",
+        "details_fr": "Type de chart exclusif aux charts maimai DX BUDDiES, où deux joueurs, chacun sur leur côté de borne, jouent une chart qui se complète l'une à l'autre. En raison de la nature de la chart, le TRACK SKIP est desactivé."
+      },
+      {
+        "attribute": "疑 (Utaga) (Doute)",
+        "details_fr": "Le temps d'attente entre les notes étoile et les SLIDE est très profondément modifié : il n'y a plus de temps d'attente fixe, et la SLIDE démarre quand une note TAP arrive dessus. Si une note étoile est une étoile BREAK, le SLIDE est instantané (comme pour l'attribut 即 (Soku, instantané)). À l'exception des charts de Garakuta Doll Play, cet attribut a été le premier à être porté sur un chart UTAGE pré-DX (DETARAME ROCK&ROLL THEORY)."
+      },
+      {
+        "attribute": "両 (Ryou) (Tous les deux)",
+        "details_fr": "Deux charts sont jouées en même temps sur un côté de borne."
+      },
+      {
+        "attribute": "嘘 (Uso) (Mensonge)",
+        "details_fr": "Les notes étoiles et les SLIDE sont déconnectés. La SLIDE apparaît à côté de la note étoile."
+      },
+      {
+        "attribute": "習 (Shuu) (Apprendre)",
+        "details_fr": "Des charts conçues pour s'entraîner sur un pattern précis d'une chart normale donnée."
+      },
+      {
+        "attribute": "爆 (Baku) (Bombe)",
+        "details_fr": "Les SLIDE de ces charts contiennent des notes TOUCH déclenchant des effets de feu d'artifice dans leur chemin."
+      },
+      {
+        "img": "https://silentblue.remywiki.com/images/thumb/a/a4/Utage_attribute_kata.png/100px-Utage_attribute_kata.png",
+        "attribute": "片 (Kata) (Un seul sens)",
+        "details_fr": "La chart force l'utilisation de mouvements sur une seule main. Cet attribut devait être utlisé avant maimai DX mais n'a pas été utilisé, il a donc sa propre icône, tiré du site web officiel."
+      },
+      {
+        "attribute": "音 (Oto) (Son)",
+        "details_fr": "Une chart alternative qui s'efforce d'être aussi fidèle que possible au son de la musique, prouvant par la même occasion que ce n'est pas forcément la qualité retenue pour réaliser une chart normale."
+      },
+      {
+        "attribute": "鏡 (Kagami) (Miroir)",
+        "details_fr": "Une chart qui est symétrique verticalement."
+      },
+      {
+        "attribute": "招 (Shou) (Invitation)",
+        "details_fr": "Une chart qui est une reproduction ou une référence à un autre jeu. C'est un équivelent aux WORLD'S END de CHUNITHM, et qui a été ajouté sur maimai DX CiRCLE PLUS."
+      }
+    ],
+    "off_attributes": [
+      {
+        "description": "Certaines charts ont des attributs considérés comme unique à la chart, dûes au fait qu'elles s'appliquent plus à une chart en particulier plutôt qu'un gimmick ou set de gimmicks à part entière."
+      },
+      {
+        "attribute": "J",
+        "details_fr": "Utilisé uniquement pour la chart de Jack de Garakuta Doll Play."
+      },
+      {
+        "attribute": "は (Ha) (happy)",
+        "details_fr": "Utilisé uniquement pour la chart de はっぴー de Garakuta Doll Play."
+      },
+      {
+        "attribute": "r",
+        "details_fr": "Utilisé uniquement pour la chart de rioN de Garakuta Doll Play."
+      },
+      {
+        "attribute": "玉\"(Tama)",
+        "details_fr": "Utilisé uniquement pour la chart de 玉子豆腐 de Garakuta Doll Play."
+      },
+      {
+        "attribute": "某\" (Bou)",
+        "details_fr": "Utilisé uniquement pour la chart de 某S氏 de Garakuta Doll Play."
+      },
+      {
+        "attribute": "幸 (Shiawase) (Heureux)",
+        "details_fr": "Utilisé uniquement pour 犬日和。(はっぴー歌唱Ver)."
+      },
+      {
+        "attribute": "息 (Iki) (Souffle)",
+        "details_fr": "Utilisé uniquement pour ノンブレス・オブリージュ, en référence aux paroles."
+      },
+      {
+        "attribute": "X",
+        "details_fr": "Utilisé uniquement pour 人マニア, en référence au fait que Twitter s'appelle désormais X."
+      },
+      {
+        "attribute": "甘 (Ama) (Doux)",
+        "details_fr": "Utilisé uniquement pour スイートマジック (Sweet Magic), en référence au nom de la chanson."
+      },
+      {
+        "attribute": "匿 (Toku) (Caché)",
+        "details_fr": "Utilisé uniquement pour 匿名M (Anonymous M), en référence au nom de la chanson."
+      },
+      {
+        "attribute": "助 (Tasu) (À l'aide)",
+        "details_fr": "Utilisé uniquement pour メズマライザー (Mesmerizer), en référence à la parole « 誰か、助けてね(^^♪. (Someone, please help me (^^♪ .)»."
+      },
+      {
+        "attribute": "好 (Suki) (Aimé)",
+        "details_fr": "Utilisé uniquement pour la chart de Luxizhel dans 好きな惣菜発表ドラゴン."
+      },
+      {
+        "attribute": "譜 (Fu) (Partition musicale)",
+        "details_fr": "Utilisé uniquement pour la chart de サファ太 dans 好きな惣菜発表ドラゴン."
+      },
+      {
+        "attribute": "面 (Men) (Masque)",
+        "details_fr": "Utilisé uniquement pour la chart de 鳩ホルダー dans 好きな惣菜発表ドラゴン."
+      },
+      {
+        "attribute": "発 (Hatsu) (Exprimer)",
+        "details_fr": "Utilisé uniquement pour la chart de メロンポップ dans 好きな惣菜発表ドラゴン."
+      },
+      {
+        "attribute": "表 (Hyou) (Surface)",
+        "details_fr": "Utilisé uniquement pour la chart de きょむりん dans 好きな惣菜発表ドラゴン."
+      },
+      {
+        "attribute": "龍 (Ryuu) (Dragon)",
+        "details_fr": "Utilisé uniquement pour la chart de アマリリス dans 好きな惣菜発表ドラゴン."
+      },
+      {
+        "attribute": "騒 (Sou) (Bruyant)",
+        "details_fr": "Utilisé uniquement pour ありきたりな恋の歌."
+      },
+      {
+        "attribute": "餡 (An) (Pâte d'haricot / Caractère de 餡蜜 « anmitsu »)",
+        "details_fr": "Utilisé uniquement pour 隠密あんみつDX. Anmitsu fait référence à une technique de beatmania IIDX, où un joueur peux transformer des stairs (notes qui arrivent dans chaque colonne des boutons jusqu'à former un escalier) vers des chords (accord musical, appuyer sur plusieurs boutons en même temps) ou presque en appuyant très précisément. Un exemple est disponible ici : https://www.youtube.com/watch?v=itKBpwCG32A"
+      },
+      {
+        "attribute": "藍 (Ai) (Indigo)",
+        "details_fr": "Utilisé uniquement pour 絶え間なく藍色. Pourrait potentiellement devenir un attribut récurrent si la chart de その群青が愛しかったようだった (It seemed as though he loved that ultramarine blue) est un jour ressuscitée et réattribuée, le principe de jeu y étant identique."
+      },
+      {
+        "attribute": "一 (Ichi) (Un seul)",
+        "details_fr": "Utilisé uniquement pour もうみんなしねばいいのに."
+      },
+      {
+        "attribute": "充 (Juu) (Compléter)",
+        "details_fr": "Utilisé uniquement pour エンジェル ドリーム."
+      },
+      {
+        "attribute": "邪 (Ja) (Méchant)",
+        "details_fr": "Utilisé uniquement pour アマノジャクリバース feat. ytr."
+      },
+      {
+        "attribute": "破 (Yabu) (Casser)",
+        "details_fr": "Utilisé uniquement pour テレパシ."
+      },
+      {
+        "attribute": "僕 (Boku) (Je)",
+        "details_fr": "Utilisé uniquement pour ボックスワンターバ〜ン."
+      }
+    ],
+    "unused_attributes": [
+      {
+        "description": "Le code JavaScript du site officiel de maimai FiNALE révèle deux autres attributs qui n'ont jamais été utilisés."
+      },
+      {
+        "attribute": "辛 (Kara) (Épicé)",
+        "comments_fr": "La difficulté dans les jeux était parfois exprimée en termes de « piquant » (épicé), ce à quoi 辛 fait probablement référence ici."
+      },
+      {
+        "attribute": "角 (Kaku) (Coin / Côté)",
+        "comments_fr": "Inconnu. Peut-être que les notes auraient été limitées à un seul coin/bord de l'écran ?"
+      }
+    ]
+  },
+  "forced_options": {
+    "description_fr": "Certains charts Utage forcent une ou plusieurs option de jeu à une valeur donnée :",
+    "legend_fr": [
+      "Vitesse des notes (Tap speed)",
+      "Mode miroir (Mirror mode)",
+      "Affichage des infos en fond (Background info display)",
+      "Saut de piste (Track skip)",
+      "Style de jugement (Judge style)"
+    ]
+  },
+  "utage_chart_list": [
+    {
+      "song": "POP STAR",
+      "attribute": "星",
+      "comment": "そのためのPOP STAR - POP STAR for that purpose",
+      "forced_options": "- / ⇄ / - / - / -",
+      "details_fr": "Basé sur la chart MASTER, en changeant toutes les notes TAP et BREAK en notes étoile. La différence n'est qu'esthétique et n'affecte pas le gameplay. Cependant, le mode miroir horizontal est forcé."
+    },
+    {
+      "song": "ウッーウッーウマウマ(゚∀゚) - Caramell/Caramelldansen [cover]",
+      "attribute": "耐",
+      "comment": "(゚∀゚)どこまでウマれるかな(゚∀゚) - (ﾟ∀ﾟ) I wonder how far I can go? (ﾟ∀ﾟ)",
+      "forced_options": "- / Off / Border(S) / Auto (S) / Maji",
+      "details_fr": "Le couplet est basé sur la chart EXPERT, le refrain propose des notes TAP simples et doubles très rapides, basées sur la danse de la chanson."
+    },
+    {
+      "song": "Future",
+      "comment": "Re:MASTERを魔改造★ - Customizing Re:MASTER★",
+      "attribute": "星",
+      "forced_options": "- / ⇅ / - / - / -",
+      "details_fr": "Basé sur la chart Re:MASTER, en changeant toutes les notes TAP et étoile en notes étoile Break. Il possède donc aussi des éléments de l'attribut 光 (Hikari, Lumière)."
+    },
+    {
+      "song": "Touch",
+      "comment": "☆ Tap Baby",
+      "attribute": "星",
+      "forced_options": "-/ - / - / - / -",
+      "details_fr": "Toutes les notes TAP de la chart Expert sont changées en notes SLIDE. Peut-être la chart Utage la plus facile ?"
+    },
+    {
+      "song": "Love You",
+      "comment": "リア充専用譜面だよ!リア充向けだってば! / リア充(2人)譜面 ○は左の人☆は右の人 (pre-FiNALE) - This chart is just for people with fulfilling social lives! I'm telling you, it's for people with fulfilling social lives! / Chart for 2 people with fulfilling social lives: ○ is the person on the left, ☆ is the person on the right (commentaire pre-FiNale)",
+      "attribute": "協",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart conçue pour deux joueurs, un à gauche et un à droite."
+    },
+    {
+      "song": "ミラクル・ショッピング - Miracle Shopping",
+      "comment": "ボリューム満点!ドン(物理)・キホーテ - Packed with content! Don (Physical) Quixote",
+      "attribute": "蛸",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart du poisson d'avril 2018. La majeure partie de la chart consiste à plus de deux notes simultanées."
+    },
+    {
+      "song": "jelly",
+      "comment": "あの頃はごめんなさい - I'm sorry about what happened back then.",
+      "attribute": "宴",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Ancienne chart datant d'avant la mise à jour maimai PLUS. Les notes slide de la fin de la chanson sont différentes."
+    },
+    {
+      "song": "ジンギスカン - Genghis Khan",
+      "comment": "スライド始点タップ練習用に作ったの - I made this for practicing tapping the slide start point.",
+      "attribute": "宴",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart d'entraînement pour le motif SLIDE + TAP, similaire à celui de Future Re:MASTER."
+    },
+    {
+      "song": "ポップミュージックは僕のもの / Pop music wa boku no mono",
+      "comment": "ポップミュージックは僕たちのもの - Pop Music belongs to us.",
+      "attribute": "協",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "Chart à 2 joueurs. Composé principalement de 2 notes HOLD jouées simultanément, avec des motifs simples à deux mains. Curieusement, le côté gauche joue avec des TAP en étoile et le côté droit avec des TAP normaux, contrairement à la plupart des charts à 2 joueurs."
+    },
+    {
+      "song": "青春コンプレックス - Seishun Complex (maimai DX BUDDiES)",
+      "variants": [
+        {
+          "comment": "バンドメンバーを集めて楽しもう!(入門編) - Let's get a band together and have some fun! (Beginner's Guide)",
+          "attribute": "協",
+          "forced_options": "- / Off / - / Off / -",
+          "details_fr": "Chart sur 2 bornes avec 4 joueurs. Les parties jouées correspondent aux membres du groupe et à leurs instruments. De gauche à droite : Ryou Yamada à la basse, Nijika Ichiji à la batterie, Ikuyo Kita à la guitare rythmique, Hitori Gotou à la guitare solo (soit l'ordre dans lequel ils apparaissent sur les pochettes maimai et CHUNITHM)."
+        },
+        {
+          "comment": "バンドメンバーを集めて楽しもう!(ヒーロー級) - Gather your band members and have fun! (Hero Class)",
+          "attribute": "協",
+          "forced_options": "- / Off / - / Off / -",
+          "details_fr": "Variante beaucoup plus difficile du chart précédent. Avant CiRCLE PLUS, cette chart avait un TRACK SKIP avec un niveau de vie LIFE 300."
+        }
+      ]
+    },
+    {
+      "song": "さくゆいたいそう - SakuYui Taisou (maimai DX BUDDiES)",
+      "comment": "ライバル譜面 - Rival Charts",
+      "attribute": "奏",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Un côté se concentre sur la partie de Saku, l'autre sur celle de Yui. Sinon, similaire à la chart MASTER."
+    },
+    {
+      "song": "どうしてこうなった - Hanbunko",
+      "comment": "もう一人じゃないから - Because I'm not alone anymore.",
+      "attribute": "両",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La chart EXPERT est jouée à côté d'une copie d'elle-même pivotée à 180 degrés."
+    },
+    {
+      "song": "ヒトガタ - Hitogata (maimai DX BUDDiES)",
+      "comment": "ココロを叫べ! - Let Your Heart Scream!",
+      "attribute": "奏",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Un côté se concentre sur la partie d'Hime, l'autre sur Hina. Sinon, similaire à la MASTER normale."
+    },
+    {
+      "song": "不機嫌なスリーカード - Fukigen na three card (maimai DX BUDDiES)",
+      "comment": "秘密を握った 真実を 魅せてあげる - I hold the secret—I'll show you the truth.",
+      "attribute": "蛸",
+      "forced_options": "- / - / - / Off / -",
+      "details_fr": "La chart est conçue autour du fait de jouer 3 notes à la fois ou des sauts rapides entre deux et une note, demandant 3 inputs."
+    },
+    {
+      "song": "ハム太郎とっとこうた - Hamtaro tottoko uta",
+      "comment": "まわると うれしいね - It's fun when it spins, isn't it?",
+      "attribute": "回",
+      "forced_options": "- / - / - / LIFE 100 / -",
+      "details_fr": "Les notes sont arrangés de telle sorte que le joueur joue dans le sens des aiguilles d'une montre. Les TAP circulaires sont très rapides à la fin."
+    },
+    {
+      "song": "死ぬな！- Shinuna!",
+      "comment": "命はひとつ - You only have one life.",
+      "attribute": "耐",
+      "forced_options": "- / Off / - / LIFE 1 / -",
+      "details_fr": "Une version modifée de la chart MASTER, avec quelques mouvements techniques et des TAP plus rapides, mais la diffculté principale est le LIFE 1 qui force le joueur à AP la chart."
+    },
+    {
+      "song": "On your mark (104期Ver.) - On your mark (104ki Ver.)",
+      "comment": "~音取りほぼMAXバージョン~ - ~The “Almost MAX” Version for Pitch Recognition~.",
+      "attribute": "音",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La troisième de la série des 'accurate' overcharts (Charts plus diffiles qu'elle ne le devraient). Cette version contient des 24èmes de notes. Faites attention à ces TRILLS de 24èmes et les JACKS à la fin."
+    },
+    {
+      "song": "愛包ダンスホール - Aipai dancehall",
+      "comment": "~音取りほぼMAXバージョン~ - ~The “Almost MAX” Version for Pitch Recognition~.",
+      "attribute": "音",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La cinquième de la série des 'accurate' overcharts (Charts plus diffiles qu'elle ne le devraient). Assez dense avec des gros doubles TAP."
+    },
+    {
+      "song": "インドア系ならトラックメイカー - Indoor kei nara track maker",
+      "comment": "~音取りほぼMAXバージョン~ - ~The “Almost MAX” Version for Pitch Recognition~.",
+      "attribute": "音",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La sixième de la série des 'accurate' overcharts (Charts plus diffiles qu'elle ne le devraient). Les parties vocales sont plus denses, et l'instrumental est parsemé de 32ème de notes TOUCH."
+    },
+    {
+      "song": "ボックスワンターバ〜ン - Box wonter burn (maimai DX BUDDiES)",
+      "comment": "コインを入れてランラン楽しいド派手なリズムゲーム 麻衣摩維DX - A Fun, Flashy Rhythm Game Where You Insert Coins and Dance Away: Mai Mai DX",
+      "attribute": "音",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes, et cette fois-ci, les côtés sont dissociés. Le côté gauche est basé sur l'EXPERT avec des TAP changés en TAP étoilés, tandis que la partie de gauche est une version plus fidèle de la MASTER qui est déjà assez frénétique. Ce n'est pas habituel que les vocaux ne soient pas séparés sur les deux côtés."
+    },
+    {
+      "song": "どうしてこうなった - Doushite kou natta",
+      "comment": "どうしておくらいりした - Why did I get angry?",
+      "attribute": "蔵",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Cette musique était censée être sortie un mois après Oshama Scramble!, mais cette chart a plus de notes que ça. Il y a un grand nombre de doubles notes et des JACKS."
+    },
+    {
+      "song": "すーぱーぬこになりたい - Super nuko ni naritai",
+      "comment": "すーぱーたこになりたい - I want to be a Super Octopus",
+      "attribute": "蛸",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Possède aussi des éléments de l'attribut 撫 (Nade). Faites attention aux HOLDs."
+    },
+    {
+      "song": "東京リアルワールド - Tokyo real world",
+      "comment": "すーぱーたこになりたい - A Game to Practice Remembering the Order of Tracing (Beginner Level).",
+      "attribute": "蛸",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Plusieurs notes SLIDES arrivent normalement, et ensuite toutes les notes SLIDES arrivent en même temps. Le joueur doit se souvenir de l'ordre dans lequel ils apparaissent, et les faire dans cette ordre. Les autres notes SLIDES peuvent être déclenchées si elles sont touchées."
+    },
+    {
+      "song": "おちゃめ機能 - Ochame kinou",
+      "comment": "すーぱーたこになりたい - A feature where stars fly toward both ends of the slide.",
+      "attribute": "逆",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Les notes étoile viennent à la fois au début et à la fin de la note SLIDE."
+    },
+    {
+      "song": "からくりピエロ - Karakuri pierrot",
+      "comment": "始点タップを叩かなくても回る - It spins even if you don't tap the start point.",
+      "attribute": "撫",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La chart est grosso-modo des SLIDES, dont la majorité d'entre elles ne viennent pas avec une note étoile au début, et se connectent à la dernière note SLIDE."
+    },
+    {
+      "song": "だんだん早くなる - Dandan hayaku naru",
+      "comment": "だんだんShake it - Let's Shake It",
+      "attribute": "耐",
+      "forced_options": "- / - / Border(S) / Auto(S) / Maji",
+      "details_fr": "Cette chart consiste à faire le pattern de refrain de shake it!, une autre chart du jeu. Le changement de BPM rend la chart plus difficile."
+    },
+    {
+      "song": "スイートマジック - Sweet Magic",
+      "comment": "☆甘くなる魔法☆ - ☆The Magic of Sweetness☆",
+      "attribute": "撫",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Il y a pas mal de SLIDES notes qui font un mouvement de va-et-vient. Faire attention à la SLIDE rapide en forme de goutte d'eau."
+    },
+    {
+      "song": "恋愛裁判 - Ren'ai Saiban",
+      "comment": "リア充向け譜面 ～爆発しろ～ - Charts for People with Great Social Lives ~Blow Up~",
+      "attribute": "協",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart à 2 joueurs, plus difficle que Love You. Extrêmement difficile à un joueur. Faites attention de ne pas emmêler vos bras."
+    },
+    {
+      "song": "ぽっぴっぽー - PoPiPo",
+      "comment": "ぽ・っぴ・っぽー / ぽ・っぴ・っぽー(下・左上・右上) (pre-FiNALE) - Po·pi·po / Po·pi·po (Bottom, Top-Left, Top-Right) (pre-FiNALE)",
+      "attribute": "協",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart à trois joueurs. Les positions idéales sont en bas, en haut à gauche et en haut à droite."
+    },
+    {
+      "song": "ココロ - Kokoro",
+      "comment": "トテモ脆イ、取扱イニ注意。 - Very fragile; handle with care.",
+      "attribute": "狂",
+      "forced_options": "- / - / Border(SSS) / Auto(SSS) / Gori",
+      "details_fr": "Semblable à la chart EASY, mais avec les options forcées. Puisque la chart ne possède qu'un BREAK, chaque note implique que le joueur a une frame pour toucher la note et compléter la chart."
+    },
+    {
+      "song": "Ievan Polkka",
+      "comment": "罠がいっぱいなんですがこれは - There are a lot of traps, but this one...",
+      "attribute": "蔵",
+      "forced_options": "- / - / Border(SSS) / Auto(SSS) / -",
+      "details_fr": "Chart axée sur les HOLDs, et requert un AP. Les HOLDs ont tendance à emmêler les bras si on ne fait pas attention."
+    },
+    {
+      "song": "林檎華憐歌 - Ringo Karenka",
+      "comment": "流石にしゃべり過ぎです - You really are talking too much.",
+      "attribute": "蔵",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Exactement la même chart MASTER normale, excepté la partie parlée où des notes ont été ajoutées."
+    },
+    {
+      "song": "脳漿炸裂ガール - Ringo Karenka",
+      "comment": "さぁさぁなぞってなぞって踊りましょ - Come on, come on, trace, trace, and let's dance!",
+      "attribute": "蔵",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Cette chart a été présentée au maimai LIVE 2014洗濯祭 (Laundry Festival). Même chart que la MASTER, mais devient un festival de slides après le refrain."
+    },
+    {
+      "song": "Hand in Hand",
+      "comment": "Hand in Hand in Hand in Hand / まさかの8人用譜面! ? (pre-FiNALE) - Hand in Hand in Hand in Hand / An 8-player chart—who would've thought! ? (pre-FiNALE)",
+      "attribute": "協",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La dernière UTAGE de maimai pre-DX. Conçue pour 8 joueurs, mais 4 joueurs peuvent suffire. Des TAP sont sur des HOLDs, ce qui demande de jouer à la fois au tactile et aux boutons, même si ce n'est plus nécessaire à partir de maimai DX."
+    },
+    {
+      "song": "アカツキアライヴァル - Akatsuki Arrival (maimai DX BUDDiES)",
+      "comment": "ライバル譜面 - Rival Charts",
+      "attribute": "奏",
+      "forced_options": "- / Off / - / Off / - ",
+      "details_fr": "Un côté joue les vocaux de Luka, l'autre Miku. Durant la partie instrumentale, les charts sont les mêmes, en miroir."
+    },
+    {
+      "song": "ラグトレイン - Lagtrain (maimai DX BUDDiES)",
+      "comment": "＼みんなでラグトレイン再現チャレンジ／ - Let's All Try to Recreate the Lag Train!",
+      "attribute": "協",
+      "forced_options": "- / Off / - / Off / - ",
+      "details_fr": "Cette chart reproduit le clip bien connue de cette musique. Conçue pour 4 joueurs sur les deux bornes."
+    },
+    {
+      "song": "回る空うさぎ - Mawaru sora usagi",
+      "comment": "くるくる回る、お星さま。 - A little star spinning round and round.",
+      "attribute": "回",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Joue une simple série de notes TOUCH pendant qu'une SLIDE constante tourne."
+    },
+    {
+      "song": "エイリアンエイリアン - Alien Alien (maimai DX BUDDiES)",
+      "comment": "中央で踊るダンサー、急募。 - Dancers to perform in the center—urgently needed.",
+      "attribute": "協",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "Conçue pour 3 joueurs sur les deux bornes. Les deux joueurs sur le côté jouent une chart normale, tandis que le troisième imite le personnage de la vidéo."
+    },
+    {
+      "song": "テレキャスタービーボーイ- Telecaster b-boy (maimai DX BUDDiES)",
+      "comment": "誰か一緒に舞わないか？ - Wanna dance with me?",
+      "attribute": "奏",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "Une chart complémentaire conçue pour 2 joueurs, basée sur la Re:MASTER orginale. À la fin, les deux joueurs forment un coeur."
+    },
+    {
+      "song": "チュルリラ・チュルリラ・ダッダッダ! - Chururira chururira daddadda!",
+      "comment": "生き残るのはどっちだッ？？？ - Which one will survive???",
+      "attribute": "奏",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "Une chart complémentaire conçue pour 2 joueurs, basée sur la MASTER orginale."
+    },
+    {
+      "song": "ロキ - Roki",
+      "comment": "デタラメのロックンロール - Nonsense Rock n' Roll",
+      "attribute": "疑",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Les SLIDES ne commencent pas après l'étoile, mais après qu'une note TAP arrive par-dessus. Si une SLIDE possède une étoile BREAK, la SLIDE est instantanée. Plusieurs SLIDES arrivent à l'écran mais doivent jouées différemmment que leur ordre d'apparition."
+    },
+    {
+      "song": "ノンブレス・オブリージュ - Non-breath oblige",
+      "comment": "息が詰まる息が詰まる息が詰まる息が詰まる - I can't breathe, I can't breathe, I can't breathe, I can't breathe.",
+      "attribute": "息",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Le joueur ne peut pas respirer; la chart en elle-même est un gros rush de TAP, avec de très gros JACKS."
+    },
+    {
+      "song": "ダブルラリアット - Double Lariat (maimai DX BUDDiES)",
+      "comment": "今から振り回しますので離れていてください - I'm going to start swinging it around, so please stay back.",
+      "attribute": "回",
+      "forced_options": "- / Off / - / LIFE 50 / -",
+      "details_fr": "2 Joueurs sur 2 bornes. Se concentre sur les notes SLIDE circulaires au début et des notes TAP circulaires pour le reste, en finissant sur des notes TAP circulaires sur les deux côtés. Les deux charts sont identiques."
+    },
+    {
+      "song": "ウミユリ海底譚 - Umiyuri kaiteitan",
+      "comment": "ウミユリ練習譚 - A Tale of Sea Lily Training",
+      "attribute": "習",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart d'entraînement pour le pattern iconique de la chart MASTER, ajoutant des notes TAP + SLIDE à faire à une main tandis que l'autre tient une note HOLD."
+    },
+    {
+      "song": "太陽系デスコ - Taiyoukei disco",
+      "comment": "一緒にデスコ - Let's Go to a Disco Together",
+      "attribute": "協",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Conçue pour 2 joueurs sur une seule borne. Le style de jeu a été pensé pour qu'un joueur prenne les notes HOLD tandis que l'autre fait le pattern demandé. "
+    },
+    {
+      "song": "ライアーダンサー - Liar Dancer",
+      "comment": "嘘に踊れ - Dance to the Lie",
+      "attribute": "嘘",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Les notes étoiles viennent d'un autre endroit que les notes SLIDE qui sont censés les accompagner."
+    },
+    {
+      "song": "人マニア - Hito Mania",
+      "comment": "人(の初見姿観察推奨)マニア - People (Recommended to Observe Their First Impressions) Enthusiast",
+      "attribute": "X",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Contient des patterns inhabituels, se basant sur les paroles de la musique."
+    },
+    {
+      "song": "スイートマジック - Sweet Magic",
+      "comment": "そんな「甘い魔法」- That 'Sweet Magic'",
+      "attribute": "甘",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Se base sur la MASTER avec certaines notes TAP devenues des notes BREAK, certaines notes SLIDE changées en BREAK et quelques TOUCH ajoutées. Apparemment plus facile que la MASTER."
+    },
+    {
+      "song": "匿名M - Tokumei M (maimai DX BUDDiES)",
+      "comment": "本日はインタビューよろしくお願いいたします - Thank you for agreeing to this interview today.",
+      "attribute": "匿",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes, avec Arufa à gauche et Miku à droite. Le côté droit a des notes TAP étoiles en remplacement des TAP régulières, et des notes SLIDE simultanées apparaissent comme une seule SLIDE, pour rendre la chart la plus bleue possible."
+    },
+    {
+      "song": "メズマライザー - Mesmerizer (maimai DX BUDDiES)",
+      "comment": "誰か、助けてね(^^♪ - Someone, please help me (^^♪",
+      "attribute": "助",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes, inspiré du clip vidéo, où Miku est à gauche et Teto à droite. Le côté gauche ne contient que des notes SLIDE bleues, et le côté droit ne contient que des notes SLIDE BREAK pour représenter les deux couleurs des deux personnages. Toutes les notes TAP à gauche sont aussi remplacées par des étoiles à partir de la fin du dernier refrain, ce qui est censé représenter Miku qui est hypnotisée."
+    },
+    {
+      "song": "好きな惣菜発表ドラゴン - Suki na souzai happyou dragon",
+      "variants": [
+        {
+          "comment": "好きな譜面発表Luxizhel - Favorite Sheet Music Announcement: Luxizhel",
+          "attribute": "好"
+        },
+        {
+          "comment": "好きな譜面発表サファ太 - Safata's Favorite Sheet Music Picks",
+          "attribute": "譜"
+        },
+        {
+          "comment": "好きな譜面発表鳩ホルダー - Favorite Sheet Music Display Pigeon Holder",
+          "attribute": "面"
+        },
+        {
+          "comment": "好きな譜面発表メロンポップ - Favorite Sheet Music Announcement: Melon Pop",
+          "attribute": "発"
+        },
+        {
+          "comment": "好きな譜面発表きょむりん - Kyomurin's Favorite Sheet Music Announcement",
+          "attribute": "表"
+        },
+        {
+          "comment": "好きな譜面発表アマリリス - Amaryllis's Favorite Sheet Music Picks",
+          "attribute": "龍"
+        }
+      ],
+      "forced_options": "- / - / - / - / -",
+      "comment": "Mélange des charts préférées de chaque charter. Lié à Wonderland Ward オープニング pour le plus grand nombre d'UTAGE pour une seule musique, à 6."
+    },
+    {
+      "song": "Seyana. ～何でも言うことを聞いてくれるアカネチャン～ - Seyana. ~nandemo iu koto wo kiite kureru Akane-chan~ (maimai DX BUDDiES)",
+      "comment": "さらに言うことを聞いてくれるアカネチャン - Akane-chan, who's even more willing to do as I say",
+      "attribute": "協",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Le côté gauche joue la partie de Yukari, et le côté droit joue la partie d'Akane. Attribuer un 協 à cette chart peut paraître bizarre, néanmoins elle possède une structure similaire aux autres 協, demandant à un joueur de tenir une note HOLD tandis que l'autre joueur fait le reste de la chart."
+    },
+    {
+      "song": "星界ちゃんと可不ちゃんのおつかい合騒曲 - SEKAI-chan to KAFU-chan no otsukai gassoukyoku",
+      "comment": "さらに言うことを聞いてくれるアカネチャン - Hurry, hurry, hurry, hurry, hurry, hurry, hurry, hurry, hurry, hurry.",
+      "attribute": "耐",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Basé sur la MASTER, mais le pattern TAP + SLIDE du refrain continue. Les pauses dans la chart on été retirées avec l'ajout de notes."
+    },
+    {
+      "song": "ありきたりな恋の歌 - Arikitari na koi no uta (maimai DX BUDDiES)",
+      "comment": "花隈の歌は可愛いし小春六花はマジでうるさい - Hanakuma's song is cute, and Koharu Rikka is seriously loud.",
+      "attribute": "騒",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Le côté gauche joue une chart complètement normale, et le côté droit joue la voix de Rikka. Le coté gauche est rempli de notes BREAK, juste pour être le plus bruyant possible grâce aux sons des notes."
+    },
+    {
+      "song": "ラビットホール - Rabbit Hole",
+      "comment": "~音取りほぼMAXバージョン~ - ~The 'Almost MAX' Version for Pitch Recognition~",
+      "attribute": "音",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "Une chart alternative qui est chartée le plus possible à ce que l'on entend sur le morceau."
+    },
+    {
+      "song": "絶え間なく藍色 - Taemanaku Aiiro",
+      "comment": "絶え間なく青色 - Endless Blue",
+      "attribute": "藍",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Basée sur la MASTER, mais modifée pour qu'elle soit la plus bleue possible. Toutes les notes TAP sont des notes étoiles, et tous les CHORDS de notes sont bougées très légèrement dans le temps pour qu'ils ne soient pas comptés par le jeu comme des notes BOTH, mais qui ne font pas une différence pour le joueur. Faites attention au peu de notes qui ne sont pas bleues."
+    },
+    {
+      "song": "snooze",
+      "comment": "~音取りほぼMAXバージョン~ - ~The 'Almost MAX' Version for Pitch Recognition~",
+      "attribute": "音",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart alternative qui est chartée le plus possible à ce que l'on entend sur le morceau."
+    },
+    {
+      "song": "からくりピエロ - Karakuri pierrot",
+      "comment": "~音取りほぼMAXバージョン~ - Trace it with one hand — that's the answer, right?",
+      "attribute": "習",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart pour s'entraîner aux notes SLIDE liés. Pour éviter de s'emmêler les bras, le joueur doit continuer avec les notes SLIDE liés avec une seul main, sans regarder quelle main touche la note étoile."
+    },
+    {
+      "song": "テトリス - Tetoris",
+      "comment": "~音取りほぼMAXバージョン~ - ~The 'Almost MAX' Version for Pitch Recognition~",
+      "attribute": "音",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart alternative qui est chartée le plus possible à ce que l'on entend sur le morceau."
+    },
+    {
+      "song": "テレパシ - Telepathy",
+      "comment": "ミクの波形って可愛いんですよ - Miku's waveforms are so cute, you know.",
+      "attribute": "破",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart alternative quasiment normale, mais difficile. Ajout de la partie 'sponsor' du morceau original, faisant de fait la première song du jeu à changer musicalement entre les charts."
+    },
+    {
+      "song": "チルノのパーフェクトさんすう教室 - Cirno no perfect sansuu kyoushitsu",
+      "comment": "パーフェクトホールド教室 - Perfect Hold Class.",
+      "attribute": "蛸",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Utilisation de notes HOLD abusives."
+    },
+    {
+      "song": "ウサテイ- Usatei",
+      "comment": "譜面傾けんなってーーー！！ - Don't tilt the sheet music!!",
+      "attribute": "傾",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La même chart MASTER, pivotée de 135 degrées. "
+    },
+    {
+      "song": "幻想のサテライト- Gensou no satellite",
+      "comment": "蔵入り、はい、それでサヨナラ - 'Back in storage,' yeah, and that's goodbye.",
+      "attribute": "蔵",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Pratiquement la même chart MASTER, mais la seconde moitié du second refrain est complètement différente."
+    },
+    {
+      "song": "キャプテン・ムラサのケツアンカー - Captain Murasa no ketsu anchor",
+      "comment": "なぞる順番を覚えるゲーム(上級編) - A Game to Practice Remembering the Order of Tracing (Advanced Level)",
+      "attribute": "覚",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Similaire à 東京リアルワールド (Tokyo Real World), mais avec plus de notes SLIDE à mémoriser."
+    },
+    {
+      "song": "しゅわスパ大作戦☆ - Shuwa spa daisakusen",
+      "comment": "☆T☆TAP大作戦☆ - ☆Operation TAP☆",
+      "attribute": "星",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Dans cette chart, les notes TAP et les notes étoiles sont interchangées. Faites attention à la fin de la chart, où les BREAK étoile arrivent sur les 8 boutons."
+    },
+    {
+      "song": "最速最高シャッターガール - Saisoku saikou shutter girl",
+      "comment": "スライドが待ち無しで飛んでくガール - The Girl Whose Slides Fly By Without a Pause.",
+      "attribute": "即",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "L'attente d'un temps de battement sur les SLIDES est supprimée. Le joueur doit immédiatement jouer la SLIDE dès qu'elle arrive."
+    },
+    {
+      "song": "魔理沙は大変なものを盗んでいきました - Marisa wa taihen na mono wo nusunde ikimashita",
+      "comment": "大変なスライドを間違えていきました - I accidentally skipped an important slide.",
+      "attribute": "宴",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Aucune note étoile n'arrive au même endroit que leurs SLIDE respectives. S'il y a deux SLIDE en même temps, l'étoile arrive entre elles."
+    },
+    {
+      "song": "疾走あんさんぶる - Shissou ensemble",
+      "comment": "なりきれ! プリズムリバー三姉妹 / 3人用!?（上・左下・右下）(pre-FiNALE) - Become Them! The Prism River Sisters / For 3 Players!? (Top, Bottom Left, Bottom Right) (pre-FiNALE)",
+      "attribute": "協",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart conçue pour trois joueurs, à l'occasion du Poisson d'Avril 2018. La position idéale est un en haut, un autre en bas à gauche et l'autre en bas à droite. C'était la première chart disponible en Utage uniquement, avant d'être ressortie le 8 Mai 2018 en tant que chart classique."
+    },
+    {
+      "song": "スカーレット警察のゲットーパトロール24時 - Scarlet keisatsu no ghetto patrol 24 ji (maimai DX BUDDiES)",
+      "comment": "隣を見てなぞる順番を覚えるゲーム(初級) - A Game to Learn the Order by Looking at Your Neighbor and Tracing (Beginner Level)",
+      "attribute": "覚",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Un type 覚 pour la première fois sur maimai DX BUDDiES. 2 joueurs sur une borne. Un joueur joue les notes SLIDE normalement, tandis que l'autre devra observer et mémoriser l'ordre des SLIDE. Les notes TOUCH en forme de flèche indiquent les moments où c'est à l'autre joueur de prendre le relais. À la fin, il y a grand cercle composé de notes TOUCH et de notes TAP."
+    },
+    {
+      "song": "三妖精SAY YA!!! - San yousei SAY YA!!!",
+      "comment": "君たちが三妖精だ！！！ - You guys are the Three Fairies!!!",
+      "attribute": "協",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart à 3 joueurs. Il n'existe pas de position fixe des joueurs pour cette chart, et les joueurs doivent bouger un peu. Néanmois, une position idéale serait un joueur au gauche, un autre à droite, et un au milieu."
+    },
+    {
+      "song": "神々が恋した幻想郷 - Kamigami ga koishita Gensoukyou",
+      "comment": "神々が恋したトリル郷 - The Land of Trill, Where the Gods Fell in Love",
+      "attribute": "片",
+      "forced_options": " - / Off / - / LIFE 300 / -",
+      "details_fr": "Chart d'endurance assez difficile. Conçue autour de trills à une main de notes TAP, mais d'autres patterns complexes arrivent à la seconde moitié de la chart. À la fin, il y a un TRILL très vicieux de doubles BREAK. Avec le LIFE 300, c'est une vraie épreuve d'endurance. Contient également quelques SLIDE instantanés vers la fin de la chart."
+    },
+    {
+      "song": "Ultimate Taste (maimai DX BUDDiES)",
+      "comment": "みんなでFull Flavor! - Let's All Enjoy Full Flavor!",
+      "attribute": "片",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "4 joueurs sur 2 bornes. Chaque joueur sera actif quand la Flandre correspondante dans le clip vidéo est active."
+    },
+    {
+      "song": "Mou minna shineba ii noni",
+      "comment": "どいつもこいつもリア充しやがって！ - Every single one of them is living the good life!",
+      "attribute": "一",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Basée sur la MASTER, mais beaucoup plus intense, avec des jacks. Spam de notes BREAK, et d'autres types de notes post-FESTiVAL."
+    },
+    {
+      "song": "アマノジャクリバース feat. ytr - Amanojaku reverse feat. ytr",
+      "comment": "ぜたっ作を面譜なルワジイ - A work by Zetta, illustrated by Ruwaiji",
+      "attribute": "邪",
+      "forced_options": "- / - / - / LIFE 10 / -",
+      "details_fr": "Une chart pleine de notes SLIDE confuses : certaines commencent ensemble mais bougent à différentes vitesses, d'autres restent plus longtemps qu'on ne le pense, et d'autres s'arrêtent et reviennent en va-et-vient au milieu du chemin. C'est un test des mécaniques de SLIDE post-FESTiVAL, et le LIFE 10 ne laisse aucune place à l'erreur. "
+    },
+    {
+      "song": "クレイジークレイジーダンサーズ - Crazy Crazy dancers (maimai DX BUDDiES)",
+      "comment": "舞 踊れ SAD-NO 踊れ - Danse, SAD-NO, danse !",
+      "attribute": "奏",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Basée sur la Re:MASTER, le côté gauche se concentre sur les paroles d'Amane et à droite sur celles de beatMARIO."
+    },
+    {
+      "song": "悪戯センセーション - Itazura sensation  (maimai DX BUDDiES)",
+      "comment": "二人で一つなの クランベリー - We're One Together, Cranberry",
+      "attribute": "奏",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Basée sur la MASTER, avec les paroles separées des deux côtés (même si on échange durant la partie instrumentale) et quelques parties en miroir entre les deux côtés."
+    },
+    {
+      "song": "Re:Unknown X",
+      "comment": "LUNATIC X",
+      "attribute": "招",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "Recréation de la chart LUNATIC de ce morceau dans 東方ダンマクカグラ ファンタジア・ロスト (Touhou Danmaku Kagura Phantasia Lost). L'une des parties du jeu origial est un VSRG (Vertical Scrolling Rythm Game) à 6 boutons, l'adapter pour maimai fait que cette chart est un vrai challenge."
+    },
+    {
+      "song": "Reach For The Stars",
+      "variants": [
+        {
+          "comment": "スーパーソニック状態！ - Supersonic Mode!",
+          "attribute": "光",
+          "forced_options": "- / - / - / - / -",
+          "details_fr": "Toutes les notes TAP, incluant les débuts de SLIDES, deviennent des notes BREAK. Cette chart a été la seule Utage sélectionnable durant le Location Test de maimai MURASAKi."
+        },
+        {
+          "comment": "お蔵入り - Shelved",
+          "attribute": "蔵",
+          "forced_options": "- / - / AR(-) / - / -",
+          "details_fr": "Une version protoype, différente de la chart MASTER. La première moitié se concentre sur les notes TAP répétitives sur le même bouton, tandis que la suite a une très longue période de spams de double TAP. C'est un peu surréaliste de penser qu'une chart pareille a été imaginée au tout début de maimai."
+        }
+      ]
+    },
+    {
+      "song": "DRAGONLADY",
+      "comment": "TATERENLADY",
+      "attribute": "宴",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Le rythme est le même que la chart MASTER, avec beaucoup plus de jacks que la chart originale."
+    },
+    {
+      "song": "時空を超えて久しぶり！- Jikuu wo koete hisashiburi!",
+      "attribute": "蛸",
+      "variants": [
+        {
+          "comment": "4つ繋げて消すぷよ~ - Connect four Puyos to clear them~",
+          "forced_options": "- / - / - / - / -",
+          "details_fr": "Le joueur doit jouer 4 notes à la fois pour la majorité de la chart. Néanmoins, il y a une section de 6 notes à appuyer en une fois au milieu."
+        },
+        {
+          "comment": "つなげたりして消すぷよ（令和最新版） - Puyo You Clear by Connecting (Latest Reiwa Edition).",
+          "forced_options": "- / Off / - / Off / -",
+          "details_fr": "Une version modifiée de la chart utage originale, mais en ajoutant des notes TOUCH. Le joueur doit donc jouer 4 notes à la fois pour la majorité de la chart, avec une section à 6 notes en même temps. Il n'y a plus de trou quand 'Puyo vert' arrive dans la chart, puisque des notes TOUCH ont été ajoutées."
+        }
+      ]
+    },
+    {
+      "song": "コトバ・カラフル - Kotoba colorful",
+      "comment": "ほらね５・７・５！！ - See? It's 5-7-5!!",
+      "attribute": "宴",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Les notes arrivent uniquement sur les boutons 5 et 7 en suivant le sens d'une aguille d'une montre à partie du haut à droite. Les options de miroir sont désactivées pour des raisons évidentes."
+    },
+    {
+      "song": "Ignis Danse",
+      "comment": "勝手にお蔵入り譜面祭 - Festival of Unpublished Sheet Music.",
+      "attribute": "蔵",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Un prototype de la chart MASTER, avec des notes TAP plus complexes et des SLIDE très rapides."
+    },
+    {
+      "song": "Back 2 Back",
+      "comment": "Spin 2 Spin.",
+      "attribute": "傾",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "La chart MASTER, pivotée de 90 degrés."
+    },
+    {
+      "song": "In Chaos",
+      "comment": "チャンさんは今日もアクセル全開 - Mr. Chan is going full throttle again today.",
+      "attribute": "蔵",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une version prototype de la Re:MASTER, qui plus difficile que la chart normale."
+    },
+    {
+      "song": "セガサターン起動音[H.][Remix] - Sega Saturn kidou on[H.][Remix]",
+      "comment": "回転タップ検定起動音 - Rotary Tap Certification Startup Sound.",
+      "attribute": "宴",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Un cercle de notes TAP qui continue durant toute la chart."
+    },
+    {
+      "song": "Credits",
+      "comment": "あの人の引き出しサイズは化け物 - That person's repertoire is off the charts.",
+      "attribute": "蔵",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Un prototype de la MASTER, avec des positions de notes TAP moins abouties dans la première moitié et qui possède une deuxième moitié très différente, beaucoup plus difficile."
+    },
+    {
+      "song": "FREEDOM DiVE (tpz Overcute Remix)",
+      "comment": "サファ太人間卒業シリーズ - Safata's 'Graduating from Being Human' Series.",
+      "attribute": "狂",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart d'une extrême difficulté conçue pour défier vos aptitudes humaines. Néanmoins, elle a déjà été AP."
+    },
+    {
+      "song": "Wonderland Wars オープニング - Wonderland Wars opening",
+      "attribute": "宴",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Toutes les charts de Wonderland Wars オープニング, la musique de Poisson d'Avril 2016, sont ressorties dans les UTAGE. C'est le morceau avec le plus d'UTAGE de tout le jeu, avec 好きな惣菜発表ドラゴン - Suki na souzai happyou dragon.",
+      "variants": [
+        {
+          "comment": "EASY(当時は宴という枠が) - EASY (At the time, it was part of the 'Banquet' category)"
+        },
+        {
+          "comment": "BASIC(無かった時代なので) - BASIC (since it didn't exist back then)"
+        },
+        {
+          "comment": "ADVANCED(急ぎで全難度を) - ADVANCED (All difficulty levels, as soon as possible)"
+        },
+        {
+          "comment": "EXPERT(作成した訳です) - EXPERT (This is the translation I created.)"
+        },
+        {
+          "comment": "MASTER(チャン氏のReMASが) - MASTER (Mr. Chan's ReMAS)"
+        },
+        {
+          "comment": "Re:MASTER(一番先にできた譜面！) - Re:MASTER (The very first chart I made!)"
+        }
+      ]
+    },
+    {
+      "song": "Aegleseeker",
+      "attribute": "蔵",
+      "comment": "and in that light, I find deliverance.",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart MASTER prototype. L'idée derrière cette chart semble être plus basée sur la chart FUTURE d'Arcaea (Le jeu d'où est tiré ce morceau), mais contenait trop de notes et a été allégée sur la chart normale."
+    },
+    {
+      "song": "Space Harrier Main Theme [Reborn]",
+      "attribute": "耐",
+      "comment": "HOLDがSQUILLAに!? - HOLD Becomes SQUILLA!?",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Basé sur la chart EXPERT. Change toutes les notes HOLD par des 16ème de notes TAP de la même longueur. Le commentaire fait référence à SQUILLA qui est un boss de la série Space Harrier, qui ressemble à des perles enchaînées formant un dragon, faisant écho aux patterns de cette chart. Tous les jacks sont des notes BREAK, sauf la première note (qui pourrait suggérer le point faible de SQUILLA, qui est sa tête)."
+    },
+    {
+      "song": "Love's Theme of BADASS ～バッド・アス 愛のテーマ～ - Love's Theme of BADASS ~bad ass ai no Thema~",
+      "attribute": "爆",
+      "comment": "爆発は好きか！？- Do you like explosions!?",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Basé sur la chart MASTER, mais à travers pas mal de SLIDE. Les notes TOUCH avec des effets d'explosion sont ajoutées. Certaines SLIDE sont devenues des SLIDE BREAK. Les notes de fin ont toutes été changées par des notes BREAK."
+    },
+    {
+      "song": "エンジェル ドリーム - Angel Dream",
+      "attribute": "充",
+      "comment": "目と目を合わせて舞を分け合おう - Let's lock eyes and share the dance.",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur les deux côtés de la chart sont des miroirs et partagent le rythme de la chart EXPERT. Le placement des notes facilite la rencontre des deux joueurs au milieu de la borne."
+    },
+    {
+      "song": "3re Avenue",
+      "attribute": "覚",
+      "comment": "Mai Dimension",
+      "forced_options": "SONIC / - / - / - / -",
+      "details_fr": "Un nouveau style de mémorisation de chart. Il faut suivre les notes TOUCH, puisque les HOLD et les TAP à cette vitesse viendront à la même position. Si les notes TOUCH sont au milieu, cela veut dire qu'une SLIDE immédiate arrive, avec l'espacement des notes TOUCH qui indiqueront la longueur de la SLIDE. "
+    },
+    {
+      "song": "Lionheart",
+      "attribute": "蔵",
+      "comment": "かつてのニコ生で公開したアレ！- That thing we showed on a past Nico Live stream!",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une version prototye de la chart MASTER actuelle, vue pour la première fois dans un stream live NicoNico."
+    },
+    {
+      "song": "Oshama Scramble!",
+      "attribute": "宴",
+      "comment": "Let's Party Night!",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart apparue pour la première fois au JAEPO 2017 (Japan Amusement Expo), avec des patterns conçus juste pour le fun, avec des notes SLIDE en va-et-vient et 8 notes HOLD en même temps."
+    },
+    {
+      "song": "犬日和。- Inu biyori.",
+      "attribute": "逆",
+      "comment": "エイプリルのやつ復活 / ☆＜僕なりのジョークです (April 1st, 2017 only) - The April Fools' Thing Is Back / ☆<Just my own little joke (April 1, 2017 only)>",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart Poisson d'Avril 2017. Une chart lourde en SLIDE, où les notes étoiles apparaissent toujours à la fin de la SLIDE, au lieu du début. Une SLIDE en forme d'éventail nécessite de taper 3 notes étoiles en une fois. Il y a aussi une partie avec 6 notes HOLD à tenir en même temps."
+    },
+    {
+      "song": "Garakuta Doll Play",
+      "forced_options": "- / - / - / - / -",
+      "variants": [
+        {
+          "attribute": "J",
+          "comment": "No.1 いちばんかんたん じこべ99.2% (MURASAKi) / master練習用(?) (MURASAKi PLUS→MiLK PLUS) /Jackの現代風アレンジ版 (FiNALE→) - No. 1: The Easiest One—99.2% Self-Play (MURASAKi) / For Master Practice (?) (MURASAKi PLUS→MiLK PLUS) / Jack's Modern Arrangement (FiNALE→)",
+          "details_fr": "Une des 5 charts ajoutée pour le Poisson d'Avril 2017, dans le cadre du ガラクタ総選挙 (Garakuta General Election). Cette chart était la plus jouée, elle a été donc ajoutée de manière permanente à MURASAKi PLUS. Elle devait être ajoutée à maimai DX BUDDiES également, mais la chart 'No.2' a été ajoutée à la place. Les 4 autres charts sont disponibles à partir de maimai DX BUDDiES PLUS."
+        },
+        {
+          "attribute": "は",
+          "comment": "No.2 理論出来る（出来るとは言ってない (MURASAKi) / はっぴーの若干ストイック気味版 (FiNALE→) - No. 2: Theoretically Possible (Not Saying It's Possible) (MURASAKi) / A Slightly More Stoic Version of “Happy” (FiNALE→)",
+          "details_fr": "Une des 5 charts ajoutée pour le Poisson d'Avril 2017, dans le cadre du ガラクタ総選挙 (Garakuta General Election). Semble être basée sur la Re:MASTER normale ajoutée à maimai FiNALE. "
+        },
+        {
+          "attribute": "r",
+          "comment": "No.3 ガラクタ＋＋ (MURASAKi) / rioNのスライド筋マシマシ版 (FiNALE→) - No. 3 Junk++ (MURASAKi) / rioN's Slide Muscle Maxed-Out Edition (FiNALE→)",
+          "details_fr": "Une des 5 charts ajoutée pour le Poisson d'Avril 2017, dans le cadre du ガラクタ総選挙 (Garakuta General Election). Beaucoup de SLIDE."
+        },
+        {
+          "attribute": "玉",
+          "comment": "No.4 CHUNITHM 再翻訳版 (MURASAKi) /玉子豆腐のチュウニリスペクト版 (FiNALE→) - No. 4 CHUNITHM Re-translated Version (MURASAKi) / Tamago Tofu's Chunithm Tribute Version (FiNALE→)",
+          "details_fr": "Une des 5 charts ajoutée pour le Poisson d'Avril 2017, dans le cadre du ガラクタ総選挙 (Garakuta General Election). C'est une recréation de la MASTER de CHUNITHM. Le placement des notes est sensiblement le même que la chart originale, avec les timings de sons. Les EX Notes (Notes 'Critical-ou-rien' sorties à partir de maimai DX) n'existaient pas à l'époque, elles sont des BREAK dans maimai pre-DX."
+        },
+        {
+          "attribute": "某",
+          "comment": "No.5 ブレイクマシマシコンボカラメ (MURASAKi) /パリピS氏のやべーやつ版 (FiNALE→) - No. 5 Break Mashi-Mashi Combo Karame (MURASAKi) / Party Animal S's “Crazy Version” (FiNALE→) ",
+          "details_fr": "Une des 5 charts ajoutée pour le Poisson d'Avril 2017, dans le cadre du ガラクタ総選挙 (Garakuta General Election). Ce commentaire fait référence au fait que, lorsqu'on passe commande dans un restaurant de ramen, on utilise des 'mots-clés' (qui sont censés être des abréviations des garnitures, comme dans le commentaire 'many breaks scrambled') pour indiquer au chef ce que l'on souhaite."
+        }
+      ]
+    },
+    {
+      "song": "CYCLES",
+      "attribute": "宴",
+      "comment": "いつもより多く回っております - We're running more frequently than usual.",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart d'entraînement du fameux pattern de SLIDES de la chart MASTER, qui arrive à la deuxième moité du morceau. 46% des notes de la chart sont des notes SLIDE."
+    },
+    {
+      "song": "Turn around",
+      "attribute": "蛸",
+      "comment": "Tako around",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Les notes TAP arrivent au même endroit que les HOLD, forçant le joueur à utiliser les boutons et l'écran tactile."
+    },
+    {
+      "song": "LANCE",
+      "attribute": "覚",
+      "comment": "なぞる順番を覚えるゲーム(中級編) - A Game to Practice Remembering the Order of Tracing (Intermediate Level)",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart de mémorisation de SLIDE, semblable à 東京リアルワールド (Tokyo Real World) mais plus difficle. Cette fois-ci, les SLIDE sont en miroir à chaque fois que vous les répétez."
+    },
+    {
+      "song": "D✪N'T ST✪P R✪CKIN'",
+      "attribute": "覚",
+      "comment": "なぞる順番を覚えるゲーム(応用編) - A Game to Practice Remembering the Order of Tracing (Advanced)",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Chart de mémorisation de SLIDE, où non seulement les SLIDE sont en miroir, mais les notes étoiles ne sont plus là pour vous guider. Le joueur devra jouer deux SLIDE en même temps à la seconde partie de la chart."
+    },
+    {
+      "song": "ジングルベル - Jingle bell",
+      "attribute": "即",
+      "comment": "スライド発射が早ければ簡単になると思った - I thought it would be easier if the slide launched quickly.",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La chart MASTER mais sans le temps d'attente d'un battement de BPM sur les SLIDE."
+    },
+    {
+      "song": "Our Wrenally",
+      "attribute": "即",
+      "comment": "この曲ＢＰＭ２１０やろ！？→結果 - This song's BPM is 210, right!? → Result",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La chart MASTER mais avec le temps d'attente des SLIDE réduit. La difficulté est plus grande à cause de l'abondance de notes TAP qui viennent en même temps que l'activation des SLIDE dans la chart originale."
+    },
+    {
+      "song": "夢花火 - Yume hanabi",
+      "attribute": "宴",
+      "comment": "CYCLESの素を手に入れたぞよ - I've got my hands on the CYCLES source code!",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La charte originale est remplacée par les patterns de la chart MASTER de CYCLES, incluant l'iconique pattern de la seconde moitié de CYCLES, qui prend tout le refrain."
+    },
+    {
+      "song": "オトヒメモリー☆ウタゲーション - Otohimemory_utagation",
+      "attribute": "協",
+      "comment": "カメとタイに遊んでもらう予定じゃ - I'm planning to hang out with the turtle and the snapper...",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Conçue pour deux joueurs sur une même borne, un à gauche et un autre à droite. La seule chart 協 (Kyou, Cooperation) qui n'a pas été ressortie pour maimai DX BUDDiES à son lancement."
+    },
+    {
+      "song": "GEMINI -M-",
+      "attribute": "宴",
+      "comment": "―ALL PUSH―",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Dégage la vibe d'une chart 蛸 (Tako, Pieuvre), car la chart est constituée principalement de 4 notes TAP ou plus à taper en même temps, incluant des notes BREAK venant de tous les boutons."
+    },
+    {
+      "song": "Starlight Disco",
+      "attribute": "宴",
+      "comment": "☆Starlight Disco Festa☆",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart remplie de SLIDE sans notes étoiles, et des étoiles à la place des notes TAP."
+    },
+    {
+      "song": "タカハせ！名人マン - Takahase! Meijin-man",
+      "attribute": "狂",
+      "comment": "名人マンよくばりセット - Meijin Man's All-You-Can-Eat Set",
+      "forced_options": "- / - / Border(SSS) / Auto(SSS) / -",
+      "details_fr": "Contient des jacks extrêmement rapides, compliqués par une note HOLD qui oblige de les effectuer à une main. La seule manière de passer cette chart (si vous n'avez pas le doigté aussi rapide que Takahashi Meijin lui-même) est d'appliquer l'option de miroir vertical (⇅) et d'appuyer sur la HOLD avec votre corps."
+    },
+    {
+      "song": "Glorious Crown",
+      "attribute": "蔵",
+      "comment": "名人マンよくばりセット - Mr. Chan's 'First Draft' Series: 'The King'",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Prototype de la chart MASTER, version initale avant que Jack ne la modifie."
+    },
+    {
+      "song": "AMAZING MIGHTYYYY!!!!",
+      "attribute": "蔵",
+      "comment": "やる気いっぱい夢いっぱい、ノーツも。- Full of enthusiasm and dreams—and notes, too.",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Prototype de la chart MASTER, version initale. La différence la plus notable est que la partie du milieu (qui est une pause dans la chart MASTER originale) est remplacée par des 16èmes de notes TAP."
+    },
+    {
+      "song": "四月の雨 - Shigatsu no ame",
+      "attribute": "宴",
+      "comment": "ちゃんとしたBPMはこっちでしょ - This is the correct BPM, right?",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La chart MASTER mais avec le temps d'attente des SLIDE réduit."
+    },
+    {
+      "song": "犬日和。(はっぴー歌唱Ver) - Inu biyori. (Happy kashou Ver)",
+      "attribute": "幸",
+      "comment": "HOLDだけでがんばろうとした。 - I tried to do my best just by holding on.",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart sortie à l'occasion du Poisson d'Avril 2014, alternative au morceau original 犬日和。(Inu Biyori.). Elle est chantée par はっぴー (Happy), un des charters depuis maimai classique et la fameuse personne toujours costumée en chien dans les events officiels de SEGA. La chart est principalement des notes HOLD."
+    },
+    {
+      "song": "全世界共通リズム感テスト - Zen sekai kyoutsuu rhythm kan test",
+      "attribute": "宴",
+      "comment": "譜面が見えるバージョン(初級) / 譜面が見えないバージョン(上級) - Version with Sheet Music (Beginner) / Version without Sheet Music (Advanced)",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart sortie à l'occasion du Poisson d'Avril 2015, ayant pour principe d'appuyer sur un même bouton en rythme régulier même si le métronome disparaît. La version Beginner fait référence à la chart EXPERT et Advanced à la chart MASTER. La différence entre les deux est qu'il y n'y pas de HIT SOUND dans la chart MASTER."
+    },
+    {
+      "song": "怒槌～光吉猛修一部謎～ - Ikazuchi~Mitsuyoshi Takenobu ichibu nazo~",
+      "attribute": "宴",
+      "comment": "譜面とムービーをよく見て謎を解け！- Look closely at the sheet music and the video to solve the mystery!",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Une chart sortie à l'occasion du Poisson d'Avril 2019. Elle n'a pas été conçue pour être jouée, mais en regardant les notes et le clip, le joueur doit résoudre des énigmes, sur CHUNITHM, ONGEKI et maimai. Les solutions en anglais sont disponibles sur la page SilentBlue du morceau pour chaque jeu. Les énigmes supplémentaires sont disponibles en japonais sur le thread Twitter de l'évènement, dont le lien est disponible également sur SilentBlue."
+    },
+    {
+      "song": "BREaK! BREaK! BREaK!",
+      "attribute": "光",
+      "comment": "BREaK! BREaK! BREaK! BREaK! BREaK! BREaK!",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Tous les notes possibles devinnent des notes BREAK, incluant les HOLD et SLIDE ajoutés sur maimai DX FESTiVAL. Toutes les notes TOUCH ont des effets, and sont d'office les plus grandes possible, comme celles utilisées dans les charts BASIC et ADVANCED."
+    },
+    {
+      "song": "KING is BACK!!",
+      "attribute": "逆",
+      "comment": "お前がBACKするんかーーーい!! - You're going BACK?!?!",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Les notes étoiles sont à la fin des SLIDE. Regarder la direction des SLIDE n'a pas d'intérêt au vu du BPM assez rapide du morceau."
+    },
+    {
+      "song": "洗脳 - Sennou (maimai DX BUDDiES)",
+      "attribute": "奏",
+      "comment": "知ってた？元祖デュエット譜面 - Did you know? The original duet sheet music",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Le côté gauche joue une chart basée sur la chart MASTER, qui suit les paroles de Kakichoko, et à droite une chart basée sur la Re:MASTER, qui suit les paroles de Yurin. Un duo, donc."
+    },
+    {
+      "song": "アンビバレンス - Ambivalence (maimai DX BUDDiES)",
+      "attribute": "奏",
+      "comment": "アンビバレンスな私なの - I'm such an ambivalent person.",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Le côté gauche joue les paroles d'Aizawa, et à droite les paroles de suriii. Sinon, les charts sont similaires à leur chart MASTER originale et sont des miroirs l'une de l'autre."
+    },
+    {
+      "song": "マイオドレ！舞舞タイム - Maiodore! maimai time (maimai DX BUDDiES)",
+      "attribute": "奏",
+      "comment": "一緒に！舞舞タイム！ - Let's do it together! Mai Mai Time!",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Le côté gauche joue la partie de Sora, et à droite la partie de Miko. Les charts sont similaires à leur chart MASTER originale. À la fin, les SLIDE classique du côté gauche sont remplacés par des SLIDE BREAK sur le côté droit, ce qui reprend les couleurs de l'image des deux chanteuses."
+    },
+    {
+      "song": "ほしぞらスペクタクル - Hoshizora Spectacle",
+      "attribute": "星",
+      "comment": "一緒に！舞舞タイム！- A Spectacle of Stars",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Non seulement toutes les notes TAP deviennent des notes étoiles, le début et la fin des notes HOLD sont remplacés par des notes étoiles également. Elle ressemble beaucoup à la chart normale."
+    },
+    {
+      "song": "チューリングの跡 - Turing no ato",
+      "attribute": "即",
+      "comment": "実際はBPM360らしいので… - Actually, it seems to be 360 BPM, so…",
+      "forced_options": "- / Off / - / LIFE 10 / -",
+      "details_fr": "Une chart unique composé principalement de SLIDE, avec le temps d'attente des SLIDE réduit, comme si la chart avait été prévue à 360 BPM (comme composée à l'origine). À cette vitesse, les SLIDE peuvent être pris immédiatement. Extrêmement difficile au vu de la LIFE 10. "
+    },
+    {
+      "song": "隠密あんみつDX - Onmitsu anmitsu DX",
+      "attribute": "餡",
+      "comment": "いい感じに同時押しするといい感じになる - If you press the buttons at the same time just right, it sounds great!",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "'Anmitsu' est une terminologie dans les jeux de rythme qui fait référence à une technique qui permet de transformer des notes presque collés ensemble dans le temps en les prenant comme des notes BOTH, sacrifiant la précision pour le combo. Cette chart contient ce genre de note collées pour s'entraîner à cette technique, pour ceux qui souhaiteraient s'entraîner pour Xaleid◆scopiX ou 系ぎて (Tsunagite), avec leur quadruplettes (4 notes presque simultanées)."
+    },
+    {
+      "song": "のじゃロリック - Noja lolic (maimai DX BUDDiES)",
+      "attribute": "奏",
+      "comment": "のじゃロリックがはじまるぞ - “Nojya Loric” is about to start!",
+      "forced_options": "- / Off / - / Off / -",
+      "details_fr": "2 joueurs sur 2 bornes. Le côté gauche se concentre sur les paroles de Choko, et le côté droit sur celles de Chinoi. Sinon, semblable à la chart MASTER originale."
+    },
+    {
+      "song": "MIRROR of MAGIC",
+      "attribute": "鏡",
+      "comment": "MIRROR of ADVANCED(↻)",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "La chart ADVANCED pivotée verticalement. Cela donne une chart faite entièrement de double et de notes quadruples."
+    },
+    {
+      "song": "Straight into the lights",
+      "attribute": "即",
+      "comment": "ごめんなさい、今は急がないと - I'm sorry, but I have to hurry right now.",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La chart MASTER originale avec le temps des SLIDE réduits. Comme avec Our Wrenally, cette chart à bas BPM a un temps d'attente des SLIDE assez longs, et peut induire en erreur les joueurs qui les jouent beaucoup plus tôt qu'il ne faudrait."
+    },
+    {
+      "song": "その群青が愛しかったようだった - Sono gunjou ga itoshikatta you datta",
+      "attribute": "星",
+      "comment": "そのTAPは青かったようだった - That TAP seemed to be blue.",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La chart MASTER originale rendue la plus bleue possible en remplaçant les HOLD, les BOTH et les BREAK avec des notes étoiles."
+    },
+    {
+      "song": "DETARAME ROCK&ROLL THEORY",
+      "attribute": "疑",
+      "comment": "スライドの発射タイミング速度がデタラメ - The timing and speed of the slide's firing are all over the place.",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "Si l'étoile commençant la SLIDE est une BREAK, alors la SLIDE doit être faite instantanément. Sinon, la SLIDE ne doit pas être faite tant qu'une note TAP ne soit arrivée dessus. Il faut gérer les SLIDE multiples suivant ces conditions."
+    },
+    {
+      "song": "Oshama Scramble! (Cranky Remix)",
+      "attribute": "宴",
+      "comment": "ぼくらのかんがえたさいきょうのまいまい - The Ultimate Snail We Imagined.",
+      "forced_options": "- / - / - / - / -",
+      "details_fr": "La Utage d'Oshama Scramble!, mais plus chaotique."
+    },
+    {
+      "song": "The wheel to the right",
+      "attribute": "右",
+      "comment": "インド人含め右に - To the right, including Indians.",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Toute la chart est emprisonnée sur le côté droit de l'écran, incluant les SLIDE qui commencent et qui terminent à la fois sur la droite. La slide en forme d'éventail est changée par une triple SLIDE. Cela donne des situations ou les notes TAP et HOLD se superposent, ce qui rend la lecture difficile."
+    },
+    {
+      "song": "The wheel to the right",
+      "attribute": "右",
+      "comment": "インド人含め右に - To the right, including Indians.",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Toute la chart est emprisonnée sur le côté droit de l'écran, incluant les SLIDE qui commencent et qui terminent à la fois sur la droite. La slide en forme d'éventail est changée par une triple SLIDE. Cela donne des situations ou les notes TAP et HOLD se superposent, ce qui rend la lecture difficile."
+    },
+    {
+      "song": "WE'RE BACK!!",
+      "attribute": "逆",
+      "comment": "SLIDE BACK!!",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Basée sur la chart EXPERT, avec la direction des SLIDE renversées, mais avec les notes étoiles au même endroit initial. Peut induire en erreur les joueurs habitués à la chart EXPERT originale."
+    },
+    {
+      "song": "Hainuwele",
+      "attribute": "覚",
+      "comment": "maimai でらっくす版覚譜面もほしかった - I also wanted the 'Kaku' chart for the Deluxe version of maimai.",
+      "forced_options": "- / Off / - / - / -",
+      "details_fr": "Le retour des chart de mémorisation de SLIDE de maimai. Dans chaque groupe de mémorisation, une note étoile BREAK est liée à la première SLIDE du groupe, et une SLIDE BREAK la dernière du groupe."
+    }
+  ]
+}

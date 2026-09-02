@@ -140,6 +140,19 @@ class ScorefetcherClient(
         }
     }
 
+    suspend fun getTopUtageScores(keyHash: String): List<PlayerBest30Response> {
+        val response: HttpResponse = client.get("${baseUrl}scores/top/utage") {
+            addApiKey()
+            header("Accept", "application/json")
+            parameter("keyHash", keyHash)
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            emptyList()
+        } else {
+            response.body()
+        }
+    }
+
     suspend fun getChartHistory(
         hashKey: String,
         songName: String,
