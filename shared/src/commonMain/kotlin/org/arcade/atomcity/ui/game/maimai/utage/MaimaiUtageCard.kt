@@ -194,7 +194,7 @@ fun UtageExpressiveItem(
                             if (parsedComments.isNotEmpty()) {
                                 Card(
                                     colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
+                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
                                     ),
                                     shape = RoundedCornerShape(
                                         topStart = 16.dp,
@@ -236,7 +236,7 @@ fun UtageExpressiveItem(
                                                                 lineHeight = 18.sp
                                                             ),
                                                             fontWeight = FontWeight.Bold,
-                                                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                                                            color = MaterialTheme.colorScheme.onSurface
                                                         )
                                                     }
                                                     if (!eraComment.en.isNullOrBlank()) {
@@ -246,14 +246,14 @@ fun UtageExpressiveItem(
                                                                 lineHeight = 16.sp
                                                             ),
                                                             fontWeight = FontWeight.Medium,
-                                                            color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                                         )
                                                     }
                                                 }
 
                                                 if (index < parsedComments.size - 1) {
                                                     HorizontalDivider(
-                                                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.15f),
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                                                         thickness = 0.5.dp
                                                     )
                                                 }
