@@ -230,7 +230,7 @@ fun MaimaiScoreItem(
                 // Achievement Column
                 Column(
                     horizontalAlignment = Alignment.End,
-                    modifier = Modifier.padding(start = 4.dp)
+                    modifier = Modifier.padding(start = 6.dp)
                 ) {
                     footer()
                     if (play.rank != null) {
@@ -242,7 +242,9 @@ fun MaimaiScoreItem(
                                 letterSpacing = 0.5.sp
                             ),
                             color = difficultyColor,
-                            modifier = Modifier.padding(bottom = 2.dp)
+                            modifier = Modifier.padding(bottom = 2.dp),
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                     
@@ -254,7 +256,9 @@ fun MaimaiScoreItem(
                                 fontSize = if (isNarrow) 18.sp else 24.sp,
                                 letterSpacing = (-0.5).sp
                             ),
-                            color = textColor
+                            color = textColor,
+                            maxLines = 1,
+                            softWrap = false
                         )
 
                         Text(
@@ -264,7 +268,9 @@ fun MaimaiScoreItem(
                                 fontSize = if (isNarrow) 10.sp else 12.sp
                             ),
                             color = difficultyColor,
-                            modifier = Modifier.padding(bottom = 2.dp, start = 1.dp)
+                            modifier = Modifier.padding(bottom = 2.dp, start = 1.dp),
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
 
@@ -276,7 +282,9 @@ fun MaimaiScoreItem(
                                 fontSize = if (isNarrow) 14.sp else 18.sp,
                                 letterSpacing = (-0.5).sp
                             ),
-                            color = textColor
+                            color = textColor,
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                     
@@ -286,6 +294,9 @@ fun MaimaiScoreItem(
                             fontSize = if (isNarrow) 9.sp else 11.sp,
                             color = textSecondaryColor
                         ),
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }

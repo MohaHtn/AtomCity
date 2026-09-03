@@ -177,7 +177,7 @@ fun MaimaiScoreInfoSheet(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "maimai donne 4% de bonus sur chaque BREAK, ce qui donne 100 points lors que la note est tapée parfaitement (soit 2500 points), d'ou le 1.04.",
+                        text = "maimai donne 100 points de bonus, ce qui équivaut à 4% (d'où 1,04) du score du BREAK tapée parfaitement (2500 points), ce qui donne au total 2600.",
                         style = MaterialTheme.typography.bodySmall.copy(
                             lineHeight = 18.sp
                         ),

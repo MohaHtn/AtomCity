@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -15,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.arcade.atomcity.ui.core.AutoResizedText
 import org.arcade.atomcity.ui.game.common.selectRatingBackground
 import org.arcade.atomcity.utils.format
 
@@ -49,7 +49,7 @@ fun MaimaiRatingBadge(
         color = Color.Transparent,
         tonalElevation = 4.dp
     ) {
-        Text(
+        AutoResizedText(
             text = computeRating(rating),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.ExtraBold,
@@ -57,6 +57,8 @@ fun MaimaiRatingBadge(
                 letterSpacing = 0.sp
             ),
             color = ratingTextColor,
+            minFontSize = 8.sp,
+            maxLines = 1,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
         )
     }

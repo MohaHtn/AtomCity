@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.arcade.atomcity.domain.model.LevelInfo
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
@@ -100,10 +101,13 @@ fun MaimaiDifficultyBadge(
         shadowElevation = 4.dp,
         modifier = modifier
     ) {
-        Row(){
+        Row {
             Text(
                 text = displayText,
                 style = textStyle,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(
                     horizontal = if (isCompact) 8.dp else 12.dp,
                     vertical = if (isCompact) 2.dp else 4.dp

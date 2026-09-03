@@ -267,7 +267,7 @@
       "attribute": "耐",
       "comment": "(゚∀゚)どこまでウマれるかな(゚∀゚) - (ﾟ∀ﾟ) I wonder how far I can go? (ﾟ∀ﾟ)",
       "forced_options": "- / Off / Border(S) / Auto (S) / Maji",
-      "details_fr": "Le couplet est basé sur la chart EXPERT, le refrain propose des notes TAP simples et doubles très rapides, basées sur la danse de la chanson."
+      "details_fr": "Les couplets sont basés sur la chart EXPERT, le refrain propose des notes TAP simples et doubles très rapides, basées sur la danse de la chanson."
     },
     {
       "song": "Future",
@@ -873,7 +873,7 @@
       "comment": "ほらね５・７・５！！ - See? It's 5-7-5!!",
       "attribute": "宴",
       "forced_options": "- / Off / - / - / -",
-      "details_fr": "Les notes arrivent uniquement sur les boutons 5 et 7 en suivant le sens d'une aguille d'une montre à partie du haut à droite. Les options de miroir sont désactivées pour des raisons évidentes."
+      "details_fr": "Les notes arrivent uniquement sur les boutons 5 et 7 en suivant le sens d'une aiguille d'une montre à partir du haut à droite. Les options de miroir sont désactivées pour des raisons évidentes."
     },
     {
       "song": "Ignis Danse",

@@ -1,11 +1,13 @@
 package org.arcade.atomcity.ui.game.maimai.details
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -21,9 +23,9 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.Scorefet
 @Composable
 fun MaimaiScoreBadgeRow(scoreEntry: ScorefetcherApiData, modifier: Modifier = Modifier) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = modifier.horizontalScroll(rememberScrollState())
     ) {
         if (scoreEntry.isHighScore == true) {
             ScoreBadge(
@@ -77,6 +79,8 @@ fun ScoreBadge(text: String, containerColor: Color, contentColor: Color) {
                 fontWeight = FontWeight.Black,
                 color = contentColor
             ),
+            maxLines = 1,
+            softWrap = false,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }

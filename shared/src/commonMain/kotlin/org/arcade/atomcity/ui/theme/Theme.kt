@@ -6,10 +6,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import org.arcade.atomcity.utils.ThemeMode
 import org.arcade.atomcity.utils.ThemeSettingsManager
 import org.koin.compose.koinInject
@@ -39,11 +42,23 @@ fun AtomCityTheme(
 
     val animatedColorScheme = animateColorSchemeAsState(targetColorScheme)
 
-    MaterialTheme(
-        colorScheme = animatedColorScheme,
-        typography = Typography,
-        content = content
-    )
+    val currentDensity = LocalDensity.current
+    // Si la taille de police du système (fontScale) dépasse 1.15x,
+    // on la limite à 1.15x max pour éviter de casser la mise en page de l'interface.
+    val adjustedFontScale = currentDensity.fontScale.coerceAtMost(1.0f)
+
+    CompositionLocalProvider(
+        LocalDensity provides Density(
+            density = currentDensity.density,
+            fontScale = adjustedFontScale
+        )
+    ) {
+        MaterialTheme(
+            colorScheme = animatedColorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }
 
 @Composable

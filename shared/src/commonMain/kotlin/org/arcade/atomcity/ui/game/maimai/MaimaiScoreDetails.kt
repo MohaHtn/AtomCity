@@ -182,7 +182,7 @@ fun MaimaiScoresDetails(
                 shape = RoundedCornerShape(32.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Header: Badges + Date
@@ -193,9 +193,11 @@ fun MaimaiScoresDetails(
                     ) {
                         MaimaiScoreBadgeRow(
                             scoreEntry = scoreEntry,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f, fill = false)
                         )
                         
+                        Spacer(modifier = Modifier.width(8.dp))
+
                         Surface(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(8.dp)
@@ -206,6 +208,7 @@ fun MaimaiScoresDetails(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 ),
+                                maxLines = 1,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
@@ -289,60 +292,82 @@ fun MaimaiScoresDetails(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Achievement Display
-                    Row(
-                        verticalAlignment = Alignment.Bottom,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
+                    // Achievement Display
+                    BoxWithConstraints(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        if (scoreEntry.rank != null) {
-                            Text(
-                                text = scoreEntry.rank!!,
-                                style = MaterialTheme.typography.headlineLarge.copy(
-                                    fontWeight = FontWeight.Black,
-                                    color = difficultyColor,
-                                    fontSize = 32.sp
-                                ),
-                                modifier = Modifier.padding(bottom = 12.dp, end = 8.dp)
-                            )
+                        val scaleFactor = when {
+                            maxWidth < 320.dp -> 0.7f
+                            maxWidth < 360.dp -> 0.8f
+                            maxWidth < 400.dp -> 0.9f
+                            else -> 1.0f
                         }
 
-                        Text(
-                            text = scoreEntry.achievementFormattedFixed?.replace("%", "") ?: "0.00",
-                            style = MaterialTheme.typography.displayLarge.copy(
-                                fontWeight = FontWeight.Black,
-                                fontSize = 56.sp,
-                                letterSpacing = (-2).sp,
-                                color = textColor
-                            )
-                        )
-                        Text(
-                            text = "%",
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = difficultyColor
-                            ),
-                            modifier = Modifier.padding(bottom = 8.dp, start = 2.dp)
-                        )
-
-                        val maxAchievement = scoreEntry.theoreticalMaxPercent?.let { "${it.format(2)}%" }
-                            ?: scoreEntry.maxScoreFormattedFixed 
-                            ?: scoreEntry.maxScore?.let { if (it <= 110.0) "${it.format(2)}%" else null }
-                        if (!maxAchievement.isNullOrBlank()) {
-                            val formattedMaxAch = if (maxAchievement.endsWith("%")) maxAchievement else "$maxAchievement%"
-                            Surface(
-                                color = difficultyColor.copy(alpha = 0.15f),
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.padding(bottom = 14.dp, start = 8.dp)
-                            ) {
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            if (scoreEntry.rank != null) {
                                 Text(
-                                    text = "MAX $formattedMaxAch",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.ExtraBold,
+                                    text = scoreEntry.rank!!,
+                                    style = MaterialTheme.typography.headlineLarge.copy(
+                                        fontWeight = FontWeight.Black,
                                         color = difficultyColor,
-                                        letterSpacing = 0.5.sp
+                                        fontSize = (32 * scaleFactor).sp
                                     ),
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    modifier = Modifier.padding(bottom = (12 * scaleFactor).dp, end = (8 * scaleFactor).dp),
+                                    maxLines = 1,
+                                    softWrap = false
                                 )
+                            }
+
+                            Text(
+                                text = scoreEntry.achievementFormattedFixed?.replace("%", "") ?: "0.00",
+                                style = MaterialTheme.typography.displayLarge.copy(
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = (56 * scaleFactor).sp,
+                                    letterSpacing = (-2 * scaleFactor).sp,
+                                    color = textColor
+                                ),
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                            Text(
+                                text = "%",
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = difficultyColor,
+                                    fontSize = (28 * scaleFactor).sp
+                                ),
+                                modifier = Modifier.padding(bottom = (8 * scaleFactor).dp, start = (2 * scaleFactor).dp),
+                                maxLines = 1,
+                                softWrap = false
+                            )
+
+                            val maxAchievement = scoreEntry.theoreticalMaxPercent?.let { "${it.format(2)}%" }
+                                ?: scoreEntry.maxScoreFormattedFixed 
+                                ?: scoreEntry.maxScore?.let { if (it <= 110.0) "${it.format(2)}%" else null }
+                            if (!maxAchievement.isNullOrBlank()) {
+                                val formattedMaxAch = if (maxAchievement.endsWith("%")) maxAchievement else "$maxAchievement%"
+                                Surface(
+                                    color = difficultyColor.copy(alpha = 0.15f),
+                                    shape = RoundedCornerShape((8 * scaleFactor).dp),
+                                    modifier = Modifier.padding(bottom = (14 * scaleFactor).dp, start = (8 * scaleFactor).dp)
+                                ) {
+                                    Text(
+                                        text = "MAX $formattedMaxAch",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = difficultyColor,
+                                            letterSpacing = 0.5.sp,
+                                            fontSize = (11 * scaleFactor).sp
+                                        ),
+                                        modifier = Modifier.padding(horizontal = (6 * scaleFactor).dp, vertical = (2 * scaleFactor).dp),
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                }
                             }
                         }
                     }
@@ -372,14 +397,18 @@ fun MaimaiScoresDetails(
                                                 fontSize = 9.sp,
                                                 letterSpacing = 1.sp,
                                                 color = textSecondaryColor
-                                            )
+                                            ),
+                                            maxLines = 1,
+                                            softWrap = false
                                         )
                                         Text(
                                             text = currentScoreStr,
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Black,
                                                 color = textColor
-                                            )
+                                            ),
+                                            maxLines = 1,
+                                            softWrap = false
                                         )
                                     }
                                 }
@@ -404,14 +433,18 @@ fun MaimaiScoresDetails(
                                                 fontSize = 9.sp,
                                                 letterSpacing = 1.sp,
                                                 color = textSecondaryColor
-                                            )
+                                            ),
+                                            maxLines = 1,
+                                            softWrap = false
                                         )
                                         Text(
                                             text = maxScoreStr,
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Black,
                                                 color = difficultyColor
-                                            )
+                                            ),
+                                            maxLines = 1,
+                                            softWrap = false
                                         )
                                     }
                                 }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
+import org.arcade.atomcity.ui.core.AutoResizedText
 import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.theme.NijiiroFontFamily
 
@@ -139,7 +139,7 @@ fun TaikoNameplate(
                             .offset(x = titleOffsetX, y = titleOffsetY),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
+                        AutoResizedText(
                             text = title ?: "",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = NijiiroFontFamily,
@@ -149,7 +149,7 @@ fun TaikoNameplate(
                             ),
                             color = Color.Black,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
+                            minFontSize = 7.sp,
                             modifier = Modifier.offset(y = -(4).dp)
                         )
                     }
@@ -176,7 +176,7 @@ fun TaikoNameplate(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             if (collapsedFraction < 0.8f) {
-                                Text(
+                                AutoResizedText(
                                     text = title ?: "",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontFamily = NijiiroFontFamily,
@@ -186,7 +186,7 @@ fun TaikoNameplate(
                                     ),
                                     color = expandedTitleColor,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
+                                    minFontSize = 7.sp,
                                     modifier = Modifier.padding(bottom = 2.dp).offset(x = titleOffsetX, y = titleOffsetY + -(1).dp)
                                 )
                             }
@@ -203,7 +203,7 @@ fun TaikoNameplate(
                                 val nameText = name ?: ""
 
                                 // "Border/Stroke" layer
-                                Text(
+                                AutoResizedText(
                                     text = nameText,
                                     modifier = Modifier.fillMaxWidth().offset(y=-(2).dp),
                                     textAlign = TextAlign.Center,
@@ -219,11 +219,10 @@ fun TaikoNameplate(
                                     ),
                                     color = Color.Black,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    softWrap = false
+                                    minFontSize = 8.sp
                                 )
                                 // "Main" layer
-                                Text(
+                                AutoResizedText(
                                     text = nameText,
                                     modifier = Modifier.fillMaxWidth().offset(y=-(2).dp),
                                     textAlign = TextAlign.Center,
@@ -234,8 +233,7 @@ fun TaikoNameplate(
                                     ),
                                     color = Color.White,
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    softWrap = false
+                                    minFontSize = 8.sp
                                 )
                             }
                         }
@@ -258,7 +256,7 @@ fun TaikoNameplate(
                             .offset(x = titleOffsetX, y = titleOffsetY),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
+                        AutoResizedText(
                             text = title ?: "",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = NijiiroFontFamily,
@@ -268,7 +266,7 @@ fun TaikoNameplate(
                             ),
                             color = Color.Black,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
+                            minFontSize = 7.sp,
                             modifier = Modifier.offset(y = -(4).dp)
                         )
                     }
@@ -286,7 +284,7 @@ fun TaikoNameplate(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         if (collapsedFraction < 0.8f) {
-                            Text(
+                            AutoResizedText(
                                 text = title ?: "",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontFamily = NijiiroFontFamily,
@@ -296,7 +294,7 @@ fun TaikoNameplate(
                                 ),
                                 color = expandedTitleColor,
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
+                                minFontSize = 7.sp,
                                 modifier = Modifier.padding(bottom = 2.dp).offset(x = titleOffsetX, y = titleOffsetY + -(1).dp)
                             )
                         }
@@ -313,7 +311,7 @@ fun TaikoNameplate(
                             contentAlignment = Alignment.Center
                         ) {
                             // "Border/Stroke" layer
-                            Text(
+                            AutoResizedText(
                                 modifier = Modifier.fillMaxWidth().offset(y=-(2).dp),
                                 text = nameText,
                                 textAlign = TextAlign.Center,
@@ -329,11 +327,10 @@ fun TaikoNameplate(
                                 ),
                                 color = Color.Black,
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                softWrap = false
+                                minFontSize = 8.sp
                             )
                             // "Main" layer
-                            Text(
+                            AutoResizedText(
                                 modifier = Modifier.fillMaxWidth().offset(y=-(2).dp),
                                 text = nameText,
                                 textAlign = TextAlign.Center,
@@ -344,8 +341,7 @@ fun TaikoNameplate(
                                 ),
                                 color = Color.White,
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                softWrap = false
+                                minFontSize = 8.sp
                             )
                         }
                     }

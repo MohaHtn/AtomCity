@@ -89,11 +89,15 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Black,
                         color = difficultyColor
-                    )
+                    ),
+                    maxLines = 1,
+                    softWrap = false
                 )
                 Text(
                     text = "${((historyEntry.achievement ?: 0.0) / 100.0).format(2)}%",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
         }
