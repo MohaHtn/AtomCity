@@ -149,7 +149,7 @@ fun TaikoScores(
                                 containerColor = Color.Transparent,
                                 scrolledContainerColor = Color.Transparent,
                             ),
-                            scrollBehavior = scrollBehavior
+                            scrollBehavior = scrollBehavior,
                         )
                     }
 

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -350,8 +351,8 @@ fun ProfileHeader(
                 collapsedFraction = 1f,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(horizontal = 48.dp, vertical = 8.dp),
+                    .padding(horizontal = 48.dp, vertical = 8.dp)
+                    .aspectRatio(4.15f),
                 isNarrow = true,
                 titleOffsetX = 0.dp,
                 titleOffsetY = 0.dp,

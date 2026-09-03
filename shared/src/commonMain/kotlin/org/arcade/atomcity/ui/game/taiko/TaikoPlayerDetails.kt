@@ -78,30 +78,32 @@ fun TaikoPlayerDetailsContent(
     titleFontSize: TextUnit? = null,
     nameFontSize: TextUnit? = null
 ) {
-    val density = LocalDensity.current
-    var componentWidth by remember { mutableStateOf(0.dp) }
-
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .offset(x = -(6.5).dp)
             .padding(horizontal = 2.dp, vertical = 2.dp)
-            .onSizeChanged { size ->
-                componentWidth = with(density) { size.width.toDp() }
-            }
             .background(
                 color = MaterialTheme.colorScheme.surface.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 0.7f)),
                 shape = RoundedCornerShape(16.dp),
             )
     ) {
-        val isNarrow = componentWidth < 260.dp && componentWidth > 0.dp
+        val isNarrow = maxWidth <= 360.dp
         val avatarSize = if (isNarrow) {
-            lerp(80.dp, 56.dp, collapsedFraction)
+            lerp(72.dp, 48.dp, collapsedFraction)
         } else {
             lerp(110.dp, 64.dp, collapsedFraction)
         }
+        val nameplateHeight = if (isNarrow) {
+            lerp(68.dp, 48.dp, collapsedFraction)
+        } else {
+            lerp(90.dp, 52.dp, collapsedFraction)
+        }
+        val nameplateYOffset = lerp(0.dp, 2.dp, collapsedFraction)
 
-        Row {
+        Row(
+            modifier = Modifier.wrapContentWidth()
+        ) {
             Column(
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
@@ -111,15 +113,15 @@ fun TaikoPlayerDetailsContent(
                     text = "Taiko",
                     fontWeight = FontWeight.Bold,
                     color = textColor,
-                    fontSize = lerp(25.sp, 16.sp, collapsedFraction),
-                    lineHeight = lerp(16.sp, 12.sp, collapsedFraction)
+                    fontSize = if (isNarrow) lerp(18.sp, 14.sp, collapsedFraction) else lerp(25.sp, 16.sp, collapsedFraction),
+                    lineHeight = if (isNarrow) lerp(14.sp, 11.sp, collapsedFraction) else lerp(16.sp, 12.sp, collapsedFraction)
                 )
                 Text(
                     text = "no Tatsujin",
                     fontWeight = FontWeight.Bold,
                     color = textColor,
-                    fontSize = lerp(25.sp, 16.sp, collapsedFraction),
-                    lineHeight = lerp(16.sp, 12.sp, collapsedFraction)
+                    fontSize = if (isNarrow) lerp(18.sp, 14.sp, collapsedFraction) else lerp(25.sp, 16.sp, collapsedFraction),
+                    lineHeight = if (isNarrow) lerp(14.sp, 11.sp, collapsedFraction) else lerp(16.sp, 12.sp, collapsedFraction)
                 )
             }
 
@@ -138,8 +140,10 @@ fun TaikoPlayerDetailsContent(
             // Taiko Avatar Rendering
             Box(
                 modifier = Modifier
+                    .align(Alignment.CenterVertically)
                     .padding(0.dp)
-                    .requiredSize(avatarSize + 14.dp).offset(y = (-8).dp),
+                    .offset(y = if (!isNarrow) (-4).dp else 0.dp)
+                    .requiredSize(avatarSize + 14.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 if (taikoViewModel != null && userSettings != null) {
@@ -239,15 +243,26 @@ fun TaikoPlayerDetailsContent(
                 }
             }
 
+            val nameplateModifier = if (collapsedFraction >= 0.5f) {
+                Modifier
+                    .align(Alignment.CenterVertically)
+                    .height(nameplateHeight)
+                    .offset(y = if (isNarrow) 0.dp else nameplateYOffset)
+                    .aspectRatio(4.15f, matchHeightConstraintsFirst = true)
+            } else {
+                Modifier
+                    .weight(1f)
+                    .align(Alignment.CenterVertically)
+                    .height(nameplateHeight)
+                    .offset(y = if (isNarrow) 0.dp else nameplateYOffset)
+            }
+
             TaikoNameplate(
                 name = name,
                 title = title,
                 nameplateUrls = nameplateUrls,
                 collapsedFraction = collapsedFraction,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(avatarSize)
-                    .offset(y = lerp(8.dp, 12.dp, collapsedFraction)),
+                modifier = nameplateModifier,
                 isNarrow = isNarrow,
                 titleOffsetX = titleOffsetX,
                 titleOffsetY = titleOffsetY,

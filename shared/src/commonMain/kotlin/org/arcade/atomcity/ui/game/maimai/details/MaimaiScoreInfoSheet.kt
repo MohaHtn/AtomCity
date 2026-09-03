@@ -2,7 +2,9 @@ package org.arcade.atomcity.ui.game.maimai.details
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.formatScoreValue
+import org.arcade.atomcity.ui.core.AutoResizedText
 import org.arcade.atomcity.utils.format
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,14 +103,16 @@ fun MaimaiScoreInfoSheet(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
+                AutoResizedText(
                     text = "($tapCount × 500) + ($holdCount × 1000) + ($slideCount × 1500) + ($breakCount × 2500 × 1,04)",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface
                     ),
                     modifier = Modifier.padding(16.dp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    minFontSize = 8.sp,
+                    maxLines = 1
                 )
             }
 
@@ -268,51 +273,98 @@ fun MaimaiScoreInfoSheet(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "( ",
-                            style = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.onSurface)
-                        )
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "Score avec bonus BREAK de 4% (${formatScoreValue(totalPts.toDouble())})",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                ),
-                                textAlign = TextAlign.Center
-                            )
-                            HorizontalDivider(
-                                modifier = Modifier.padding(vertical = 4.dp).width(220.dp),
-                                thickness = 1.5.dp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                            )
-                            Text(
-                                text = "Score sans bonus BREAK de 4% (${formatScoreValue(basePts.toDouble())})",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                ),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                        Text(
-                            text = " × 100 )",
-                            style = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.onSurface)
-                        )
+                    val scaleFactor = when {
+                        maxWidth < 300.dp -> 0.65f
+                        maxWidth < 350.dp -> 0.75f
+                        maxWidth < 400.dp -> 0.85f
+                        else -> 1.0f
                     }
 
-                    Text(
-                        text = "- 0,0045%",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                        ),
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
+                    val numDenomFontSize = (13 * scaleFactor).sp
+                    val symbolFontSize = (18 * scaleFactor).sp
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "( ",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontSize = symbolFontSize,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                maxLines = 1,
+                                softWrap = false
+                            )
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.width(IntrinsicSize.Max)
+                            ) {
+                                AutoResizedText(
+                                    text = "Score avec bonus BREAK de 4% (${formatScoreValue(totalPts.toDouble())})",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = numDenomFontSize,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    textAlign = TextAlign.Center,
+                                    minFontSize = 7.sp,
+                                    maxLines = 1
+                                )
+
+                                HorizontalDivider(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = (3 * scaleFactor).dp),
+                                    thickness = (1.5 * scaleFactor).dp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                )
+
+                                AutoResizedText(
+                                    text = "Score sans bonus BREAK de 4% (${formatScoreValue(basePts.toDouble())})",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = numDenomFontSize,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    textAlign = TextAlign.Center,
+                                    minFontSize = 7.sp,
+                                    maxLines = 1
+                                )
+                            }
+
+                            Text(
+                                text = " × 100 )",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontSize = symbolFontSize,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
+
+                        Text(
+                            text = "- 0,0045%",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = (15 * scaleFactor).sp
+                            ),
+                            modifier = Modifier.padding(top = (8 * scaleFactor).dp),
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
                 }
             }
 
