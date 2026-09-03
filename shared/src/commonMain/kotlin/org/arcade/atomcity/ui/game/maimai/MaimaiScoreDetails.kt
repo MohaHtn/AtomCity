@@ -470,7 +470,7 @@ fun MaimaiScoresDetails(
 
                     // Table Header
                     val columnHeaders = listOf(
-                        "PERFECT" to Color(0xFFFFD700),
+                        "PERFECT" to Color(0xFFDCA632),
                         "GREAT" to Color(0xFFFF4081),
                         "GOOD" to Color(0xFF00E676),
                         "MISS" to Color(0xFFE57373)
@@ -485,7 +485,7 @@ fun MaimaiScoresDetails(
                             text = "TYPE",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             ),
                             modifier = Modifier.weight(1.2f)
                         )
@@ -512,7 +512,7 @@ fun MaimaiScoresDetails(
                     HorizontalDivider(
                         modifier = Modifier.padding(bottom = 8.dp),
                         thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
 
                     val detail = scoreEntry.scoreDetail
@@ -529,6 +529,12 @@ fun MaimaiScoresDetails(
                     detail?.breakk?.let {
                         DetailRow("Breaks", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
                     detail?.hits?.let {
                         DetailRow("Total", it.perfect ?: 0, it.great ?: 0, it.good ?: 0, it.bad ?: 0)
                     }
@@ -1100,12 +1106,13 @@ fun MaimaiScoreBadgeRow(scoreEntry: ScorefetcherApiData, modifier: Modifier = Mo
                 contentColor = Color(0xFFFBC02D)
             )
         }
-        if (scoreEntry.fullCombo == 1) {
-            val hasGreats = (scoreEntry.scoreDetail?.hits?.great ?: 0) > 0
+        if (scoreEntry.fullCombo != 0) {
             ScoreBadge(
-                text = "FULL COMBO",
-                containerColor = if (hasGreats) Color(0xFFE3F2FD) else Color(0xFFFFF9C4),
-                contentColor = if (hasGreats) Color(0xFF1976D2) else Color(0xFFFBC02D)
+                text = if (scoreEntry.fullCombo == 1) "FULL COMBO" else "FULL COMBO +",
+                containerColor = if (scoreEntry.fullCombo == 1) Color(0xFFE3F2FD) else Color(0xFFFFF9C4),
+                contentColor = if (scoreEntry.fullCombo == 1) Color(0xFF1976D2) else Color(
+                    0xFFC99A2E
+                )
             )
         }
         if (scoreEntry.isAllPerfect == true) {
@@ -1169,10 +1176,10 @@ fun DetailRow(label: String, p: Int, gr: Int, gd: Int, m: Int) {
         )
         
         listOf(
-            p to Color(0xFFFFD700),     // Perfect - Gold
-            gr to Color(0xFFFF4081),    // Great - Pink
-            gd to Color(0xFF00E676),    // Good - Green
-            m to Color(0xFFE57373)      // Miss - Red
+            p to Color(0xFFDBA532),
+            gr to Color(0xFFFF4081),
+            gd to Color(0xFF00E676),
+            m to Color(0xFFE57373)
         ).forEach { (count, color) ->
             Box(
                 modifier = Modifier.weight(1f).padding(horizontal = 2.dp),
