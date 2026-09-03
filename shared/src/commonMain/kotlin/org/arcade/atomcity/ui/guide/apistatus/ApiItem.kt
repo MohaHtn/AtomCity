@@ -1,15 +1,19 @@
 package org.arcade.atomcity.ui.guide.apistatus
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.rounded.Add
@@ -17,9 +21,12 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,24 +38,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.domain.repository.IScorefetcherRepository
 import org.arcade.atomcity.ui.core.GlobalUIState
-import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.utils.PlatformUtils
+import org.arcade.atomcity.utils.TokenUtils
 import org.koin.compose.koinInject
-import io.ktor.util.decodeBase64String
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 @Composable
 internal fun ApiItem(
@@ -85,6 +84,7 @@ internal fun ApiItem(
     val hasKeyActual = if (key == "taiko") taikoAccessCode != null else apiKey != null
     val dialogVisible = remember { mutableStateOf(false) }
     val revealed = remember { mutableStateOf(false) }
+    val revealedPassword = remember { mutableStateOf(false) }
     val successDialogVisible = remember { mutableStateOf(false) }
     
     // Actual supported games (for now!)
@@ -100,92 +100,148 @@ internal fun ApiItem(
         }
     }
 
-    ListItem(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.medium)
-            .clickable(enabled = hasKeyActual) { dialogVisible.value = true },
-        leadingContent = {
-            Icon(
-                imageVector = if (hasKeyActual) Icons.Rounded.CheckCircle else Icons.Rounded.Close,
-                contentDescription = if (hasKeyActual) "API configurée" else "API non configurée",
-                tint = if (hasKeyActual) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-            )
+    OutlinedCard(
+        onClick = {
+            if (hasKeyActual) {
+                GlobalUIState.selectedGameForGuide.value = name
+                dialogVisible.value = true
+            }
         },
-        headlineContent = {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.bodyLarge
-            )
-        },
-        supportingContent = {
-            Text(
-                text = if (hasKeyActual) "Clé configurée • ${maskKey(apiKey)}" else "Aucun accès configuré",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        },
-        trailingContent = {
-            Row() {
+        enabled = hasKeyActual,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = if (hasKeyActual) {
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.12f)
+            } else if (isGameSupported) {
+                MaterialTheme.colorScheme.surfaceContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerLowest
+            }
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (hasKeyActual) {
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+            } else {
+                MaterialTheme.colorScheme.outlineVariant
+            }
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Status Icon Container
+            Surface(
+                shape = CircleShape,
+                color = if (hasKeyActual) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else if (isGameSupported) {
+                    MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainerHighest
+                },
+                modifier = Modifier.size(42.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = if (hasKeyActual) Icons.Rounded.CheckCircle else Icons.Rounded.Close,
+                        contentDescription = null,
+                        tint = if (hasKeyActual) {
+                            MaterialTheme.colorScheme.primary
+                        } else if (isGameSupported) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        },
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
 
-                TextButton(
-                    onClick = {
-                        GlobalUIState.selectedGameForGuide.value = name
-                        GlobalUIState.openSaveKeyDialog.value = true
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Text info
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = when {
+                        hasKeyActual -> "Clé configurée • ${maskKey(apiKey)}"
+                        isGameSupported -> "Non configuré"
+                        else -> "Bientôt disponible"
                     },
-                    enabled = isGameSupported
-                ) {
-                    Column(
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (hasKeyActual) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            }
+
+            // Actions
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isGameSupported) {
+                    FilledTonalButton(
+                        onClick = {
+                            GlobalUIState.selectedGameForGuide.value = name
+                            GlobalUIState.openSaveKeyDialog.value = true
+                        },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                     ) {
                         Icon(
                             imageVector = if (hasKeyActual) Icons.Rounded.Edit else Icons.Rounded.Add,
-                            contentDescription = if (hasKeyActual) "Modifier la clé API" else "Ajouter une clé API",
-                            modifier = Modifier.align( Alignment.CenterHorizontally)
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
                         )
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (hasKeyActual) "Modifier" else "Ajouter",
-                            style = MaterialTheme.typography.labelLarge
+                            style = MaterialTheme.typography.labelMedium
                         )
                     }
 
-                }
-
-                TextButton(
-                    onClick = {
-                        GlobalUIState.selectedGameForGuide.value = name
-                        GlobalUIState.openApiGuide.value = true
-                    },
-                    enabled = isGameSupported
-                ) {
-                    Column(
-                        modifier = Modifier.align( Alignment.CenterVertically)
+                    IconButton(
+                        onClick = {
+                            GlobalUIState.selectedGameForGuide.value = name
+                            GlobalUIState.openApiGuide.value = true
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Info,
                             contentDescription = "Guide",
-                            modifier = Modifier.align( Alignment.CenterHorizontally)
-                        )
-                        Text(
-                            text = "Guide",
-                            style = MaterialTheme.typography.labelLarge
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             }
-
         }
-    )
+    }
 
     if (dialogVisible.value) {
         ApiItemDialog(
             name = name,
             apiKey = if (key == "taiko") taikoAccessCode else apiKey,
+            password = if (key == "taiko") taikoPassword else null,
             revealed = revealed.value,
+            revealedPassword = revealedPassword.value,
             onRevealClick = { revealed.value = !revealed.value },
+            onRevealPasswordClick = { revealedPassword.value = !revealedPassword.value },
             onDismiss = {
                 dialogVisible.value = false
                 revealed.value = false
+                revealedPassword.value = false
             },
             onDeleteClick = {
                 scope.launch {
@@ -209,6 +265,7 @@ internal fun ApiItem(
                     }
                     dialogVisible.value = false
                     revealed.value = false
+                    revealedPassword.value = false
                     
                     if (isDeletedOnServer) {
                         successDialogVisible.value = true
@@ -228,7 +285,7 @@ internal fun ApiItem(
 
     if (successDialogVisible.value) {
         AlertDialog(
-            onDismissRequest = { /* Empêcher la fermeture en cliquant à côté */ },
+            onDismissRequest = { /* Prevent the user from exiting the dialog by touching anywhere else */ },
             title = {
                 Text(text = "Clé supprimée")
             },
@@ -238,9 +295,8 @@ internal fun ApiItem(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        // In KMP we can't easily exit the app platform-agnostically without a callback
-                        // For now we just hide the dialog
                         successDialogVisible.value = false
+                        PlatformUtils.exitApp()
                     }
                 ) {
                     Text("Valider")
@@ -264,7 +320,7 @@ internal fun ApiItem(
                             if (token != null) {
                                 apiKeyManager?.saveTaikoAuthToken(token)
                                 // Extract BAID and link to scorefetcher
-                                val baid = extractBaid(token)?.toIntOrNull() ?: throw Exception("Impossible d'extraire le BAID du token")
+                                val baid = TokenUtils.extractBaid(token)?.toIntOrNull() ?: throw Exception("Impossible d'extraire le BAID du token")
                                 scorefetcherRepository?.addTaikoUser(baid)
                                 PlatformUtils.log("ApiItem", "Taiko user $baid linked to scorefetcher")
                             }
@@ -307,230 +363,6 @@ internal fun ApiItem(
                     "maimai" -> "Exemple : Exemple: 391|UBvwFPZvDrC3lm9DMSd50e4zXZicB5ssPogJmsw"
                     "Taiko no Tatsujin" -> "Exemple : 1234567890"
                     else -> ""
-                }
-            )
-        }
-    }
-}
-
-private fun extractBaid(token: String): String? {
-    return try {
-        val parts = token.split(".")
-        if (parts.size < 2) return null
-        val payload = parts[1]
-
-        val base64 = payload
-            .replace('-', '+')
-            .replace('_', '/')
-
-        val paddedBase64 = when (base64.length % 4) {
-            2 -> "$base64=="
-            3 -> "$base64="
-            else -> base64
-        }
-
-        val decodedString = paddedBase64.decodeBase64String()
-        val jsonElement = Json.parseToJsonElement(decodedString)
-        val jsonObject = jsonElement.jsonObject
-
-        val baid = jsonObject["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]?.jsonPrimitive?.content
-
-        PlatformUtils.log("ApiItem", "Decoded BAID: $baid")
-        baid
-
-    } catch (e: Exception) {
-        PlatformUtils.log("ApiItem", "Error extracting BAID from token: ${e.message}")
-        null
-    }
-}
-
-@Composable
-fun ApiItemDialog(
-    name: String,
-    text: String,
-    apiKey: String?,
-    revealed: Boolean,
-    onRevealClick: () -> Unit,
-    onDismiss: () -> Unit,
-    onDeleteClick: () -> Unit,
-    maskKey: (String?) -> String
-) {
-    val showDeleteConfirmation = remember { mutableStateOf(false) }
-
-    if (showDeleteConfirmation.value) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirmation.value = false },
-            title = {
-                Text(text = "Supprimer la clé ?")
-            },
-            text = {
-                Column() {
-                    Text(text = "Êtes-vous sûr de vouloir supprimer la clé pour $name ?")
-                    Spacer(modifier = Modifier.padding(4.dp))
-                    Text(
-                        text = "Cette action est irréversible. La clé sera également supprimée sur le serveur distant.",
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteConfirmation.value = false
-                        onDeleteClick()
-                        
-                    }
-                ) {
-                    Text("Supprimer", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { showDeleteConfirmation.value = false }
-                ) {
-                    Text("Annuler")
-                }
-            }
-        )
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Clé API pour $name",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-            )
-        },
-        text = {
-            Column {
-                Text(
-                    text = text + "Appuyez sur ci-dessous pour révéler ou masquer sa valeur.",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(
-                    text = "Note : Ne partagez jamais cette information avec d'autres personnes ou applications non fiables.",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-                SelectionContainer {
-                    Text(
-                        text = when {
-                            apiKey.isNullOrBlank() -> "(aucune clé)"
-                            revealed -> apiKey
-                            else -> maskKey(apiKey)
-                        },
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontFamily = FontFamily.Monospace
-                        ),
-                        modifier = Modifier
-                            .clickable(enabled = !apiKey.isNullOrBlank()) {
-                                onRevealClick()
-                            }
-                            .padding(vertical = 2.dp)
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            androidx.compose.material3.Button(onClick = onDismiss) {
-                Text("Fermer")
-            }
-        },
-        dismissButton = {
-            if (!apiKey.isNullOrBlank()) {
-                TextButton(onClick = { showDeleteConfirmation.value = true }) {
-                    Text("Supprimer la clé", color = MaterialTheme.colorScheme.error)
-                }
-            }
-        }
-    )
-}
-
-@Preview
-@Composable
-fun ApiItemConfiguredPreview() {
-    AtomCityTheme {
-        ApiItem(
-            name = "maimai",
-            key = "maimai",
-        )
-    }
-}
-
-@Preview
-@Composable
-fun ApiItemNotConfiguredPreview() {
-    AtomCityTheme {
-        ApiItem(
-            name = "Taiko no Tatsujin",
-            key = "taiko",
-        )
-    }
-}
-
-@Preview
-@Composable
-fun ApiItemDialogPreviewLongKeyAPI() {
-    AtomCityTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            ApiItemDialog(
-                name = "maimai",
-                text = "Votre clé API pour maimai est affichée ci-dessous.",
-                apiKey = "1234567890abcdef1234567890abcdef1234567890abcdef",
-                revealed = false,
-                onRevealClick = {},
-                onDismiss = {},
-                onDeleteClick = {},
-                maskKey = { key ->
-                    if (key.isNullOrBlank()) ""
-                    else {
-                        val visibleStart = 4.coerceAtMost(key.length)
-                        val visibleEnd = 4.coerceAtMost(key.length - visibleStart)
-                        when {
-                            key.length <= visibleStart + visibleEnd -> "*".repeat(key.length)
-                            else -> key.take(visibleStart) + " … " + key.takeLast(visibleEnd)
-                        }
-                    }
-                }
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-fun ApiItemDialogPreviewNoLongKeyAPI() {
-    AtomCityTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            ApiItemDialog(
-                name = "maimai",
-                text = "Votre clé API pour maimai est affichée ci-dessous.",
-                apiKey = "12345",
-                revealed = false,
-                onRevealClick = {},
-                onDismiss = {},
-                onDeleteClick = {},
-                maskKey = { key ->
-                    if (key.isNullOrBlank()) ""
-                    else {
-                        val visibleStart = 4.coerceAtMost(key.length)
-                        val visibleEnd = 4.coerceAtMost(key.length - visibleStart)
-                        when {
-                            key.length <= visibleStart + visibleEnd -> "*".repeat(key.length)
-                            else -> key.take(visibleStart) + " … " + key.takeLast(visibleEnd)
-                        }
-                    }
                 }
             )
         }

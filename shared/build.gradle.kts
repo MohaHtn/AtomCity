@@ -17,6 +17,10 @@ room {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     android {
         namespace = "org.arcade.atomcity.shared"
         compileSdk = 36

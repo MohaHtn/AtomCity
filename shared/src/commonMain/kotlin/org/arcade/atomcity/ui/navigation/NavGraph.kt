@@ -1,10 +1,12 @@
 package org.arcade.atomcity.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,40 +21,44 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.WelcomeScreen
 import org.arcade.atomcity.ui.core.SettingsScreen
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.guide.apistatus.ApiSettingsScreen
-import org.arcade.atomcity.ui.game.maimai.GameScreen
 import org.arcade.atomcity.ui.game.maimai.MaimaiBest30Charts
 import org.arcade.atomcity.ui.game.maimai.MaimaiScoresDetails
 import org.arcade.atomcity.ui.game.maimai.AtomCityUsers
 import org.arcade.atomcity.ui.game.taiko.TaikoUserSettings
 import org.arcade.atomcity.ui.game.taiko.TaikoScoresDetails
 import org.arcade.atomcity.ui.game.taiko.TaikoAtomCityUsers
+import org.arcade.atomcity.ui.game.maimai.MaimaiScores
+import org.arcade.atomcity.ui.game.taiko.TaikoScores
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.arcade.atomcity.ui.game.maimai.MaimaiUtageScreen
 import org.koin.compose.koinInject
 
 sealed class Screen(val route: String) {
-    data object Game : Screen("game/{gameId}") {
-        fun createRoute(gameId: String) = "game/$gameId"
-    }
+    data object Maimai : Screen("game/maimai")
+    data object Taiko : Screen("game/taiko")
     data object Settings : Screen("settings")
+
+    companion object {
+        fun gameRoute(gameId: String): String = "game/$gameId"
+    }
 }
 
 @Composable
 fun AppNavigation(
     taikoViewModel: TaikoViewModel,
     maimaiViewModel: MaimaiViewModel,
-    apiKeyManager: ApiKeyManager
+    apiKeyManager: ApiKeyManager,
 ) {
     val navController = rememberNavController()
-
-    val showMiniMenu: MutableState<Boolean> = remember { mutableStateOf(false) }
 
     // Use null as initial to wait for DataStore
     val apiChecklistState by apiKeyManager.getApiChecklistStateFlow().collectAsState(initial = null)
@@ -65,6 +71,10 @@ fun AppNavigation(
 
     // Wait until we know the API key state before rendering navigation
     val currentApiChecklist = apiChecklistState ?: return
+
+    val initialStartDestination = remember {
+        if (currentApiChecklist.isEmpty()) "welcome" else "game/${currentApiChecklist.first()}"
+    }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val taikoSnackbarMessage by taikoViewModel.snackbarMessage.collectAsState()
@@ -79,23 +89,64 @@ fun AppNavigation(
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = if (currentApiChecklist.isEmpty()) "welcome" else Screen.Game.createRoute(currentApiChecklist.first()),
-            enterTransition = { expandHorizontally() },
-            exitTransition = { fadeOut(animationSpec = tween(500)) + slideOutHorizontally() },
-            popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) },
-            popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) }
+            startDestination = initialStartDestination,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + fadeIn(
+                    animationSpec = tween(220, delayMillis = 50, easing = FastOutSlowInEasing)
+                ) + scaleIn(
+                    initialScale = 0.94f,
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + fadeOut(
+                    animationSpec = tween(120, easing = FastOutSlowInEasing)
+                ) + scaleOut(
+                    targetScale = 1.04f,
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                )
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.End,
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + fadeIn(
+                    animationSpec = tween(220, delayMillis = 50, easing = FastOutSlowInEasing)
+                ) + scaleIn(
+                    initialScale = 1.06f,
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                )
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.End,
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + fadeOut(
+                    animationSpec = tween(120, easing = FastOutSlowInEasing)
+                ) + scaleOut(
+                    targetScale = 0.94f,
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                )
+            }
         ) {
-            composable(
-                Screen.Game.route,
-                arguments = listOf(navArgument("gameId") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val gameId = backStackEntry.arguments?.getString("gameId")
-                GameScreen(
-                    gameId = gameId.toString(),
-                    onBackClick = { navController.popBackStack() },
+            composable("game/maimai") {
+                MaimaiScores(
                     maimaiViewModel = maimaiViewModel,
-                    taikoViewModel = taikoViewModel,
                     navController = navController
+                )
+            }
+
+            composable("game/taiko") {
+                TaikoScores(
+                    taikoViewModel = taikoViewModel,
+                    onNavigateToSettings = { navController.navigateIfNotCurrent(Screen.Settings.route) },
+                    onNavigateToRoute = { route -> navController.navigateIfNotCurrent(route) }
                 )
             }
 
@@ -113,7 +164,9 @@ fun AppNavigation(
             composable("welcome") {
                 WelcomeScreen(
                     onContinueClick = { firstGameId ->
-                        navController.navigate(Screen.Game.createRoute(firstGameId))
+                        navController.navigate("game/$firstGameId") {
+                            popUpTo("welcome") { inclusive = true }
+                        }
                     }
                 )
             }
@@ -145,7 +198,7 @@ fun AppNavigation(
                     maimaiViewModel = maimaiViewModel,
                     onBackClick = { navController.popBackStack() },
                     onHistoryClick = { historyId ->
-                        navController.navigate("maimaiScoresDetails/$historyId")
+                        navController.navigateIfNotCurrent("maimaiScoresDetails/$historyId")
                     }
                 )
             }
@@ -227,3 +280,46 @@ fun AppNavigation(
         }
     }
 }
+
+fun NavController.navigateIfNotCurrent(route: String) {
+    val currentEntry = currentBackStackEntry ?: run {
+        navigate(route)
+        return
+    }
+    val destRoute = currentEntry.destination.route ?: run {
+        navigate(route)
+        return
+    }
+
+    val currentFullRoute = when (destRoute) {
+        "game/maimai", "game/taiko" -> destRoute
+        "maimaiScoresDetails/{scoreId}" -> {
+            val scoreId = currentEntry.arguments?.getInt("scoreId")
+            if (scoreId != null) "maimaiScoresDetails/$scoreId" else destRoute
+        }
+        "taikoScoresDetails/{songId}" -> {
+            val scoreId = currentEntry.arguments?.getInt("songId")
+            if (scoreId != null) "taikoScoresDetails/$scoreId" else destRoute
+        }
+        else -> destRoute
+    }
+
+    if (currentFullRoute != route) {
+        if (route.startsWith("game/")) {
+            val startDest = graph.findStartDestination().route ?: route
+            navigate(route) {
+                popUpTo(startDest) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        } else {
+            navigate(route) {
+                launchSingleTop = true
+            }
+        }
+    }
+}
+
+

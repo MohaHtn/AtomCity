@@ -33,11 +33,11 @@ import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-const val MAIMAI_API_GUIDE_TITLE = "Ajouter une clé API Scorefetcher pour maimai FiNALE"
+const val MAIMAI_API_GUIDE_TITLE = "Ajouter une clé API MaiTea pour maimai FiNALE"
 const val MAIMAI_API_GUIDE_URL = "https://maitea.app"
 
 // Titles
-const val MAIMAI_API_TITLE_STEP1 = "Accès à Scorefetcher"
+const val MAIMAI_API_TITLE_STEP1 = "Accès à MaiTea"
 const val MAIMAI_API_TITLE_STEP2 = "Navigation vers le profil"
 const val MAIMAI_API_TITLE_STEP3 = "Génération du Token"
 const val MAIMAI_API_TITLE_STEP4 = "Message de confirmation de création de la clé API"
@@ -46,7 +46,7 @@ const val MAIMAI_API_TITLE_STEP4 = "Message de confirmation de création de la c
 const val MAIMAI_API_GUIDE_TEXT = "Pour obtenir votre clé API, rendez-vous sur maitea.app et connectez-vous. Si vous n'avez pas de compte, n'hésitez pas à vous en créer un ! Une fois connecté, allez sur 'Profile' dans le menu déroulant."
 const val MAIMAI_API_GUIDE_TEXT2 = "Vous arriverez dans cette page. Cliquez sur le menu du site puis \"Settings\". "
 const val MAIMAI_API_GUIDE_TEXT3 = "En bas de la page, une section 'Access Token' est disponible. Cliquez sur le bouton 'Create Access Token'."
-const val MAIMAI_API_GUIDE_TEXT4 = "Lorsque vous voyez le message de succès, vous pouvez copier la clé API et la coller juste en bas."
+const val MAIMAI_API_GUIDE_TEXT4 = "Lorsque vous voyez le message de succès, vous pouvez copier la clé API et la coller dans le menu d'ajout. Attention, ce sera la seule fois que vous la verrez ! Mettez là en lieu sûr si besoin."
 
 
 @OptIn(ExperimentalMaterial3Api::class)

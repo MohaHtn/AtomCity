@@ -114,6 +114,10 @@ actual object PlatformUtils {
         }
     }
 
+    actual fun exitApp() {
+        platform.posix.exit(0)
+    }
+
     @OptIn(ExperimentalForeignApi::class)
     private fun getOrGenerateKey(): ByteArray {
         val query = CFDictionaryCreateMutable(null, 0, null, null)

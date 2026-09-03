@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -65,9 +66,10 @@ fun GuideStep(
             contentDescription = contentDescription,
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(max = 450.dp)
                 .clip(MaterialTheme.shapes.medium)
                 .padding(bottom = 12.dp),
-            contentScale = ContentScale.FillWidth
+            contentScale = ContentScale.Fit
         )
 
         content()

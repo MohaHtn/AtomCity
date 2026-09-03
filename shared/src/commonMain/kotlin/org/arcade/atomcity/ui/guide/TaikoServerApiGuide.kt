@@ -28,18 +28,15 @@ import atomcity.shared.generated.resources.Res
 import atomcity.shared.generated.resources.guide_taiko_step1
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+import org.arcade.atomcity.ui.core.LinkText
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.utils.PlatformUtils
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-const val TAIKO_API_GUIDE_TITLE = "Ajouter une clé API Taiko pour Taiko no Tatsujin"
-const val TAIKO_API_GUIDE_TEXT = "Le serveur Taiko permet de synchroniser vos scores et réglages. Seul l'ID utilisateur est requis pour accéder à vos données publiques."
-const val TAIKO_API_GUIDE_STEP1_TITLE = "Récupération de l'ID"
-const val TAIKO_API_GUIDE_STEP1_DESC = "Etape 1 Récupération de l'ID utilisateur"
-const val TAIKO_API_GUIDE_STEP1_TEXT = "Entrez votre ID utilisateur (User Number) pour synchroniser vos données. Vous pouvez le trouver sur votre profil du serveur Taiko."
-
-const val TAIKO_API_GUIDE_INFO = "Pour accèder à votre compte Taiko no Tatsujin, veuillez entrer vos identifiant, comme si vous vous connectez à https://tatsuj.in/."
+const val TAIKO_API_GUIDE_TITLE = "Connectez-vous sur Tatsuj.in"
+const val TAIKO_API_GUIDE_INFO = "Pour accèder à votre compte Taiko no Tatsujin pour consulter vos scores et votre profil, vous pouvez entrer vos identifiants comme si vous vous connectez à https://tatsuj.in/."
+const val TAIKO_API_GUIDE_URL = "https://tatsuj.in"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,20 +77,12 @@ fun TaikoApiGuideContent(
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp
     ) {
-        TaikoApiGuideSheetContent(
-            existingApiKey = existingApiKey,
-            onDismiss = onDismiss,
-            onSaveApiKey = onSaveApiKey
-        )
+        TaikoApiGuideSheetContent()
     }
 }
 
 @Composable
-fun TaikoApiGuideSheetContent(
-    existingApiKey: String?,
-    onDismiss: () -> Unit,
-    onSaveApiKey: (String) -> Unit
-) {
+fun TaikoApiGuideSheetContent() {
     Box(modifier = Modifier.fillMaxHeight(0.9f)) {
         LazyColumn(
             modifier = Modifier
@@ -111,22 +100,16 @@ fun TaikoApiGuideSheetContent(
             }
 
             item {
-                Text(
-                    text = TAIKO_API_GUIDE_TEXT,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            item {
                 GuideStep(
                     number = 1,
-                    title = TAIKO_API_GUIDE_STEP1_TITLE,
+                    title = "Se connecter",
                     imageRes = Res.drawable.guide_taiko_step1,
-                    contentDescription = TAIKO_API_GUIDE_STEP1_DESC
-                ) {
-                    Text(
-                        text = TAIKO_API_GUIDE_STEP1_TEXT,
-                        style = MaterialTheme.typography.bodyMedium
+                    contentDescription = "Se connecter"
+                ){
+                    LinkText(
+                        fullText = TAIKO_API_GUIDE_INFO,
+                        linkText = "https://tatsuj.in",
+                        url = TAIKO_API_GUIDE_URL
                     )
                 }
             }
@@ -143,11 +126,7 @@ fun TaikoApiGuideSheetContent(
 fun TaikoApiGuidePreview() {
     AtomCityTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
-            TaikoApiGuideSheetContent(
-                existingApiKey = "152",
-                onDismiss = {},
-                onSaveApiKey = {}
-            )
+            TaikoApiGuideSheetContent()
         }
     }
 }

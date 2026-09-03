@@ -11,7 +11,7 @@ class TaikoServerMusicDetailsResponseTest {
             """{"1":{"songId":1,"songName":"Test song"}}"""
         )
 
-        assertEquals(1, response.entries["1"]?.songId)
-        assertEquals("Test song", response.entries["1"]?.songName)
+        assertEquals(1, response["1"]?.songId)
+        assertEquals("Test song", response["1"]?.songName)
     }
 }

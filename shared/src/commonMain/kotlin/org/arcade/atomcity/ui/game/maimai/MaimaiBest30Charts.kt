@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
 import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
+import org.arcade.atomcity.ui.navigation.navigateIfNotCurrent
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.format
 import org.arcade.atomcity.utils.rememberPlatformContext
@@ -137,7 +138,7 @@ fun MaimaiBest30Charts(
                             MaimaiScoreItem(
                                 play = play,
                                 onClick = {
-                                    navController.navigate("maimaiScoresDetails/${play.id}")
+                                    navController.navigateIfNotCurrent("maimaiScoresDetails/${play.id}")
                                 }
                             )
                         }

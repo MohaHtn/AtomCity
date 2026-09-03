@@ -1,11 +1,13 @@
-package org.arcade.atomcity.ui.game.maimai
+package org.arcade.atomcity.ui.game
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+import org.arcade.atomcity.ui.game.maimai.MaimaiScores
 import org.arcade.atomcity.ui.game.taiko.TaikoScores
 import org.arcade.atomcity.ui.navigation.Screen
+import org.arcade.atomcity.ui.navigation.navigateIfNotCurrent
 
 @Composable
 fun GameScreen(
@@ -22,8 +24,8 @@ fun GameScreen(
         )
         "taiko" -> TaikoScores(
             taikoViewModel = taikoViewModel,
-            onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
-            onNavigateToRoute = { route -> navController.navigate(route) }
+            onNavigateToSettings = { navController.navigateIfNotCurrent(Screen.Settings.route) },
+            onNavigateToRoute = { route -> navController.navigateIfNotCurrent(route) }
         )
     }
 }

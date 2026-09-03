@@ -53,6 +53,8 @@ class TaikoViewModel(
     private val _userDetailedSettings = MutableStateFlow<TaikoServerUserSettingsResponse?>(null)
     val userDetailedSettings = _userDetailedSettings
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     private val _costumesData = MutableStateFlow<TaikoServerCostumesResponse?>(null)
     val costumesData = _costumesData
 
@@ -224,7 +226,7 @@ class TaikoViewModel(
         try {
             val bytes = Res.readBytes("files/taiko/images.json")
             val jsonString = bytes.decodeToString()
-            val data = Json { ignoreUnknownKeys = true }.decodeFromString<TaikoImagesData>(jsonString)
+            val data = json.decodeFromString<TaikoImagesData>(jsonString)
             _imagesData.value = data
         } catch (e: Exception) {
             PlatformUtils.log("TaikoViewModel", "Error loading images.json: ${e.message}")

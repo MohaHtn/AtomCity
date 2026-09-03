@@ -13,6 +13,7 @@ expect object PlatformUtils {
     fun shareImage(bitmap: androidx.compose.ui.graphics.ImageBitmap, context: Any? = null)
     fun encrypt(text: String): String
     fun decrypt(encryptedText: String): String
+    fun exitApp()
 }
 
 @Composable

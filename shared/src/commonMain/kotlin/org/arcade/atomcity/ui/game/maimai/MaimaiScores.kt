@@ -28,6 +28,7 @@ import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.ui.navigation.Screen
+import org.arcade.atomcity.ui.navigation.navigateIfNotCurrent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -157,7 +158,7 @@ fun MaimaiScores(
                     if (isMaimaiImportStateReady) {
                         MaimaiChartSearchBar(
                             viewModel = maimaiViewModel,
-                            onNavigateToDetails = { id -> navController.navigate("maimaiScoresDetails/$id") },
+                            onNavigateToDetails = { id -> navController.navigateIfNotCurrent("maimaiScoresDetails/$id") },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .offset(y = 8.dp)
@@ -183,7 +184,7 @@ fun MaimaiScores(
                         showGamesMenu = false
                     },
                     onSettingsClick = {
-                        navController.navigate(Screen.Settings.route)
+                        navController.navigateIfNotCurrent(Screen.Settings.route)
                         showGamesMenu = false
                         showActionsMenu = false
                     }
@@ -207,7 +208,7 @@ fun MaimaiScores(
                         items(data?.data ?: emptyList()) { play ->
                             MaimaiScoreItem(
                                 play = play,
-                                onClick = { navController.navigate("maimaiScoresDetails/${play.id}") }
+                                onClick = { navController.navigateIfNotCurrent("maimaiScoresDetails/${play.id}") }
                             )
                         }
                     }
@@ -222,7 +223,7 @@ fun MaimaiScores(
                 showActionsMenu = false
             },
             onItemClick = { route ->
-                navController.navigate(route)
+                navController.navigateIfNotCurrent(route)
                 showGamesMenu = false
                 showActionsMenu = false
             },

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,20 +48,7 @@ import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerCos
 import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerTitlesResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
-
-val CostumeColors = listOf(
-    "#F84828", "#68C0C0", "#DC1500", "#F8F0E0", "#009687", "#00BF87",
-    "#00FF9A", "#66FFC2", "#FFFFFF", "#690000", "#FF0000", "#FF6666",
-    "#FFB3B3", "#00BCC2", "#00F7FF", "#66FAFF", "#B3FDFF", "#E4E4E4",
-    "#993800", "#FF5E00", "#FF9E78", "#FFCFB3", "#005199", "#0088FF",
-    "#66B8FF", "#B3DBFF", "#B9B9B9", "#B37700", "#FFAA00", "#FFCC66",
-    "#FFE2B3", "#000C80", "#0019FF", "#6675FF", "#B3BAFF", "#858585",
-    "#B39B00", "#FFDD00", "#FFFF00", "#FFFF71", "#2B0080", "#5500FF",
-    "#9966FF", "#CCB3FF", "#505050", "#38A100", "#78C900", "#B3FF00",
-    "#DCFF8A", "#610080", "#C400FF", "#DC66FF", "#EDB3FF", "#232323",
-    "#006600", "#00B800", "#00FF00", "#8AFF9E", "#990059", "#FF0095",
-    "#FF66BF", "#FFB3DF", "#000000"
-)
+import org.arcade.atomcity.ui.game.taiko.settings.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -182,7 +170,7 @@ fun TaikoUserSettings(
                             titleFontSize = 14.sp,
                             nameFontSize = 14.sp)
 
-                        InfoCard("Les couleurs sont utilisables uniquement si vous avez sélectionné aucun kigurumi. Les couleurs des membres sont uniquement visible en jeu.")
+                        InfoCard("Les couleurs sont utilisables uniquement si vous avez sélectionné aucun kigurumi. Les couleurs des membres sont uniquement visible en jeu.", modifier = Modifier.padding(bottom = 8.dp))
 
                         ColorPickerRow("Visage", data.faceColor ?: 0) { localSettings = data.copy(faceColor = it) }
                         ColorPickerRow("Corps", data.bodyColor ?: 0) { localSettings = data.copy(bodyColor = it) }
@@ -244,7 +232,8 @@ fun TaikoUserSettings(
                         val isKigurumiSelected = (data.kigurumi ?: 0) > 0
 
                         if (isKigurumiSelected) {
-                            InfoCard("Si vous mettez un Kigurumi, la tête et le corps seront désactivés. De même, vous risquez de ne pas voir les couleurs choisies plus haut.")
+                            InfoCard(
+                                message = "Si vous mettez un Kigurumi, la tête et le corps seront désactivés. De même, vous risquez de ne pas voir les couleurs choisies plus haut.")
                             Spacer(modifier = Modifier.height(8.dp))
                         }
 
@@ -510,6 +499,7 @@ fun TaikoUserSettings(
         )
     }
 }
+
 
 @Composable
 fun TitleSelectionDialog(
@@ -1511,9 +1501,9 @@ fun isColorDark(color: Color): Boolean {
 }
 
 @Composable
-fun InfoCard(message: String) {
+fun InfoCard(message: String, modifier: Modifier? = null) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier ?: Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.infoContainer().copy(alpha = 0.2f)
         ),
@@ -1534,6 +1524,36 @@ fun InfoCard(message: String) {
                 text = message,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.infoColor(),
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun ErrorCard(message: String, modifier: Modifier? = null) {
+    Card(
+        modifier = modifier ?: Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.error,
                 fontWeight = FontWeight.Bold
             )
         }

@@ -16,38 +16,45 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LinkText(
     fullText: String,
-    linkText: String,
-    url: String,
+    linkText: String = "",
+    url: String = "",
+    links: List<Pair<String, String>> = emptyList(),
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.bodyMedium.copy(
         color = MaterialTheme.colorScheme.onSurface,
     )
 ) {
+    val allLinks = if (links.isNotEmpty()) links else listOf(linkText to url)
+
     val annotatedString = buildAnnotatedString {
         append(fullText)
 
-        val startIndex = fullText.indexOf(linkText)
-        if (startIndex >= 0) {
-            val endIndex = startIndex + linkText.length
-            addLink(
-                url = LinkAnnotation.Url(
-                    url = url,
-                    styles = TextLinkStyles(
-                        style = SpanStyle(
-                            color = MaterialTheme.colorScheme.primary,
-                            textDecoration = TextDecoration.Underline
-                        )
+        for ((lText, lUrl) in allLinks) {
+            if (lText.isNotBlank()) {
+                val startIndex = fullText.indexOf(lText)
+                if (startIndex >= 0) {
+                    val endIndex = startIndex + lText.length
+                    addLink(
+                        url = LinkAnnotation.Url(
+                            url = lUrl,
+                            styles = TextLinkStyles(
+                                style = SpanStyle(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    textDecoration = TextDecoration.Underline
+                                )
+                            )
+                        ),
+                        start = startIndex,
+                        end = endIndex
                     )
-                ),
-                start = startIndex,
-                end = endIndex
-            )
+                }
+            }
         }
     }
 
     Text(
         text = annotatedString,
         style = style,
-        modifier = modifier.padding(16.dp)
+        modifier = modifier.padding(bottom = 8.dp)
     )
 }

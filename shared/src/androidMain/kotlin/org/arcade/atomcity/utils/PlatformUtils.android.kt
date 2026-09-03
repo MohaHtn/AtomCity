@@ -137,6 +137,10 @@ actual object PlatformUtils {
             encryptedText
         }
     }
+
+    actual fun exitApp() {
+        android.os.Process.killProcess(android.os.Process.myPid())
+    }
 }
 
 @Composable
