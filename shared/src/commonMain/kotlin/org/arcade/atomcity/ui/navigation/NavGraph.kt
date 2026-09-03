@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -86,10 +87,21 @@ fun AppNavigation(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        NavHost(
-            navController = navController,
-            startDestination = initialStartDestination,
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            NavHost(
+                navController = navController,
+                startDestination = initialStartDestination,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,
@@ -278,6 +290,7 @@ fun AppNavigation(
                 shape = RoundedCornerShape(24.dp)
             )
         }
+        }
     }
 }
 
@@ -314,6 +327,8 @@ fun NavController.navigateIfNotCurrent(route: String) {
                 launchSingleTop = true
                 restoreState = true
             }
+        } else if (route.startsWith("maimaiScoresDetails/") || route.startsWith("taikoScoresDetails/")) {
+            navigate(route)
         } else {
             navigate(route) {
                 launchSingleTop = true

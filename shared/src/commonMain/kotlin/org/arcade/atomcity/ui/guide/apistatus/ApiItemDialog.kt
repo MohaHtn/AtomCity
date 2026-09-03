@@ -32,8 +32,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.arcade.atomcity.ui.core.GlobalUIState
-import org.arcade.atomcity.ui.game.taiko.ErrorCard
-import org.arcade.atomcity.ui.game.taiko.InfoCard
+import org.arcade.atomcity.ui.core.ErrorCard
+import org.arcade.atomcity.ui.core.InfoCard
 import org.arcade.atomcity.ui.theme.AtomCityTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 

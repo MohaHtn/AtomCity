@@ -14,22 +14,44 @@ import androidx.compose.ui.platform.LocalContext
 actual fun rememberColorScheme(
     darkTheme: Boolean,
     dynamicColor: Boolean,
-    customColor: Color
+    customColor: Color,
+    isAmoledMode: Boolean
 ): ColorScheme {
     val context = LocalContext.current
-    return when {
+    val baseScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
         darkTheme -> darkColorScheme(
-            primary = Purple80,
+            primary = customColor,
             secondary = PurpleGrey80,
             tertiary = Pink80
         )
         else -> lightColorScheme(
-            primary = Purple40,
+            primary = customColor,
             secondary = PurpleGrey40,
             tertiary = Pink40
         )
     }
+
+    return if (darkTheme && isAmoledMode) {
+        baseScheme.toAmoled()
+    } else {
+        baseScheme
+    }
+}
+
+fun ColorScheme.toAmoled(): ColorScheme {
+    return copy(
+        background = Color.Black,
+        surface = Color.Black,
+        surfaceDim = Color.Black,
+        surfaceBright = Color(0xFF121212),
+        surfaceContainerLowest = Color.Black,
+        surfaceContainerLow = Color(0xFF0A0A0A),
+        surfaceContainer = Color(0xFF121212),
+        surfaceContainerHigh = Color(0xFF1A1A1A),
+        surfaceContainerHighest = Color(0xFF222222),
+        surfaceVariant = Color(0xFF161616)
+    )
 }

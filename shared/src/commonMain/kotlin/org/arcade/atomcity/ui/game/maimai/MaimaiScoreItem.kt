@@ -23,12 +23,11 @@ import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.arcade.atomcity.domain.model.LevelInfo
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
-import org.arcade.atomcity.ui.game.common.getDifficultyColorBackgroundDark
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.formatPlayDate
 import org.koin.compose.koinInject
 
-import androidx.compose.foundation.isSystemInDarkTheme
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 
 @Composable
 fun MaimaiScoreItemNight(
@@ -50,7 +49,7 @@ fun MaimaiScoreItemNight(
 fun MaimaiScoreItem(
     play: ScorefetcherApiData,
     onClick: () -> Unit,
-    isNightMode: Boolean = isSystemInDarkTheme(),
+    isNightMode: Boolean = isAppInDarkTheme(),
     footer: @Composable () -> Unit = {},
     overlay: @Composable BoxScope.() -> Unit = {}
 ) {
@@ -70,11 +69,7 @@ fun MaimaiScoreItem(
         }
     }
 
-    val cardColors = if (isNightMode) {
-        getDifficultyColorBackgroundDark(play.difficultyLevel?.value)
-    } else {
-        getDifficultyColorBackground(play.difficultyLevel?.value)
-    }
+    val cardColors = getDifficultyColorBackground(play.difficultyLevel?.value)
 
     val textColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
     val textSecondaryColor = if (isNightMode) Color.White.copy(alpha = 0.65f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.theme.NijiiroFontFamily
 
 @Composable
@@ -41,6 +42,13 @@ fun TaikoNameplate(
     titleFontSize: TextUnit? = null,
     nameFontSize: TextUnit? = null
 ) {
+    val isDark = isAppInDarkTheme()
+    val expandedTitleColor = if (isDark) {
+        Color.White.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f))
+    } else {
+        Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f))
+    }
+
     Box(
         modifier = modifier.offset(y=-(8).dp)
     ) {
@@ -176,7 +184,7 @@ fun TaikoNameplate(
                                         fontSize = titleFontSize ?: (if (isNarrow) 10.sp else 14.sp),
                                         letterSpacing = 0.sp
                                     ),
-                                    color = Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f)),
+                                    color = expandedTitleColor,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.padding(bottom = 2.dp).offset(x = titleOffsetX, y = titleOffsetY + -(1).dp)
@@ -286,7 +294,7 @@ fun TaikoNameplate(
                                     fontSize = titleFontSize ?: (if (isNarrow) 10.sp else 14.sp),
                                     letterSpacing = 0.sp
                                 ),
-                                color = Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f)),
+                                color = expandedTitleColor,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.padding(bottom = 2.dp).offset(x = titleOffsetX, y = titleOffsetY + -(1).dp)

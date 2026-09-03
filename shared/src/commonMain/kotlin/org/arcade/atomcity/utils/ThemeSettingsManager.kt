@@ -4,14 +4,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+
+enum class ThemeMode {
+    SYSTEM,
+    LIGHT,
+    DARK
+}
 
 class ThemeSettingsManager(private val dataStore: DataStore<Preferences>) {
     companion object {
         private val THEME_COLOR_KEY = intPreferencesKey("theme_color")
+        private val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
+        private val AMOLED_MODE_KEY = booleanPreferencesKey("amoled_mode")
+
         val DEFAULT_COLOR = Color(0xFF6650a4) // Purple40
         
         val PREDEFINED_COLORS = listOf(
@@ -31,9 +42,38 @@ class ThemeSettingsManager(private val dataStore: DataStore<Preferences>) {
         if (argb != null) Color(argb) else DEFAULT_COLOR
     }
 
+    val themeMode: Flow<ThemeMode> = dataStore.data.map { preferences ->
+        val modeStr = preferences[THEME_MODE_KEY]
+        if (modeStr != null) {
+            try {
+                ThemeMode.valueOf(modeStr)
+            } catch (_: Exception) {
+                ThemeMode.SYSTEM
+            }
+        } else {
+            ThemeMode.SYSTEM
+        }
+    }
+
+    val isAmoledMode: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[AMOLED_MODE_KEY] ?: false
+    }
+
     suspend fun setThemeColor(color: Color) {
         dataStore.edit { preferences ->
             preferences[THEME_COLOR_KEY] = color.toArgb()
+        }
+    }
+
+    suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { preferences ->
+            preferences[THEME_MODE_KEY] = mode.name
+        }
+    }
+
+    suspend fun setAmoledMode(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[AMOLED_MODE_KEY] = enabled
         }
     }
 }

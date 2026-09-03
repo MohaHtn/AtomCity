@@ -2,7 +2,6 @@ package org.arcade.atomcity.ui.game.maimai
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -48,6 +47,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.*
 import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.game.maimai.details.*
 import org.arcade.atomcity.utils.formatPlayDate
 import org.arcade.atomcity.utils.format
@@ -67,7 +67,7 @@ fun MaimaiScoresDetails(
     val songName = song?.name
     val songArtist = song?.artist
     val difficultyColor = getJacketBorderColor(scoreEntry?.difficultyLevel?.value)
-    val isDark = isSystemInDarkTheme()
+    val isDark = isAppInDarkTheme()
     val textColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
     val textSecondaryColor = if (isDark) Color.White.copy(alpha = 0.65f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
     
@@ -81,7 +81,7 @@ fun MaimaiScoresDetails(
     val isLoading by maimaiViewModel?.isLoadingDetails?.collectAsState() ?: remember { mutableStateOf(false) }
     val isLoadingPlayById by maimaiViewModel?.isLoadingPlayById?.collectAsState() ?: remember { mutableStateOf(false) }
 
-    LaunchedEffect(scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
+    LaunchedEffect(scoreEntry?.id, scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
 
         val song = scoreEntry?.song
         val diffLevel = scoreEntry?.difficultyLevel

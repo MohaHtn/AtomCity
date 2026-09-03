@@ -363,3 +363,35 @@ fun ProfileHeader(
         }
     }
 }
+
+@Composable
+fun SettingToggle(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Surface(
+        onClick = { onCheckedChange(!checked) },
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+            Switch(
+                checked = checked, 
+                onCheckedChange = onCheckedChange,
+                thumbContent = if (checked) {
+                    {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                        )
+                    }
+                } else null
+            )
+        }
+    }
+}
+

@@ -10,10 +10,10 @@ import androidx.compose.ui.graphics.Color
 actual fun rememberColorScheme(
     darkTheme: Boolean,
     dynamicColor: Boolean,
-    customColor: Color
+    customColor: Color,
+    isAmoledMode: Boolean
 ): ColorScheme {
-    // On iOS, we use the custom color provided by the settings
-    return if (darkTheme) {
+    val baseScheme = if (darkTheme) {
         darkColorScheme(
             primary = customColor,
             secondary = PurpleGrey80,
@@ -25,5 +25,22 @@ actual fun rememberColorScheme(
             secondary = PurpleGrey40,
             tertiary = Pink40
         )
+    }
+
+    return if (darkTheme && isAmoledMode) {
+        baseScheme.copy(
+            background = Color.Black,
+            surface = Color.Black,
+            surfaceDim = Color.Black,
+            surfaceBright = Color(0xFF121212),
+            surfaceContainerLowest = Color.Black,
+            surfaceContainerLow = Color(0xFF0A0A0A),
+            surfaceContainer = Color(0xFF121212),
+            surfaceContainerHigh = Color(0xFF1A1A1A),
+            surfaceContainerHighest = Color(0xFF222222),
+            surfaceVariant = Color(0xFF161616)
+        )
+    } else {
+        baseScheme
     }
 }

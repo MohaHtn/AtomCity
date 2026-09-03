@@ -17,26 +17,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import org.arcade.atomcity.ui.navigation.navigateIfNotCurrent
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import org.arcade.atomcity.ui.theme.AtomCityTheme
+import org.arcade.atomcity.ui.navigation.navigateIfNotCurrent
 import org.arcade.atomcity.utils.PlatformUtils
+import org.arcade.atomcity.utils.ThemeMode
 import org.arcade.atomcity.utils.ThemeSettingsManager
 import org.koin.compose.koinInject
 
@@ -75,6 +76,8 @@ fun SettingsContent(
     onBackClick: () -> Unit,
     onApiSettingsClick: () -> Unit
 ) {
+    val themeSettingsManager: ThemeSettingsManager = koinInject()
+
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -106,81 +109,112 @@ fun SettingsContent(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 },
-                modifier = Modifier
-                    .clickable {
-                        onApiSettingsClick()
-                    }
+                modifier = Modifier.clickable {
+                    onApiSettingsClick()
+                }
             )
         }
 
-        if (PlatformUtils.isIos) {
-            item {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(
-                    text = "Apparence",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-            item {
-                ThemeSettingItem(themeSettingsManager = koinInject())
-            }
+        item {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            Text(
+                text = "Apparence",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        item {
+            ThemeSettingsSection(themeSettingsManager = themeSettingsManager)
         }
     }
 }
 
 @Composable
-fun ThemeSettingItem(themeSettingsManager: ThemeSettingsManager) {
+fun ThemeSettingsSection(themeSettingsManager: ThemeSettingsManager) {
+    val currentMode by themeSettingsManager.themeMode.collectAsState(ThemeMode.SYSTEM)
+    val isAmoled by themeSettingsManager.isAmoledMode.collectAsState(false)
     val currentColor by themeSettingsManager.themeColor.collectAsState(ThemeSettingsManager.DEFAULT_COLOR)
     val scope = rememberCoroutineScope()
 
     Column {
         ListItem(
-            headlineContent = { Text("Couleur du thème") },
-            supportingContent = { Text("Changer la couleur dominante de l'application") },
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    tint = currentColor
+            headlineContent = { Text("Mode de thème") },
+            supportingContent = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = currentMode == ThemeMode.SYSTEM,
+                        onClick = {
+                            scope.launch { themeSettingsManager.setThemeMode(ThemeMode.SYSTEM) }
+                        },
+                        label = { Text("Système") }
+                    )
+                    FilterChip(
+                        selected = currentMode == ThemeMode.LIGHT,
+                        onClick = {
+                            scope.launch { themeSettingsManager.setThemeMode(ThemeMode.LIGHT) }
+                        },
+                        label = { Text("Clair") }
+                    )
+                    FilterChip(
+                        selected = currentMode == ThemeMode.DARK,
+                        onClick = {
+                            scope.launch { themeSettingsManager.setThemeMode(ThemeMode.DARK) }
+                        },
+                        label = { Text("Sombre") }
+                    )
+                }
+            }
+        )
+
+        ListItem(
+            headlineContent = { Text("Noir profond") },
+            supportingContent = { Text("Utiliser un fond noir pur.") },
+            trailingContent = {
+                Switch(
+                    checked = isAmoled,
+                    onCheckedChange = { checked ->
+                        scope.launch { themeSettingsManager.setAmoledMode(checked) }
+                    }
                 )
             }
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            ThemeSettingsManager.PREDEFINED_COLORS.forEach { color ->
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(color, CircleShape)
-                        .border(
-                            width = if (color == currentColor) 3.dp else 1.dp,
-                            color = if (color == currentColor) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                            shape = CircleShape
-                        )
-                        .clickable {
-                            scope.launch {
-                                themeSettingsManager.setThemeColor(color)
+        if (PlatformUtils.isIos) {
+            ListItem(
+                headlineContent = { Text("Couleur du thème") },
+                supportingContent = { Text("Changer la couleur dominante de l'application") }
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ThemeSettingsManager.PREDEFINED_COLORS.forEach { color ->
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(color, CircleShape)
+                            .border(
+                                width = if (color == currentColor) 3.dp else 1.dp,
+                                color = if (color == currentColor) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                shape = CircleShape
+                            )
+                            .clickable {
+                                scope.launch {
+                                    themeSettingsManager.setThemeColor(color)
+                                }
                             }
-                        }
-                )
+                    )
+                }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun SettingsScreenPreview() {
-    AtomCityTheme {
-        SettingsContent(
-            onBackClick = {},
-            onApiSettingsClick = {}
-        )
     }
 }
