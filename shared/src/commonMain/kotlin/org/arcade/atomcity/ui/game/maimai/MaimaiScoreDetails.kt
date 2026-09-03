@@ -914,7 +914,7 @@ fun MaimaiScoresDetails(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Pourcentage Max Théorique",
+                        text = "Pourcentage MAX Théorique",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold)
                     )
                     Text(
@@ -1215,7 +1215,10 @@ fun DetailRow(label: String, p: Int, gr: Int, gd: Int, m: Int) {
 }
 
 @Composable
-fun GraphPlaceholder(difficultyColor: Color) {
+fun GraphPlaceholder(difficultyColor: Color, message: String? = null) {
+    val defaultMessage = "Pour afficher les graphiques de statistiques, faites au moins 3 essais de cette chart !"
+    val displayMessage = if (message.isNullOrEmpty()) defaultMessage else message
+
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -1229,7 +1232,7 @@ fun GraphPlaceholder(difficultyColor: Color) {
     ) {
         Box(modifier = Modifier.padding(24.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
             Text(
-                text = "Pour afficher les graphiques de statistiques, faites au moins 3 essais de cette chart !",
+                text = displayMessage,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = difficultyColor.copy(alpha = 0.7f)
@@ -1750,8 +1753,22 @@ fun PersonalBestProgressionGraph(
         result.takeLast(20)
     }
 
-    if (pbHistory.size < 3) {
-        GraphPlaceholder(difficultyColor)
+    if (pbHistory.size < 2) {
+        Text(
+            text = "PROGRESSION DES RECORDS PERSONNELS",
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 2.sp,
+                color = difficultyColor
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp, start = 8.dp)
+        )
+        GraphPlaceholder(
+            difficultyColor,
+            "Il faut au moins 2 PBs pour afficher ce graphique, vous n'en avez qu'un (pour l'instant) !"
+        )
         return
     }
 
