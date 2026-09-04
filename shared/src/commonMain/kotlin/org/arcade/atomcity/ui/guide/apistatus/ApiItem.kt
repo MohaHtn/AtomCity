@@ -88,7 +88,7 @@ internal fun ApiItem(
     val successDialogVisible = remember { mutableStateOf(false) }
     
     // Actual supported games (for now!)
-    val isGameSupported = name == "maimai" || name == "Taiko no Tatsujin"
+    val isGameSupported = name == "maimai"
 
     fun maskKey(key: String?): String {
         if (key.isNullOrBlank()) return ""
@@ -176,7 +176,7 @@ internal fun ApiItem(
                     text = when {
                         hasKeyActual -> "Clé configurée • ${maskKey(apiKey)}"
                         isGameSupported -> "Non configuré"
-                        else -> "Bientôt disponible"
+                        else -> "Disponible peut-être un jour ..."
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (hasKeyActual) {
