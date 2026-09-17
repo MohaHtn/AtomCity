@@ -16,5 +16,5 @@ class GetScorefetcherScoresUseCase(private val repository: IScorefetcherReposito
 
     fun getTopUtageScores(hashKey: String? = null): Flow<List<PlayerBest30Response>> = repository.getTopUtageScores(hashKey)
 
-    fun searchCharts(query: String, keyHash: String? = null): Flow<List<BestPerPlayerResponse>> = repository.searchCharts(query, keyHash)
+    fun searchCharts(query: String = "", keyHash: String? = null, rank: String? = null, source: String? = null): Flow<List<BestPerPlayerResponse>> = repository.searchCharts(query, keyHash, rank, source)
 }

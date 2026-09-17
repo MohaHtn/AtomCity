@@ -235,14 +235,18 @@ class ScorefetcherRepository(
         }
     }
 
-    override fun searchCharts(query: String, keyHash: String?): Flow<List<BestPerPlayerResponse>> = flow {
+    override fun searchCharts(query: String, keyHash: String?, rank: String?, source: String?): Flow<List<BestPerPlayerResponse>> = flow {
         try {
             val key = keyHash ?: PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")
-            val response = scorefetcherClient.searchCharts(query, key)
+            val response = scorefetcherClient.searchCharts(query = query, keyHash = key, rank = rank, source = source)
             response.forEach { entry ->
                 entry.jacketImageUrl = findJacketUrlBySongName(entry.songJson?.name?.jp) ?: findJacketUrlBySongName(entry.songJson?.name?.en)
             }
-            emit(response)
+            val sorted = response.sortedWith(
+                compareByDescending<BestPerPlayerResponse> { it.achievement ?: 0.0 }
+                    .thenByDescending { it.rating ?: 0.0 }
+            )
+            emit(sorted)
         } catch (e: Exception) {
             emit(emptyList())
         }
@@ -334,11 +338,7 @@ class ScorefetcherRepository(
 
     override fun getRankProgression(targetKeyHash: String?): Flow<RankProgressionResponse> = flow {
         try {
-            val callerKeyHash = PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")
-            val response = scorefetcherClient.getRankProgression(
-                targetKeyHash = targetKeyHash,
-                callerKeyHash = callerKeyHash.ifBlank { null }
-            )
+            val response = scorefetcherClient.getRankProgression()
             emit(response)
         } catch (e: Exception) {
             PlatformUtils.log("ScorefetcherRepository", "Error fetching rank progression: ${e.message}", true)
@@ -350,7 +350,7 @@ class ScorefetcherRepository(
         val apiKey = apiKeyManager.getApiKey("maimai")?.trim() ?: return false
         if (apiKey.isBlank()) return false
         val keyHash = PlatformUtils.sha256(apiKey)
-        return scorefetcherClient.updateProgressionVisibility(apiKey, isPublic, keyHash)
+        return scorefetcherClient.updateProgressionVisibility(keyHash, isPublic)
     }
 
     override suspend fun removeApiKey(apiKey: String): Flow<DeleteApiKeyResponse> = flow {

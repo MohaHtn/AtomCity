@@ -59,6 +59,35 @@ fun normalizeString(s: String?): String = s?.lowercase()
     ?.replace(Regex("[^a-z0-9\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf\u4e00-\u9fff]"), "")
     ?.trim() ?: ""
 
+data class ParsedSongTitle(
+    val jp: String,
+    val en: String? = null
+)
+
+fun parseSongTitle(rawTitle: String): ParsedSongTitle {
+    if (rawTitle.isBlank()) return ParsedSongTitle("")
+    val raw = rawTitle.trim()
+
+    val hasDash = raw.contains(" - ") || raw.contains(" — ") || raw.contains(" -") || raw.contains("- ")
+    val hasSlash = raw.contains(" / ")
+
+    val parts = when {
+        hasDash -> raw.split(Regex("\\s*[-—]\\s*"))
+        hasSlash -> raw.split(Regex("\\s*/\\s*"))
+        else -> listOf(raw)
+    }
+
+    if (parts.size >= 2) {
+        val jp = parts[0].trim()
+        val en = parts.subList(1, parts.size).joinToString(" - ").trim()
+        if (en.isNotEmpty() && en != jp) {
+            return ParsedSongTitle(jp = jp, en = en)
+        }
+    }
+
+    return ParsedSongTitle(jp = raw, en = null)
+}
+
 fun parseUtageComment(rawCommentStr: String?): List<EraComment> {
     if (rawCommentStr.isNullOrBlank()) return emptyList()
     val raw = rawCommentStr.trim()

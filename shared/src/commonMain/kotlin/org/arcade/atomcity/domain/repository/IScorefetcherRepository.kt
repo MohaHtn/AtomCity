@@ -29,7 +29,7 @@ interface IScorefetcherRepository {
     fun getChartHistory(songName: String, difficulty: String?): Flow<List<ChartHistoryResponse>>
     fun getBestPerPlayer(songName: String, difficulty: String?): Flow<List<BestPerPlayerResponse>>
     fun getPlayById(id: Int, keyHash: String): Flow<ScorefetcherApiData?>
-    fun searchCharts(query: String, keyHash: String? = null): Flow<List<BestPerPlayerResponse>>
+    fun searchCharts(query: String = "", keyHash: String? = null, rank: String? = null, source: String? = null): Flow<List<BestPerPlayerResponse>>
     fun getMostPlayed(limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false): Flow<List<MaimaiMostPlayedEntry>>
     fun getMostPlayedByHash(keyHash: String? = null, limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false): Flow<List<MaimaiMostPlayedEntry>>
     fun getRankProgression(targetKeyHash: String? = null): Flow<RankProgressionResponse>

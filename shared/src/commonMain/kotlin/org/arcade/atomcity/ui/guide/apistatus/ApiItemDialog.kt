@@ -88,7 +88,7 @@ fun ApiItemDialog(
                     ErrorCard(
                         message = when (GlobalUIState.selectedGameForGuide.value) {
                             "Taiko no Tatsujin" -> "Cette action est irréversible. Vos identifiants seront supprimés de l'application et de la liste d'utilisateurs utilisant l'app sur Scorefetcher."
-                            else -> "Cette action est irréversible. La clé API sera également supprimée sur le serveur distant (maitea.app)."
+                            else -> "Cette action est irréversible. La clé API sera également supprimée sur le serveur distant (scorefetecher)."
                         },
                         modifier = Modifier.padding(top = 4.dp)
                     )

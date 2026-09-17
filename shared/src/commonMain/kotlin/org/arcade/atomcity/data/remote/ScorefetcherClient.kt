@@ -3,23 +3,31 @@ package org.arcade.atomcity.data.remote
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.playerBest30Response.PlayerBest30Response
 import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherPlaysResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
+import org.arcade.atomcity.data.remote.model.scorefetcher.PlayerRankProgression
 import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
+import org.arcade.atomcity.utils.PlatformUtils
 
 @Serializable
 data class ApiKeyRequest(
@@ -209,11 +217,18 @@ class ScorefetcherClient(
         }
     }
 
-    suspend fun searchCharts(query: String, keyHash: String? = null): List<BestPerPlayerResponse> {
+    suspend fun searchCharts(
+        query: String = "",
+        keyHash: String? = null,
+        rank: String? = null,
+        source: String? = null
+    ): List<BestPerPlayerResponse> {
         val response: HttpResponse = client.get("${baseUrl}scores/search") {
             addApiKey()
-            parameter("query", query)
-            parameter("keyHash", keyHash)
+            if (query.isNotBlank()) parameter("query", query)
+            if (!keyHash.isNullOrBlank()) parameter("keyHash", keyHash)
+            if (!rank.isNullOrBlank()) parameter("rank", rank)
+            if (!source.isNullOrBlank()) parameter("source", source)
         }
         return if (response.status == HttpStatusCode.NotFound) {
             emptyList()
@@ -286,41 +301,58 @@ class ScorefetcherClient(
         }
     }
 
-    suspend fun getRankProgression(
-        targetKeyHash: String? = null,
-        callerKeyHash: String? = null
-    ): RankProgressionResponse {
+    private val jsonInstance = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
+
+    suspend fun getRankProgression(): RankProgressionResponse {
         val response: HttpResponse = client.get("${baseUrl}scores/progression/rank") {
             addApiKey()
             header("Accept", "application/json")
-            parameter("targetKeyHash", targetKeyHash)
-            parameter("callerKeyHash", callerKeyHash)
         }
-        return if (response.status == HttpStatusCode.NotFound) {
+        if (response.status == HttpStatusCode.NotFound) {
+            return RankProgressionResponse()
+        }
+        val text = response.bodyAsText()
+        if (text.isBlank()) return RankProgressionResponse()
+
+        return try {
+            val jsonElement = jsonInstance.parseToJsonElement(text)
+            if (jsonElement is JsonArray) {
+                val playerList = jsonInstance.decodeFromJsonElement<List<PlayerRankProgression>>(jsonElement)
+                RankProgressionResponse(players = playerList)
+            } else if (jsonElement is JsonObject) {
+                val parsedObj = jsonInstance.decodeFromJsonElement<RankProgressionResponse>(jsonElement)
+                if (parsedObj.players.isNullOrEmpty() && parsedObj.player == null) {
+                    val singlePlayer = jsonInstance.decodeFromJsonElement<PlayerRankProgression>(jsonElement)
+                    RankProgressionResponse(player = singlePlayer)
+                } else {
+                    parsedObj
+                }
+            } else {
+                RankProgressionResponse()
+            }
+        } catch (e: Exception) {
+            PlatformUtils.log("ScorefetcherClient", "Error parsing rank progression: ${e.message}", true)
             RankProgressionResponse()
-        } else {
-            response.body()
         }
     }
 
     suspend fun updateProgressionVisibility(
-        apiKey: String,
-        isPublic: Boolean,
-        keyHash: String? = null
+        keyHash: String,
+        isPublic: Boolean
     ): Boolean {
         return try {
-            val response: HttpResponse = client.post("${baseUrl}scores/progression/visibility") {
+            val response: HttpResponse = client.put("${baseUrl}scores/progression/public/$keyHash") {
                 addApiKey()
-                header("Authorization", "Bearer ${apiKey.trim()}")
                 contentType(ContentType.Application.Json)
-                parameter("isPublic", isPublic)
-                if (!keyHash.isNullOrBlank()) {
-                    parameter("keyHash", keyHash)
-                }
-                setBody(VisibilityUpdateRequest(keyHash = keyHash, isPublic = isPublic))
+                header("Accept", "application/json")
+                setBody(VisibilityUpdateRequest(isPublic = isPublic))
             }
-            response.status == HttpStatusCode.OK
+            response.status == HttpStatusCode.OK || response.status == HttpStatusCode.NoContent
         } catch (e: Exception) {
+            PlatformUtils.log("ScorefetcherClient", "Error updating progression visibility: ${e.message}", true)
             false
         }
     }

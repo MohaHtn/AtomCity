@@ -228,26 +228,43 @@ fun UtageExpressiveItem(
                                             verticalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             parsedComments.forEachIndexed { index, eraComment ->
-                                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                                    if (eraComment.jp.isNotEmpty()) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    verticalAlignment = Alignment.Top
+                                                ) {
+                                                    if (parsedComments.size > 1) {
                                                         Text(
-                                                            text = if (parsedComments.size > 1) "• ${eraComment.jp}" else eraComment.jp,
-                                                            style = MaterialTheme.typography.bodySmall.copy(
-                                                                lineHeight = 18.sp
-                                                            ),
+                                                            text = "•",
+                                                            style = MaterialTheme.typography.bodySmall,
                                                             fontWeight = FontWeight.Bold,
-                                                            color = MaterialTheme.colorScheme.onSurface
+                                                            color = MaterialTheme.colorScheme.onSurface,
+                                                            modifier = Modifier.padding(end = 6.dp)
                                                         )
                                                     }
-                                                    if (!eraComment.en.isNullOrBlank()) {
-                                                        Text(
-                                                            text = if (parsedComments.size > 1) "  ${eraComment.en}" else eraComment.en,
-                                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                                lineHeight = 16.sp
-                                                            ),
-                                                            fontWeight = FontWeight.Medium,
-                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                        )
+                                                    Column(
+                                                        modifier = Modifier.weight(1f),
+                                                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                                                    ) {
+                                                        if (eraComment.jp.isNotEmpty()) {
+                                                            Text(
+                                                                text = eraComment.jp,
+                                                                style = MaterialTheme.typography.bodySmall.copy(
+                                                                    lineHeight = 18.sp
+                                                                ),
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = MaterialTheme.colorScheme.onSurface
+                                                            )
+                                                        }
+                                                        if (!eraComment.en.isNullOrBlank()) {
+                                                            Text(
+                                                                text = eraComment.en,
+                                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                                    lineHeight = 16.sp
+                                                                ),
+                                                                fontWeight = FontWeight.Medium,
+                                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                            )
+                                                        }
                                                     }
                                                 }
 
@@ -328,6 +345,9 @@ fun EmptyUtageCard(
     onExpandClick: () -> Unit = {}
 ) {
     val outlineColor = MaterialTheme.colorScheme.outlineVariant
+    val songTitleParsed = remember(title) {
+        parseSongTitle(title)
+    }
     
     Box(
         modifier = Modifier
@@ -370,18 +390,30 @@ fun EmptyUtageCard(
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = title,
+                    text = songTitleParsed.jp,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 
+                if (!songTitleParsed.en.isNullOrBlank() && songTitleParsed.en != songTitleParsed.jp) {
+                    Text(
+                        text = songTitleParsed.en,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 1.dp)
+                    )
+                }
+
                 Text(
                     text = "Score non disponible",
                     style = MaterialTheme.typography.labelMedium,
-                    color = outlineColor
+                    color = outlineColor,
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
 

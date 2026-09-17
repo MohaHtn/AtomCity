@@ -10,10 +10,13 @@ data class PlayerRankProgression(
     val name: String? = null,
     val rating: Int? = null,
     val isPublic: Boolean? = true,
+    val isProgressionPublic: Boolean? = null,
     val totalPlayed: Int? = null,
     val totalCleared: Int? = null,
     val played: Int? = null,
     val cleared: Int? = null,
+    val totalSongs: Int? = null,
+    val playedSongs: Int? = null,
     val rankCounts: Map<String, Int>? = null,
     val ranks: Map<String, Int>? = null,
     val clearCounts: Map<String, Int>? = null,
@@ -31,15 +34,40 @@ data class PlayerRankProgression(
     val ap: Int? = null,
     val app: Int? = null
 ) {
+    val isPublicEffective: Boolean
+        get() = isProgressionPublic ?: isPublic ?: true
+
     fun getDisplayName(): String {
         return userName ?: playerName ?: name ?: "Joueur anonyme"
     }
 
     fun getNormalizedRankCounts(): Map<String, Int> {
-        if (!rankCounts.isNullOrEmpty()) return rankCounts
-        if (!ranks.isNullOrEmpty()) return ranks
-
+        val rawMap = rankCounts?.takeIf { it.isNotEmpty() } ?: ranks?.takeIf { it.isNotEmpty() }
         val map = mutableMapOf<String, Int>()
+        if (rawMap != null) {
+            for ((k, v) in rawMap) {
+                val key = when (k.trim().lowercase()) {
+                    "sss+", "sss_plus", "sssplus" -> "SSS+"
+                    "sss" -> "SSS"
+                    "ss+", "ss_plus", "ssplus" -> "SS+"
+                    "ss" -> "SS"
+                    "s+", "s_plus", "splus" -> "S+"
+                    "s" -> "S"
+                    "aaa" -> "AAA"
+                    "aa" -> "AA"
+                    "a" -> "A"
+                    "autres", "autres_ranks", "autresranks", "other", "others" -> "Autres"
+                    "fc" -> "FC"
+                    "fc+", "fcp", "fc_plus" -> "FC+"
+                    "ap" -> "AP"
+                    "ap+", "app", "ap_plus" -> "AP+"
+                    else -> k.trim()
+                }
+                map[key] = (map[key] ?: 0) + v
+            }
+            return map
+        }
+
         sssPlus?.let { if (it > 0) map["SSS+"] = it }
         sss?.let { if (it > 0) map["SSS"] = it }
         ssPlus?.let { if (it > 0) map["SS+"] = it }
@@ -58,7 +86,7 @@ data class PlayerRankProgression(
 
     fun getPlayedCount(): Int {
         val calculated = getNormalizedRankCounts().values.sum()
-        val p = totalPlayed ?: played
+        val p = playedSongs ?: totalPlayed ?: played
         return if (p != null && p > 0) p else if (calculated > 0) calculated else (totalCleared ?: cleared ?: 0)
     }
 
@@ -72,12 +100,50 @@ data class PlayerRankProgression(
 @Serializable
 data class RankProgressionResponse(
     val totalGameCharts: Int = 0,
+    val totalSongs: Int? = null,
+    val playedSongs: Int? = null,
+    val ranks: Map<String, Int>? = null,
+    val rankCounts: Map<String, Int>? = null,
+    val keyHash: String? = null,
+    val userName: String? = null,
+    val playerName: String? = null,
+    val name: String? = null,
+    val rating: Int? = null,
+    val isPublic: Boolean? = true,
+    val isProgressionPublic: Boolean? = null,
+    val totalPlayed: Int? = null,
+    val totalCleared: Int? = null,
+    val played: Int? = null,
+    val cleared: Int? = null,
     val player: PlayerRankProgression? = null,
     val players: List<PlayerRankProgression>? = null
 ) {
     fun getAllPlayers(): List<PlayerRankProgression> {
         if (!players.isNullOrEmpty()) return players
         if (player != null) return listOf(player)
+
+        val mapRanks = ranks ?: rankCounts
+        if (!mapRanks.isNullOrEmpty() || totalSongs != null || playedSongs != null) {
+            return listOf(
+                PlayerRankProgression(
+                    keyHash = keyHash,
+                    userName = userName,
+                    playerName = playerName,
+                    name = name,
+                    rating = rating,
+                    isPublic = isPublic ?: true,
+                    isProgressionPublic = isProgressionPublic ?: isPublic,
+                    totalPlayed = totalPlayed ?: played,
+                    totalCleared = totalCleared ?: cleared,
+                    played = played ?: totalPlayed,
+                    cleared = cleared ?: totalCleared,
+                    totalSongs = totalSongs,
+                    playedSongs = playedSongs,
+                    rankCounts = mapRanks,
+                    ranks = mapRanks
+                )
+            )
+        }
         return emptyList()
     }
 }

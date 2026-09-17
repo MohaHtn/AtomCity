@@ -26,6 +26,7 @@ import org.arcade.atomcity.utils.PlatformUtils
 import kotlin.time.Duration.Companion.milliseconds
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
 import kotlin.concurrent.Volatile
 
 class MaimaiViewModel(
@@ -426,8 +427,12 @@ class MaimaiViewModel(
                 } else {
                     try {
                         _isSearching.value = true
-                        scoresUseCase.searchCharts(query).collect { result ->
-                            _searchResults.value = result
+                        scoresUseCase.searchCharts(query = query, source = "plays").collect { result ->
+                            val sorted = result.sortedWith(
+                                compareByDescending<BestPerPlayerResponse> { it.achievement ?: 0.0 }
+                                    .thenByDescending { it.rating ?: 0.0 }
+                            )
+                            _searchResults.value = sorted
                             _isSearching.value = false
                         }
                     } catch (e: Exception) {
@@ -479,13 +484,30 @@ class MaimaiViewModel(
         }
     }
 
-    fun updateProgressionVisibility(isPublic: Boolean) {
+    fun updateProgressionVisibility(isPublic: Boolean, userKeyHash: String? = null) {
         viewModelScope.launch {
             try {
                 _isUpdatingVisibility.value = true
                 val success = analyticsUseCase.updateProgressionVisibility(isPublic)
                 if (success) {
-                    fetchRankProgression()
+                    val current = _rankProgression.value
+                    if (current != null) {
+                        val updatedPlayers = current.players?.map { player ->
+                            if (userKeyHash == null || player.keyHash == userKeyHash) {
+                                player.copy(isPublic = isPublic, isProgressionPublic = isPublic)
+                            } else {
+                                player
+                            }
+                        }
+                        val updatedPlayer = current.player?.copy(isPublic = isPublic, isProgressionPublic = isPublic)
+
+                        _rankProgression.value = current.copy(
+                            isPublic = isPublic,
+                            isProgressionPublic = isPublic,
+                            player = updatedPlayer,
+                            players = updatedPlayers
+                        )
+                    }
                 }
             } catch (_: Exception) {
             } finally {
@@ -502,17 +524,15 @@ class MaimaiViewModel(
 
                 val targetKeyHash = keyHash.takeIf { !it.isNullOrBlank() }
 
-                scoresUseCase.searchCharts(query = rankLabel, keyHash = targetKeyHash).collect { searchResults ->
+                scoresUseCase.searchCharts(query = "", keyHash = targetKeyHash, rank = rankLabel, source = "top_scores").collect { searchResults ->
                     val matchingRank = filterByRank(searchResults, rankLabel)
-                    if (matchingRank.isNotEmpty()) {
-                        _rankCharts.value = matchingRank
-                        _isLoadingRankCharts.value = false
-                    } else {
-                        scoresUseCase.searchCharts(query = "", keyHash = targetKeyHash).collect { allResults ->
-                            _rankCharts.value = filterByRank(allResults, rankLabel)
-                            _isLoadingRankCharts.value = false
-                        }
-                    }
+                    val listToSort = if (matchingRank.isNotEmpty()) matchingRank else searchResults
+                    val sorted = listToSort.sortedWith(
+                        compareByDescending<BestPerPlayerResponse> { it.achievement ?: 0.0 }
+                            .thenByDescending { it.rating ?: 0.0 }
+                    )
+                    _rankCharts.value = sorted
+                    _isLoadingRankCharts.value = false
                 }
             } catch (e: Exception) {
                 _rankCharts.value = emptyList()
@@ -538,6 +558,7 @@ class MaimaiViewModel(
                 "AAA" -> r == "AAA"
                 "AA" -> r == "AA"
                 "A" -> r == "A"
+                "AUTRES", "OTHER", "OTHERS" -> r !in setOf("A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+") && r.isNotBlank()
                 "FC" -> r == "FC" || r == "FC+"
                 "FC+" -> r == "FC+" || r == "FCP"
                 "AP" -> r == "AP" || r == "AP+"
