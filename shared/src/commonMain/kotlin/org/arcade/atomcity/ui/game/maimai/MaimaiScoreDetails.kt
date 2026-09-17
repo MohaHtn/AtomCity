@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -80,6 +82,25 @@ fun MaimaiScoresDetails(
     val bestPerPlayer by maimaiViewModel?.bestPerPlayer?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
     val isLoading by maimaiViewModel?.isLoadingDetails?.collectAsState() ?: remember { mutableStateOf(false) }
     val isLoadingPlayById by maimaiViewModel?.isLoadingPlayById?.collectAsState() ?: remember { mutableStateOf(false) }
+
+    var sortByScore by remember { mutableStateOf(false) }
+    var sortAscending by remember { mutableStateOf(false) }
+
+    val sortedHistory = remember(chartHistory, sortByScore, sortAscending) {
+        if (sortByScore) {
+            if (sortAscending) {
+                chartHistory.sortedBy { it.achievement ?: 0.0 }
+            } else {
+                chartHistory.sortedByDescending { it.achievement ?: 0.0 }
+            }
+        } else {
+            if (sortAscending) {
+                chartHistory.sortedBy { it.playDate ?: "" }
+            } else {
+                chartHistory.sortedByDescending { it.playDate ?: "" }
+            }
+        }
+    }
 
     LaunchedEffect(scoreEntry?.id, scoreEntry?.song?.id, scoreEntry?.difficultyLevel?.key) {
 
@@ -189,7 +210,7 @@ fun MaimaiScoresDetails(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.Top
                     ) {
                         MaimaiScoreBadgeRow(
                             scoreEntry = scoreEntry,
@@ -645,10 +666,84 @@ fun MaimaiScoresDetails(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp, start = 8.dp)
+                        .padding(bottom = 12.dp, start = 8.dp)
                 )
 
-                chartHistory.forEach { historyEntry ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp, start = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Trier par :",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                    )
+
+                    FilterChip(
+                        selected = !sortByScore,
+                        onClick = {
+                            if (!sortByScore) {
+                                sortAscending = !sortAscending
+                            } else {
+                                sortByScore = false
+                                sortAscending = false
+                            }
+                        },
+                        label = {
+                            Text(
+                                text = if (!sortByScore) {
+                                    if (sortAscending) "Date (Ancien)" else "Date (Récents)"
+                                } else "Date"
+                            )
+                        },
+                        leadingIcon = if (!sortByScore) {
+                            {
+                                Icon(
+                                    imageVector = if (sortAscending) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        } else null,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    FilterChip(
+                        selected = sortByScore,
+                        onClick = {
+                            if (sortByScore) {
+                                sortAscending = !sortAscending
+                            } else {
+                                sortByScore = true
+                                sortAscending = false
+                            }
+                        },
+                        label = {
+                            Text(
+                                text = if (sortByScore) {
+                                    if (sortAscending) "Score (Croissant)" else "Score (Décroissant)"
+                                } else "Score"
+                            )
+                        },
+                        leadingIcon = if (sortByScore) {
+                            {
+                                Icon(
+                                    imageVector = if (sortAscending) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        } else null,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+
+                sortedHistory.forEach { historyEntry ->
                     ChartHistoryItem(historyEntry, onClick = { historyEntry.playId?.let { onHistoryClick(it) } })
                     Spacer(modifier = Modifier.height(12.dp))
                 }

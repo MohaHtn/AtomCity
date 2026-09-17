@@ -240,6 +240,16 @@ fun AppNavigation(
                 )
             }
 
+            composable("maimaiProgress") {
+                org.arcade.atomcity.ui.game.maimai.MaimaiProgress(
+                    viewModel = maimaiViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onNavigateToDetails = { scoreId ->
+                        navController.navigateIfNotCurrent("maimaiScoresDetails/$scoreId")
+                    }
+                )
+            }
+
             composable("taikoUserSettings") {
                 TaikoUserSettings(
                     taikoViewModel = taikoViewModel,

@@ -84,6 +84,10 @@ class MaimaiViewModel(
     private val _utageStaticData = MutableStateFlow<UtageData?>(null)
     val utageStaticData: StateFlow<UtageData?> = _utageStaticData
 
+    // StateFlow to hold rank progression
+    private val _rankProgression = MutableStateFlow<org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse?>(null)
+    val rankProgression: StateFlow<org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse?> = _rankProgression
+
 
     // Expose the current page
     internal val _currentPage = MutableStateFlow(1)
@@ -118,6 +122,18 @@ class MaimaiViewModel(
     private val _isLoadingMostPlayed = MutableStateFlow(false)
     val isLoadingMostPlayed: StateFlow<Boolean> = _isLoadingMostPlayed
 
+    private val _isLoadingRankProgression = MutableStateFlow(false)
+    val isLoadingRankProgression: StateFlow<Boolean> = _isLoadingRankProgression
+
+    private val _isUpdatingVisibility = MutableStateFlow(false)
+    val isUpdatingVisibility: StateFlow<Boolean> = _isUpdatingVisibility
+
+    private val _rankCharts = MutableStateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>>(emptyList())
+    val rankCharts: StateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>> = _rankCharts
+
+    private val _isLoadingRankCharts = MutableStateFlow(false)
+    val isLoadingRankCharts: StateFlow<Boolean> = _isLoadingRankCharts
+
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching
 
@@ -139,7 +155,8 @@ class MaimaiViewModel(
         _isLoadingChartHistory,
         _isLoadingPlayById,
         _isLoadingBestPerPlayer,
-        _isLoadingMostPlayed
+        _isLoadingMostPlayed,
+        _isLoadingRankProgression
     ) { loadings ->
         loadings.any { it }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -444,6 +461,88 @@ class MaimaiViewModel(
             } catch (e: Exception) {
                 // Log.e("ScorefetcherViewModel", "Error fetching most played charts: ${e.message}")
                 _isLoadingMostPlayed.value = false
+            }
+        }
+    }
+
+    fun fetchRankProgression(targetKeyHash: String? = null) {
+        viewModelScope.launch {
+            try {
+                _isLoadingRankProgression.value = true
+                analyticsUseCase.getRankProgression(targetKeyHash).collect { response ->
+                    _rankProgression.value = response
+                    _isLoadingRankProgression.value = false
+                }
+            } catch (e: Exception) {
+                _isLoadingRankProgression.value = false
+            }
+        }
+    }
+
+    fun updateProgressionVisibility(isPublic: Boolean) {
+        viewModelScope.launch {
+            try {
+                _isUpdatingVisibility.value = true
+                val success = analyticsUseCase.updateProgressionVisibility(isPublic)
+                if (success) {
+                    fetchRankProgression()
+                }
+            } catch (_: Exception) {
+            } finally {
+                _isUpdatingVisibility.value = false
+            }
+        }
+    }
+
+    fun fetchChartsForRank(keyHash: String?, rankLabel: String) {
+        viewModelScope.launch {
+            try {
+                _isLoadingRankCharts.value = true
+                _rankCharts.value = emptyList()
+
+                val targetKeyHash = keyHash.takeIf { !it.isNullOrBlank() }
+
+                scoresUseCase.searchCharts(query = rankLabel, keyHash = targetKeyHash).collect { searchResults ->
+                    val matchingRank = filterByRank(searchResults, rankLabel)
+                    if (matchingRank.isNotEmpty()) {
+                        _rankCharts.value = matchingRank
+                        _isLoadingRankCharts.value = false
+                    } else {
+                        scoresUseCase.searchCharts(query = "", keyHash = targetKeyHash).collect { allResults ->
+                            _rankCharts.value = filterByRank(allResults, rankLabel)
+                            _isLoadingRankCharts.value = false
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _rankCharts.value = emptyList()
+                _isLoadingRankCharts.value = false
+            }
+        }
+    }
+
+    private fun filterByRank(
+        list: List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>,
+        targetRank: String
+    ): List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse> {
+        val target = targetRank.uppercase().trim()
+        return list.filter { item ->
+            val r = item.rank?.uppercase()?.trim() ?: ""
+            when (target) {
+                "SSS+", "SSS PLUS" -> r == "SSS+" || r == "SSS PLUS"
+                "SSS" -> r == "SSS"
+                "SS+", "SS PLUS" -> r == "SS+" || r == "SS PLUS"
+                "SS" -> r == "SS"
+                "S+", "S PLUS" -> r == "S+" || r == "S PLUS"
+                "S" -> r == "S"
+                "AAA" -> r == "AAA"
+                "AA" -> r == "AA"
+                "A" -> r == "A"
+                "FC" -> r == "FC" || r == "FC+"
+                "FC+" -> r == "FC+" || r == "FCP"
+                "AP" -> r == "AP" || r == "AP+"
+                "AP+" -> r == "AP+" || r == "APP"
+                else -> r == target || r.contains(target)
             }
         }
     }

@@ -17,6 +17,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.Scorefet
 import org.arcade.atomcity.data.remote.DeleteApiKeyResponse
 import org.arcade.atomcity.data.remote.ApiKeyRequest
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
+import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
 import io.ktor.http.HttpStatusCode
 import org.arcade.atomcity.data.cache.DataCache
 import org.arcade.atomcity.utils.PlatformUtils
@@ -329,6 +330,27 @@ class ScorefetcherRepository(
         } catch (e: Exception) {
             emit(emptyList())
         }
+    }
+
+    override fun getRankProgression(targetKeyHash: String?): Flow<RankProgressionResponse> = flow {
+        try {
+            val callerKeyHash = PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")
+            val response = scorefetcherClient.getRankProgression(
+                targetKeyHash = targetKeyHash,
+                callerKeyHash = callerKeyHash.ifBlank { null }
+            )
+            emit(response)
+        } catch (e: Exception) {
+            PlatformUtils.log("ScorefetcherRepository", "Error fetching rank progression: ${e.message}", true)
+            emit(RankProgressionResponse())
+        }
+    }
+
+    override suspend fun updateProgressionVisibility(isPublic: Boolean): Boolean {
+        val apiKey = apiKeyManager.getApiKey("maimai")?.trim() ?: return false
+        if (apiKey.isBlank()) return false
+        val keyHash = PlatformUtils.sha256(apiKey)
+        return scorefetcherClient.updateProgressionVisibility(apiKey, isPublic, keyHash)
     }
 
     override suspend fun removeApiKey(apiKey: String): Flow<DeleteApiKeyResponse> = flow {

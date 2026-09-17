@@ -81,6 +81,24 @@ actual object PlatformUtils {
     }
 
     @OptIn(ExperimentalForeignApi::class)
+    actual fun saveImage(bitmap: ImageBitmap, context: Any?) {
+        val skiaBitmap = bitmap.asSkiaBitmap()
+        val skiaImage = Image.makeFromBitmap(skiaBitmap)
+        val encodedData = skiaImage.encodeToData(EncodedImageFormat.PNG, 100) ?: return
+        val bytes = encodedData.bytes
+
+        val nsData = bytes.usePinned<ByteArray, NSData> { pinned ->
+            NSData.create(
+                bytes = pinned.addressOf(0).reinterpret<ByteVar>(),
+                length = bytes.size.toULong()
+            )
+        }
+
+        val uiImage = UIImage.imageWithData(nsData) ?: return
+        platform.UIKit.UIImageWriteToSavedPhotosAlbum(uiImage, null, null, null)
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
     actual fun encrypt(text: String): String {
         return try {
             val key = getOrGenerateKey()

@@ -19,6 +19,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherPlaysResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
+import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
 
 @Serializable
 data class ApiKeyRequest(
@@ -41,6 +42,12 @@ data class AddApiKeyResponse(
 @Serializable
 data class DeleteApiKeyResponse(
     val message: String,
+)
+
+@Serializable
+data class VisibilityUpdateRequest(
+    val keyHash: String? = null,
+    val isPublic: Boolean
 )
 
 @Serializable
@@ -276,6 +283,45 @@ class ScorefetcherClient(
             processGroupedEntries(grouped, limit ?: 30)
         } else {
             response.body()
+        }
+    }
+
+    suspend fun getRankProgression(
+        targetKeyHash: String? = null,
+        callerKeyHash: String? = null
+    ): RankProgressionResponse {
+        val response: HttpResponse = client.get("${baseUrl}scores/progression/rank") {
+            addApiKey()
+            header("Accept", "application/json")
+            parameter("targetKeyHash", targetKeyHash)
+            parameter("callerKeyHash", callerKeyHash)
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            RankProgressionResponse()
+        } else {
+            response.body()
+        }
+    }
+
+    suspend fun updateProgressionVisibility(
+        apiKey: String,
+        isPublic: Boolean,
+        keyHash: String? = null
+    ): Boolean {
+        return try {
+            val response: HttpResponse = client.post("${baseUrl}scores/progression/visibility") {
+                addApiKey()
+                header("Authorization", "Bearer ${apiKey.trim()}")
+                contentType(ContentType.Application.Json)
+                parameter("isPublic", isPublic)
+                if (!keyHash.isNullOrBlank()) {
+                    parameter("keyHash", keyHash)
+                }
+                setBody(VisibilityUpdateRequest(keyHash = keyHash, isPublic = isPublic))
+            }
+            response.status == HttpStatusCode.OK
+        } catch (e: Exception) {
+            false
         }
     }
 

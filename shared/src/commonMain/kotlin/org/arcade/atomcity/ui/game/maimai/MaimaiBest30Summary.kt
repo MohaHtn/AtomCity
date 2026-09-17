@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import org.arcade.atomcity.utils.format
 import androidx.compose.ui.draw.alpha
+import androidx.compose.foundation.clickable
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.arcade.atomcity.utils.getCurrentFormattedDate
 
@@ -39,7 +40,8 @@ fun MaimaiBest30Summary(
     title: String? = null,
     modifier: Modifier = Modifier,
     repository: IDifficultyRepository,
-    isCapture: Boolean = false
+    isCapture: Boolean = false,
+    onScoreClick: ((PlayerBest30Response) -> Unit)? = null
 ) {
     Column(
         modifier = modifier
@@ -132,9 +134,10 @@ fun MaimaiBest30Summary(
                             val score = scores[index]
                             Box(modifier = Modifier.weight(1f)) {
                                 SummaryScoreItem(
-                                    score,
+                                    score = score,
                                     repository = repository,
-                                    isCapture = isCapture
+                                    isCapture = isCapture,
+                                    onClick = if (onScoreClick != null) { { onScoreClick(score) } } else null
                                 )
                             }
                         } else {
@@ -161,7 +164,8 @@ fun MaimaiBest30Summary(
 fun SummaryScoreItem(
     score: PlayerBest30Response,
     repository: IDifficultyRepository,
-    isCapture: Boolean = false
+    isCapture: Boolean = false,
+    onClick: (() -> Unit)? = null
 ) {
     val difficultyColor = getJacketBorderColor(score.difficultyLevelJson?.value)
     val levelValue = rememberMaimaiLevel(
@@ -171,7 +175,14 @@ fun SummaryScoreItem(
         repository = repository
     )
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = if (onClick != null) {
+            Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onClick() }
+        } else Modifier
+    ) {
         Box {
             AsyncImage(
                 model = score.jacketImageUrl,

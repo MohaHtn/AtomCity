@@ -103,6 +103,40 @@ actual object PlatformUtils {
         }
     }
 
+    actual fun saveImage(bitmap: ImageBitmap, context: Any?) {
+        val androidContext = context as? android.content.Context ?: return
+        val androidBitmap = bitmap.asAndroidBitmap()
+
+        try {
+            val filename = "maimai_b30_${System.currentTimeMillis()}.png"
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                val contentValues = android.content.ContentValues().apply {
+                    put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                    put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                    put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/AtomCity")
+                }
+                val uri = androidContext.contentResolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null) {
+                    androidContext.contentResolver.openOutputStream(uri)?.use { stream ->
+                        androidBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                    }
+                    android.widget.Toast.makeText(androidContext, "Image enregistrée dans la galerie", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                val imagesDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES).toString() + "/AtomCity"
+                val dir = File(imagesDir)
+                if (!dir.exists()) dir.mkdirs()
+                val file = File(dir, filename)
+                FileOutputStream(file).use { stream ->
+                    androidBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                }
+                android.widget.Toast.makeText(androidContext, "Image enregistrée dans la galerie", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            log("PlatformUtils", "Error saving image: ${e.message}", true)
+        }
+    }
+
     actual fun encrypt(text: String): String {
         return try {
             val cipher = Cipher.getInstance(TRANSFORMATION)

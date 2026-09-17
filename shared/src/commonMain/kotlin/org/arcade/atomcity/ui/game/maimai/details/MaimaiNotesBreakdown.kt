@@ -1,13 +1,12 @@
 package org.arcade.atomcity.ui.game.maimai.details
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -22,10 +21,10 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.Scorefet
 
 @Composable
 fun MaimaiScoreBadgeRow(scoreEntry: ScorefetcherApiData, modifier: Modifier = Modifier) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.horizontalScroll(rememberScrollState())
+    Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = Alignment.Start,
+        modifier = modifier
     ) {
         if (scoreEntry.isHighScore == true) {
             ScoreBadge(
@@ -34,7 +33,7 @@ fun MaimaiScoreBadgeRow(scoreEntry: ScorefetcherApiData, modifier: Modifier = Mo
                 contentColor = Color(0xFFFBC02D)
             )
         }
-        if (scoreEntry.fullCombo != 0) {
+        if (scoreEntry.fullCombo != 0 && scoreEntry.isAllPerfect != true) {
             ScoreBadge(
                 text = if (scoreEntry.fullCombo == 1) "FULL COMBO" else "FULL COMBO +",
                 containerColor = if (scoreEntry.fullCombo == 1) Color(0xFFE3F2FD) else Color(0xFFFFF9C4),
