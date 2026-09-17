@@ -16,11 +16,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,29 +56,46 @@ fun UserLegend(profiles: Map<String, String>, entries: List<MaimaiMostPlayedEntr
     val activeHashes = entries.flatMap { it.userPlayCounts?.keys ?: emptySet() }.distinct()
     
     if (activeHashes.isNotEmpty()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
-            verticalAlignment = Alignment.CenterVertically
+        OutlinedCard(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.outlinedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+            ),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            activeHashes.forEach { hash ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(getColorForHash(hash))
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = profiles[hash] ?: "Utilisateur",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                activeHashes.forEach { hash ->
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(getColorForHash(hash))
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = profiles[hash] ?: "Utilisateur",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -87,7 +107,7 @@ fun PeriodChip(label: String, selected: Boolean, onClick: () -> Unit) {
     FilterChip(
         selected = selected,
         onClick = onClick,
-        label = { Text(label) }
+        label = { Text(label, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal) }
     )
 }
 
@@ -106,8 +126,7 @@ val UserColors = listOf(
     Color(0xFFE6EE9C), Color(0xFFDCE775), Color(0xFFD4E157),
     Color(0xFFFFF59D), Color(0xFFFFF176), Color(0xFFFFEE58),
     Color(0xFFFFE082), Color(0xFFFFD54F), Color(0xFFFFCA28),
-    Color(0xFFFFCC80), Color(0xFFFFB74D), Color(0xFFFFA726),
-    Color(0xFFFFAB91), Color(0xFFFF8A65), Color(0xFFFF7043),
+    Color(0xFFFFCC80), Color(0xFFFFA726), Color(0xFFFF8A65),
     Color(0xFFBCAAA4), Color(0xFFA1887F), Color(0xFF8D6E63),
     Color(0xFFB0BEC5), Color(0xFF90A4AE), Color(0xFF78909C)
 )
@@ -142,42 +161,59 @@ fun stableHash64(value: String): ULong {
 fun MostPlayedBarChart(topEntries: List<MaimaiMostPlayedEntry>, maxCount: Int) {
     var selectedIndex by remember { mutableStateOf(-1) }
 
-    Card(
-        modifier = Modifier.fillMaxWidth().height(180.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth().height(200.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
     ) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(12.dp),
+            modifier = Modifier.fillMaxSize().padding(14.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Bottom
         ) {
             topEntries.forEachIndexed { index, entry ->
+                val isSelected = selectedIndex == index
+                
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
                         .pointerInput(Unit) {
                             detectTapGestures {
-                                selectedIndex = index
+                                selectedIndex = if (selectedIndex == index) -1 else index
                                 PlatformUtils.hapticImpact()
                             }
                         },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val isSelected = selectedIndex == index
-                    val rankText = when (index) {
-                        0 -> "1er"
-                        else -> "${index + 1}ème"
+                    val (rankBg, rankText) = when (index) {
+                        0 -> Color(0xFFFFD700) to "1er"
+                        1 -> Color(0xFFC0C0C0) to "2e"
+                        2 -> Color(0xFFCD7F32) to "3e"
+                        else -> MaterialTheme.colorScheme.primaryContainer to "${index + 1}e"
                     }
-                    
-                    Text(
-                        text = if (isSelected) "${entry.playCount}" else rankText,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = if (index == 0 || isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    
-                    Spacer(modifier = Modifier.height(2.dp))
+                    val rankTextColor = when (index) {
+                        0, 1, 2 -> Color.Black
+                        else -> MaterialTheme.colorScheme.onPrimaryContainer
+                    }
+
+                    // Rank Pill / Play count badge
+                    Surface(
+                        shape = CircleShape,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else rankBg,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    ) {
+                        Text(
+                            text = if (isSelected) "${entry.playCount} essais" else rankText,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 10.sp,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else rankTextColor,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
 
                     val fraction = if (maxCount > 0) entry.playCount.toFloat() / maxCount else 0f
                     
@@ -189,9 +225,9 @@ fun MostPlayedBarChart(topEntries: List<MaimaiMostPlayedEntry>, maxCount: Int) {
                         if (!distribution.isNullOrEmpty()) {
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(0.7f)
-                                    .fillMaxHeight(fraction.coerceAtLeast(0.1f))
-                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                    .fillMaxWidth(0.75f)
+                                    .fillMaxHeight(fraction.coerceAtLeast(0.12f))
+                                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 4.dp, bottomEnd = 4.dp))
                             ) {
                                 distribution.toList().sortedByDescending { it.second }.forEach { (hash, count) ->
                                     Box(
@@ -205,9 +241,9 @@ fun MostPlayedBarChart(topEntries: List<MaimaiMostPlayedEntry>, maxCount: Int) {
                         } else {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth(0.7f)
-                                    .fillMaxHeight(fraction.coerceAtLeast(0.1f))
-                                    .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                    .fillMaxWidth(0.75f)
+                                    .fillMaxHeight(fraction.coerceAtLeast(0.12f))
+                                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 4.dp, bottomEnd = 4.dp))
                                     .background(
                                         color = if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
                                     )
@@ -215,16 +251,17 @@ fun MostPlayedBarChart(topEntries: List<MaimaiMostPlayedEntry>, maxCount: Int) {
                         }
                     }
                     
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     
                     Text(
-                        text = entry.songNameJp ?: entry.songName ?: "",
+                        text = entry.songNameEn ?: entry.songName ?: "",
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
-                        fontSize = 8.sp,
-                        lineHeight = 10.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        fontSize = 9.sp,
+                        lineHeight = 11.sp,
                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -252,101 +289,136 @@ fun MostPlayedItem(entry: MaimaiMostPlayedEntry) {
         }
     }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+    ElevatedCard(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        AsyncImage(
-            model = entry.jacketImageUrl,
-            contentDescription = null,
+        Row(
             modifier = Modifier
-                .size(50.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentScale = ContentScale.Crop
-        )
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = entry.jacketImageUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                contentScale = ContentScale.Crop
+            )
 
-        Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = entry.songNameEn ?: entry.songName ?: "Inconnu",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = entry.songNameEn ?: entry.songName ?: "Inconnu",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Text(
+                            text = "${entry.playCount} essais",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
+                    }
+                }
 
                 if (!entry.userPlayCounts.isNullOrEmpty()) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         entry.userPlayCounts.toList().sortedByDescending { it.second }.take(4).forEach { (hash, count) ->
-                            Text(
-                                text = count.toString(),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 10.sp,
-                                color = getColorForHash(hash)
-                            )
+                            Surface(
+                                shape = CircleShape,
+                                color = getColorForHash(hash).copy(alpha = 0.2f)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(6.dp)
+                                            .clip(CircleShape)
+                                            .background(getColorForHash(hash))
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "$count",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.sp,
+                                        color = getColorForHash(hash)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
                 
-                Text(
-                    text = "${entry.playCount}",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                val distribution = entry.userPlayCounts
+                Spacer(modifier = Modifier.height(4.dp))
                 
-                if (!distribution.isNullOrEmpty()) {
-                    Row(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
-                        distribution.toList().sortedByDescending { it.second }.forEach { (hash, count) ->
-                            Box(
-                                modifier = Modifier
-                                    .weight(count.toFloat())
-                                    .fillMaxHeight()
-                                    .background(getColorForHash(hash))
-                            )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    val distribution = entry.userPlayCounts
+                    
+                    if (!distribution.isNullOrEmpty()) {
+                        Row(modifier = Modifier.fillMaxSize()) {
+                            distribution.toList().sortedByDescending { it.second }.forEach { (hash, count) ->
+                                Box(
+                                    modifier = Modifier
+                                        .weight(count.toFloat())
+                                        .fillMaxHeight()
+                                        .background(getColorForHash(hash))
+                                )
+                            }
                         }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
                     }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.primary)
+                }
+
+                if (!entry.difficulty.isNullOrBlank()) {
+                    MaimaiDifficultyBadge(
+                        difficultyValue = entry.difficulty,
+                        levelInfo = levelInfo,
+                        isCompact = true,
+                        modifier = Modifier.padding(top = 6.dp)
                     )
                 }
-            }
-
-            if (!entry.difficulty.isNullOrBlank()) {
-                MaimaiDifficultyBadge(
-                    difficultyValue = entry.difficulty,
-                    levelInfo = levelInfo,
-                    isCompact = true,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
             }
         }
     }

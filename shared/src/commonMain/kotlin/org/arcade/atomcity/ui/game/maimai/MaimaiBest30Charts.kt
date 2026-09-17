@@ -290,11 +290,11 @@ fun MaimaiBest30Charts(
                 }
             }
             
-            // Hidden capture area (composed but invisible to pre-load images)
+            // Hidden capture area (composed for capturing B30 image)
             Box(
                 modifier = Modifier
                     .wrapContentSize(align = Alignment.TopStart, unbounded = true)
-                    .alpha(0f) // Invisible
+                    .alpha(0.001f) // Kept in render tree for graphicsLayer recording
                     .drawWithContent {
                         if (isGeneratingImage) {
                             graphicsLayer.record {
@@ -318,21 +318,19 @@ fun MaimaiBest30Charts(
             }
 
             if (isGeneratingImage) {
-                LaunchedEffect(Unit) {
-                    delay(1000.milliseconds)
-                    scope.launch {
-                        try {
-                            val bitmap = graphicsLayer.toImageBitmap()
-                            if (isSaveAction) {
-                                PlatformUtils.saveImage(bitmap, context)
-                            } else {
-                                PlatformUtils.shareImage(bitmap, context)
-                            }
-                        } catch (e: Exception) {
-                            // Handle error
-                        } finally {
-                            isGeneratingImage = false
+                LaunchedEffect(isGeneratingImage) {
+                    delay(600.milliseconds)
+                    try {
+                        val bitmap = graphicsLayer.toImageBitmap()
+                        if (isSaveAction) {
+                            PlatformUtils.saveImage(bitmap, context)
+                        } else {
+                            PlatformUtils.shareImage(bitmap, context)
                         }
+                    } catch (e: Exception) {
+                        PlatformUtils.log("MaimaiBest30Charts", "Error capturing or sharing B30 image: ${e.message}", true)
+                    } finally {
+                        isGeneratingImage = false
                     }
                 }
             }
@@ -389,10 +387,14 @@ fun MaimaiBest30Charts(
                             OutlinedButton(
                                 onClick = {
                                     scope.launch {
-                                        sheetState.hide()
-                                        showSharePreview = false
-                                        isSaveAction = true
-                                        isGeneratingImage = true
+                                        try {
+                                            sheetState.hide()
+                                        } catch (_: Exception) {
+                                        } finally {
+                                            showSharePreview = false
+                                            isSaveAction = true
+                                            isGeneratingImage = true
+                                        }
                                     }
                                 },
                                 modifier = Modifier
@@ -414,10 +416,14 @@ fun MaimaiBest30Charts(
                             Button(
                                 onClick = {
                                     scope.launch {
-                                        sheetState.hide()
-                                        showSharePreview = false
-                                        isSaveAction = false
-                                        isGeneratingImage = true
+                                        try {
+                                            sheetState.hide()
+                                        } catch (_: Exception) {
+                                        } finally {
+                                            showSharePreview = false
+                                            isSaveAction = false
+                                            isGeneratingImage = true
+                                        }
                                     }
                                 },
                                 modifier = Modifier

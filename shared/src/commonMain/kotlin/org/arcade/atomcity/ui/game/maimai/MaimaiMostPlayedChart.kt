@@ -1,46 +1,35 @@
 package org.arcade.atomcity.ui.game.maimai
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
-import coil3.compose.AsyncImage
-import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
-import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
-import org.arcade.atomcity.utils.PlatformUtils
 import kotlinx.datetime.*
+import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
+import org.arcade.atomcity.ui.game.maimai.mostplayed.*
+import org.arcade.atomcity.utils.PlatformUtils
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.detectTapGestures
-import kotlinx.datetime.number
-import org.arcade.atomcity.domain.model.LevelInfo
-import org.arcade.atomcity.domain.repository.IDifficultyRepository
-import org.arcade.atomcity.ui.game.maimai.mostplayed.*
-import org.koin.compose.koinInject
 import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
@@ -56,10 +45,8 @@ fun MaimaiMostPlayedChart(
     var isGlobal by remember { mutableStateOf(true) }
     var selectedPeriod by remember { mutableStateOf("month") }
     
-    var currentDate by remember { 
-        mutableStateOf(Clock.System.todayIn(TimeZone.currentSystemDefault())) 
-    }
-    val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
+    val todayLocal = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
+    var currentDate by remember { mutableStateOf(todayLocal) }
     var showDatePicker by remember { mutableStateOf(false) }
     
     val apiDate = remember(currentDate, selectedPeriod) {
@@ -69,12 +56,11 @@ fun MaimaiMostPlayedChart(
                 val dayOfYear = currentDate.dayOfYear
                 val dayOfWeek = currentDate.dayOfWeek.isoDayNumber // 1=Mon, 7=Sun
                 val weekNumber = (dayOfYear - dayOfWeek + 10) / 7
-                // Simplified ISO week number calculation
                 val finalWeek = if (weekNumber < 1) 52 else if (weekNumber > 53) 1 else weekNumber
                 val finalYear = when {
                     weekNumber < 1 -> currentDate.year - 1
                     weekNumber >= 52 && currentDate.month == Month.JANUARY -> currentDate.year - 1
-                    weekNumber == 1 && currentDate.month == Month.DECEMBER -> currentDate.year + 1
+                    (weekNumber == 1 && currentDate.month == Month.DECEMBER) -> currentDate.year + 1
                     else -> currentDate.year
                 }
                 "$finalYear-${finalWeek.toString().padStart(2, '0')}"
@@ -131,12 +117,31 @@ fun MaimaiMostPlayedChart(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Charts les plus jouées") },
+                title = {
+                    Column {
+                        Text(
+                            "Charts les plus jouées",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            if (isGlobal) "Statistiques globales" else "Mes statistiques",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    FilledTonalIconButton(
+                        onClick = onBackClick,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         }
     ) { padding ->
@@ -146,117 +151,182 @@ fun MaimaiMostPlayedChart(
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-            // Toggle Global / Personal
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.Center
+            // Scope Switcher: Global vs Personnel
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
             ) {
-                FilterChip(
+                SegmentedButton(
                     selected = isGlobal,
-                    onClick = { isGlobal = true },
-                    label = { Text("Global") }
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                FilterChip(
-                    selected = !isGlobal,
-                    onClick = { isGlobal = false },
-                    label = { Text("Personnel") }
-                )
-            }
-
-            // Period Selection
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                PeriodChip(label = "Jour", selected = selectedPeriod == "day", onClick = { selectedPeriod = "day" })
-                PeriodChip(label = "Semaine", selected = selectedPeriod == "week", onClick = { selectedPeriod = "week" })
-                PeriodChip(label = "Mois", selected = selectedPeriod == "month", onClick = { selectedPeriod = "month" })
-                PeriodChip(label = "Tout", selected = selectedPeriod == "alltime", onClick = { selectedPeriod = "alltime" })
-            }
-
-            if (selectedPeriod != "alltime") {
-                // Date Selection
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    onClick = {
+                        isGlobal = true
+                        PlatformUtils.hapticImpact()
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
                 ) {
-                    IconButton(onClick = {
-                        currentDate = when (selectedPeriod) {
-                            "day" -> currentDate.minus(DatePeriod(days = 1))
-                            "week" -> currentDate.minus(DatePeriod(days = 7))
-                            "month" -> currentDate.minus(DatePeriod(months = 1))
-                            else -> currentDate.minus(DatePeriod(months = 1))
-                        }
-                    }) {
-                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Précédent")
-                    }
+                    Text("Global", fontWeight = FontWeight.SemiBold)
+                }
+                SegmentedButton(
+                    selected = !isGlobal,
+                    onClick = {
+                        isGlobal = false
+                        PlatformUtils.hapticImpact()
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                ) {
+                    Text("Personnel", fontWeight = FontWeight.SemiBold)
+                }
+            }
 
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .then(
-                                if (selectedPeriod == "day") {
-                                    Modifier.clip(RoundedCornerShape(8.dp))
-                                        .clickable { showDatePicker = true }
-                                        .padding(vertical = 4.dp)
-                                } else Modifier
-                            ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+            // Period Selector
+            val periods = listOf(
+                "day" to "Jour",
+                "week" to "Semaine",
+                "month" to "Mois",
+                "alltime" to "Tout"
+            )
+
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+            ) {
+                periods.forEachIndexed { index, (key, label) ->
+                    SegmentedButton(
+                        selected = selectedPeriod == key,
+                        onClick = {
+                            selectedPeriod = key
+                            PlatformUtils.hapticImpact()
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = periods.size)
                     ) {
                         Text(
-                            text = displayDate,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (selectedPeriod == key) FontWeight.Bold else FontWeight.Normal
                         )
-                        if (selectedPeriod == "day") {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = "Sélectionner une date",
-                                modifier = Modifier.padding(start = 8.dp).size(18.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
                     }
+                }
+            }
 
-                    IconButton(
-                        onClick = {
-                            currentDate = when (selectedPeriod) {
-                                "day" -> currentDate.plus(DatePeriod(days = 1))
-                                "week" -> currentDate.plus(DatePeriod(days = 7))
-                                "month" -> currentDate.plus(DatePeriod(months = 1))
-                                else -> currentDate.plus(DatePeriod(months = 1))
-                            }
-                        },
-                        enabled = when (selectedPeriod) {
-                            "day" -> currentDate < today
-                            "week" -> {
-                                val currentStartOfWeek = currentDate.minus(DatePeriod(days = currentDate.dayOfWeek.ordinal))
-                                val todayStartOfWeek = today.minus(DatePeriod(days = today.dayOfWeek.ordinal))
-                                currentStartOfWeek < todayStartOfWeek
-                            }
-                            "month" -> currentDate.year < today.year || (currentDate.year == today.year && currentDate.month < today.month)
-                            else -> false
-                        }
+            // Date Navigation Bar
+            if (selectedPeriod != "alltime") {
+                ElevatedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Suivant")
+                        FilledTonalIconButton(
+                            onClick = {
+                                currentDate = when (selectedPeriod) {
+                                    "day" -> currentDate.minus(DatePeriod(days = 1))
+                                    "week" -> currentDate.minus(DatePeriod(days = 7))
+                                    "month" -> currentDate.minus(DatePeriod(months = 1))
+                                    else -> currentDate.minus(DatePeriod(months = 1))
+                                }
+                                PlatformUtils.hapticImpact()
+                            }
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Précédent")
+                        }
+
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                                .then(
+                                    if (selectedPeriod == "day") {
+                                        Modifier
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .clickable {
+                                                showDatePicker = true
+                                                PlatformUtils.hapticImpact()
+                                            }
+                                    } else Modifier
+                                ),
+                            color = if (selectedPeriod == "day") MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.Transparent,
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = displayDate,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    color = if (selectedPeriod == "day") MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                )
+                                if (selectedPeriod == "day") {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.DateRange,
+                                        contentDescription = "Sélectionner une date",
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+
+                        FilledTonalIconButton(
+                            onClick = {
+                                currentDate = when (selectedPeriod) {
+                                    "day" -> currentDate.plus(DatePeriod(days = 1))
+                                    "week" -> currentDate.plus(DatePeriod(days = 7))
+                                    "month" -> currentDate.plus(DatePeriod(months = 1))
+                                    else -> currentDate.plus(DatePeriod(months = 1))
+                                }
+                                PlatformUtils.hapticImpact()
+                            },
+                            enabled = when (selectedPeriod) {
+                                "day" -> currentDate < todayLocal
+                                "week" -> {
+                                    val currentStartOfWeek = currentDate.minus(DatePeriod(days = currentDate.dayOfWeek.ordinal))
+                                    val todayStartOfWeek = todayLocal.minus(DatePeriod(days = todayLocal.dayOfWeek.ordinal))
+                                    currentStartOfWeek < todayStartOfWeek
+                                }
+                                "month" -> currentDate.year < todayLocal.year || (currentDate.year == todayLocal.year && currentDate.month < todayLocal.month)
+                                else -> false
+                            }
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Suivant")
+                        }
                     }
                 }
             } else {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
+            // Cross-Platform iOS & Android DatePicker Dialog
             if (showDatePicker && selectedPeriod == "day") {
-                val todayMillis = remember<Long> { Clock.System.now().toEpochMilliseconds() }
+                val initialUtcMillis = remember(currentDate) {
+                    currentDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+                }
+                val maxSelectableUtcMillis = remember(todayLocal) {
+                    todayLocal.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+                }
+
                 val datePickerState = rememberDatePickerState(
-                    initialSelectedDateMillis = currentDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
-                    selectableDates = remember {
+                    initialSelectedDateMillis = initialUtcMillis,
+                    selectableDates = remember(maxSelectableUtcMillis) {
                         object : SelectableDates {
                             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                                return utcTimeMillis <= todayMillis
+                                return utcTimeMillis <= maxSelectableUtcMillis
                             }
                         }
                     }
@@ -265,40 +335,98 @@ fun MaimaiMostPlayedChart(
                 DatePickerDialog(
                     onDismissRequest = { showDatePicker = false },
                     confirmButton = {
-                        TextButton(onClick = {
-                            datePickerState.selectedDateMillis?.let {
-                                currentDate = Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
+                        TextButton(
+                            onClick = {
+                                datePickerState.selectedDateMillis?.let { selectedMillis ->
+                                    currentDate = Instant.fromEpochMilliseconds(selectedMillis)
+                                        .toLocalDateTime(TimeZone.UTC).date
+                                }
+                                showDatePicker = false
                             }
-                            showDatePicker = false
-                        }) {
-                            Text("OK")
+                        ) {
+                            Text("OK", fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDatePicker = false }) {
                             Text("Annuler")
                         }
-                    }
+                    },
+                    properties = DialogProperties(usePlatformDefaultWidth = false)
                 ) {
                     DatePicker(
                         state = datePickerState,
-                        showModeToggle = false
+                        showModeToggle = false,
+                        modifier = Modifier.padding(horizontal = 8.dp)
                     )
                 }
             }
 
+            // Content Area
             if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 3.dp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Chargement ...",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             } else if (mostPlayedCharts.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Aucune donnée disponible pour cette période",
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ElevatedCard(
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth().padding(16.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Aucune donnée disponible",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Aucune partie enregistrée pour cette période.",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             } else {
                 val maxCount = mostPlayedCharts.maxOfOrNull { it.playCount } ?: 1
@@ -306,29 +434,43 @@ fun MaimaiMostPlayedChart(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
+                    contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
                     item {
-                        Text(
-                            "Top 5",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
                             modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                        ) {
+                            Text(
+                                "Top 5",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 15.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                            )
+                        }
                         MostPlayedBarChart(mostPlayedCharts.take(5), maxCount)
                         
                         if (isGlobal) {
                             val profiles by maimaiViewModel.profiles.collectAsState()
+                            Spacer(modifier = Modifier.height(8.dp))
                             UserLegend(profiles, mostPlayedCharts.take(5))
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            "Toutes les charts",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                "Les 30 premières charts les plus jouées",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                     items(mostPlayedCharts) { entry ->
                         MostPlayedItem(entry)
@@ -338,4 +480,3 @@ fun MaimaiMostPlayedChart(
         }
     }
 }
-

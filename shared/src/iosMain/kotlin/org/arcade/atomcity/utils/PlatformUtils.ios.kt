@@ -15,8 +15,11 @@ import platform.AVFAudio.AVAudioPlayer
 import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
+import platform.UIKit.popoverPresentationController
 import platform.Security.*
 import platform.CoreFoundation.*
+import platform.CoreGraphics.CGRectZero
+import platform.UIKit.UIImageWriteToSavedPhotosAlbum
 import platform.posix.size_tVar
 import platform.posix.memcpy
 
@@ -66,46 +69,79 @@ actual object PlatformUtils {
 
     @OptIn(ExperimentalForeignApi::class)
     actual fun shareImage(bitmap: ImageBitmap, context: Any?) {
-        val skiaBitmap = bitmap.asSkiaBitmap()
-        val skiaImage = Image.makeFromBitmap(skiaBitmap)
-        val encodedData = skiaImage.encodeToData(EncodedImageFormat.WEBP, 80) ?: return
-        val bytes = encodedData.bytes
-        
-        val nsData = bytes.usePinned<ByteArray, NSData> { pinned ->
-            NSData.create(
-                bytes = pinned.addressOf(0).reinterpret<ByteVar>(),
-                length = bytes.size.toULong()
-            )
-        }
-        
-        val uiImage = UIImage.imageWithData(nsData) ?: return
-        val activityController = UIActivityViewController(listOf(uiImage), null)
+        try {
+            val skiaBitmap = bitmap.asSkiaBitmap()
+            val skiaImage = Image.makeFromBitmap(skiaBitmap)
+            val encodedData = skiaImage.encodeToData(EncodedImageFormat.PNG, 100) ?: run {
+                log("PlatformUtils", "Failed to encode image to PNG for sharing", true)
+                return
+            }
+            val bytes = encodedData.bytes
+            
+            val nsData = bytes.usePinned<ByteArray, NSData> { pinned ->
+                NSData.create(
+                    bytes = pinned.addressOf(0).reinterpret<ByteVar>(),
+                    length = bytes.size.toULong()
+                )
+            }
+            
+            val uiImage = UIImage.imageWithData(nsData) ?: run {
+                log("PlatformUtils", "Failed to create UIImage from NSData for sharing", true)
+                return
+            }
+            val activityController = UIActivityViewController(listOf(uiImage), null)
 
-        val window = UIApplication.sharedApplication.keyWindow
-        var rootViewController = window?.rootViewController
-        while (rootViewController?.presentedViewController != null) {
-            rootViewController = rootViewController.presentedViewController
-        }
+            val window = UIApplication.sharedApplication.keyWindow
+            var rootViewController = window?.rootViewController
+            while (rootViewController?.presentedViewController != null) {
+                rootViewController = rootViewController.presentedViewController
+            }
 
-        rootViewController?.presentViewController(activityController, true, null)
+            activityController.popoverPresentationController?.let { popover ->
+                rootViewController?.view?.let { view ->
+                    popover.sourceView = view
+                    popover.sourceRect = view.bounds
+                }
+            }
+
+            NSOperationQueue.mainQueue.addOperationWithBlock {
+                rootViewController?.presentViewController(activityController, true, null)
+            }
+        } catch (e: Exception) {
+            log("PlatformUtils", "Error in shareImage on iOS: ${e.message}", true)
+        }
     }
 
     @OptIn(ExperimentalForeignApi::class)
     actual fun saveImage(bitmap: ImageBitmap, context: Any?) {
-        val skiaBitmap = bitmap.asSkiaBitmap()
-        val skiaImage = Image.makeFromBitmap(skiaBitmap)
-        val encodedData = skiaImage.encodeToData(EncodedImageFormat.PNG, 100) ?: return
-        val bytes = encodedData.bytes
+        try {
+            val skiaBitmap = bitmap.asSkiaBitmap()
+            val skiaImage = Image.makeFromBitmap(skiaBitmap)
+            val encodedData = skiaImage.encodeToData(EncodedImageFormat.PNG, 100) ?: run {
+                log("PlatformUtils", "Failed to encode image to PNG for saving", true)
+                return
+            }
+            val bytes = encodedData.bytes
 
-        val nsData = bytes.usePinned<ByteArray, NSData> { pinned ->
-            NSData.create(
-                bytes = pinned.addressOf(0).reinterpret<ByteVar>(),
-                length = bytes.size.toULong()
-            )
+            val nsData = bytes.usePinned<ByteArray, NSData> { pinned ->
+                NSData.create(
+                    bytes = pinned.addressOf(0).reinterpret<ByteVar>(),
+                    length = bytes.size.toULong()
+                )
+            }
+
+            val uiImage = UIImage.imageWithData(nsData) ?: run {
+                log("PlatformUtils", "Failed to create UIImage from NSData for saving", true)
+                return
+            }
+
+            NSOperationQueue.mainQueue.addOperationWithBlock {
+                UIImageWriteToSavedPhotosAlbum(uiImage, null, null, null)
+                hapticImpact()
+            }
+        } catch (e: Exception) {
+            log("PlatformUtils", "Error in saveImage on iOS: ${e.message}", true)
         }
-
-        val uiImage = UIImage.imageWithData(nsData) ?: return
-        platform.UIKit.UIImageWriteToSavedPhotosAlbum(uiImage, null, null, null)
     }
 
     @OptIn(ExperimentalForeignApi::class)
