@@ -15,8 +15,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 // ...existing code...
+import androidx.compose.animation.core.*
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
-// ...existing code...
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.runtime.saveable.rememberSaveable
 
 import coil3.compose.AsyncImage
 import androidx.compose.ui.graphics.Brush
@@ -29,6 +34,7 @@ import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.ui.navigation.Screen
 import org.arcade.atomcity.ui.navigation.navigateIfNotCurrent
+import org.arcade.atomcity.utils.PlatformUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +59,26 @@ fun MaimaiScores(
     val playerDataState by maimaiViewModel.playerData.collectAsState()
     val playerData = playerDataState?.data?.firstOrNull()
     val frameUrl = playerData?.options?.frame?.png ?: playerData?.options?.frame?.webp
+
+    val playerName = playerData?.name?.trim() ?: ""
+    val isBirthdayUser = remember(playerName) {
+        playerName.isNotEmpty() && (
+            playerName == "♪ｌ☆ｔｔｅ♪" ||
+            playerName == "ＭｏｈａＨｔｎ♪" ||
+            playerName.contains("ｌ☆ｔｔｅ") ||
+            playerName.contains("ＭｏｈａＨｔｎ")
+        )
+    }
+
+    var hasAutoShownBirthday by rememberSaveable { mutableStateOf(false) }
+    var showBirthdayDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isBirthdayUser) {
+        if (isBirthdayUser && !hasAutoShownBirthday) {
+            showBirthdayDialog = true
+            hasAutoShownBirthday = true
+        }
+    }
 
     val extraItems = listOf(
         Triple("maimaiBest30Scores", "30 Meilleurs scores", "Vos 30 meilleures performances"),
@@ -143,6 +169,14 @@ fun MaimaiScores(
                                             )
                                         }
                                     }
+                                }
+                            },
+                            actions = {
+                                if (isBirthdayUser) {
+                                    MaimaiBirthdayBadge(
+                                        onClick = { showBirthdayDialog = true },
+                                        modifier = Modifier.padding(end = 12.dp)
+                                    )
                                 }
                             },
                             scrollBehavior = scrollBehavior,
@@ -237,6 +271,263 @@ fun MaimaiScores(
                 progress = importProgress,
                 message = importMessage ?: ""
             )
+        }
+
+        if (showBirthdayDialog) {
+            MaimaiBirthdayDialog(
+                playerName = playerName,
+                onDismiss = { showBirthdayDialog = false }
+            )
+        }
+    }
+}
+
+@Composable
+fun MaimaiBirthdayBadge(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val rotateDegrees by infiniteTransition.animateFloat(
+        initialValue = -10f,
+        targetValue = 10f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFFF4081),
+        shadowElevation = 6.dp,
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = "🎂",
+                fontSize = 16.sp,
+                modifier = Modifier.graphicsLayer {
+                    rotationZ = rotateDegrees
+                }
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Anniversaire !",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun MaimaiBirthdayDialog(
+    playerName: String,
+    onDismiss: () -> Unit
+) {
+    DisposableEffect(Unit) {
+        PlatformUtils.playBirthdayBgm()
+        onDispose {
+            PlatformUtils.stopBirthdayBgm()
+        }
+    }
+
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val bobOffset1 by infiniteTransition.animateFloat(
+        initialValue = -6f,
+        targetValue = 6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val bobOffset2 by infiniteTransition.animateFloat(
+        initialValue = 6f,
+        targetValue = -6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val milkBobbing by infiniteTransition.animateFloat(
+        initialValue = -8f,
+        targetValue = 8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val milkRotation by infiniteTransition.animateFloat(
+        initialValue = -5f,
+        targetValue = 5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1100, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val milkScale by infiniteTransition.animateFloat(
+        initialValue = 0.98f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 8.dp,
+            shadowElevation = 16.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                Text(
+                    text = "🎈",
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .graphicsLayer { translationY = bobOffset1 }
+                )
+                Text(
+                    text = "✨",
+                    fontSize = 22.sp,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .graphicsLayer { translationY = bobOffset2 }
+                )
+                Text(
+                    text = "🥳",
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .graphicsLayer { translationY = bobOffset2 }
+                )
+                Text(
+                    text = "🎁",
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .graphicsLayer { translationY = bobOffset1 }
+                )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalPlatformContext.current)
+                            .data("file:///android_asset/maimai/database/birthday/milk_maimai_prism_plus.webp")
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Milk Maimai Prism Plus",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .height(130.dp)
+                            .graphicsLayer {
+                                translationY = milkBobbing
+                                rotationZ = milkRotation
+                                scaleX = milkScale
+                                scaleY = milkScale
+                            }
+                    )
+
+                    Text(
+                        text = "Joyeux Anniversaire !",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = (-0.5).sp
+                        ),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "$playerName ! 🍰✨",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Text(
+                                text = "Alors faut savoir que y'a que toi qui aura cette pop-up !!! " +
+                                        "J'espère que tu continueras à t'amuser à fond sur maimai !! Dommage que ça doit tombé un jour de cours" +
+                                        " mais en tous cas je tenais à te le souhaiter à travers cette app !! c:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Button(
+                        onClick = onDismiss,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                    ) {
+                        Text(
+                            text = "bisous !! ❤️",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 }

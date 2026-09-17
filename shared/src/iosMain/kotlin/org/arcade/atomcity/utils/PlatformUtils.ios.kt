@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asSkiaBitmap
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.EncodedImageFormat
+import platform.AVFAudio.AVAudioPlayer
 import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIApplication
 import platform.UIKit.UIImage
@@ -26,7 +27,16 @@ actual object PlatformUtils {
     actual val isIos: Boolean = true
     actual val isAndroid: Boolean = false
     actual fun log(tag: String, message: String, isError: Boolean) {
-        NSLog("[%s] %s", tag, message)
+        val maxLogLength = 1000
+        message.lineSequence().forEach { line ->
+            if (line.length <= maxLogLength) {
+                NSLog("[%s] %s", tag, line)
+            } else {
+                line.chunked(maxLogLength).forEach { chunk ->
+                    NSLog("[%s] %s", tag, chunk)
+                }
+            }
+        }
     }
 
     @OptIn(ExperimentalForeignApi::class)
@@ -199,6 +209,32 @@ actual object PlatformUtils {
             }
         }
         return bytes
+    }
+
+    private var audioPlayer: AVAudioPlayer? = null
+
+    @OptIn(ExperimentalForeignApi::class)
+    actual fun playBirthdayBgm() {
+        try {
+            stopBirthdayBgm()
+            val path = NSBundle.mainBundle.pathForResource("maimai_circle_bgm", "mp3") ?: return
+            val url = NSURL.fileURLWithPath(path)
+            audioPlayer = AVAudioPlayer(contentsOfURL = url, error = null).apply {
+                numberOfLoops = -1
+                play()
+            }
+        } catch (e: Exception) {
+            log("PlatformUtils", "Error playing iOS BGM: ${e.message}", true)
+        }
+    }
+
+    actual fun stopBirthdayBgm() {
+        try {
+            audioPlayer?.stop()
+            audioPlayer = null
+        } catch (e: Exception) {
+            log("PlatformUtils", "Error stopping iOS BGM: ${e.message}", true)
+        }
     }
 }
 

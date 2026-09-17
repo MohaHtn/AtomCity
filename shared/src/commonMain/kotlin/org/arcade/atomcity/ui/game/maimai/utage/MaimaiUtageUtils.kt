@@ -102,7 +102,8 @@ fun mergeUtageData(
             details = null,
             comment = null,
             forcedOptions = null,
-            score = score
+            score = score,
+            preDx = null
         )
     }
 
@@ -112,26 +113,28 @@ fun mergeUtageData(
     staticData.utage_chart_list.forEach { chartEntry ->
         if (chartEntry.variants != null) {
             chartEntry.variants.forEach { variant ->
-                val matchingScore = findMatchingScore(chartEntry.song, variant.attribute, scores, matchedScoreIds)
+                val matchingScore = findMatchingScore(chartEntry.song, variant.attribute, variant.key, scores, matchedScoreIds)
                 results.add(UtageDisplayItem(
                     songTitle = chartEntry.song,
-                    attribute = variant.attribute,
+                    attribute = variant.attribute ?: chartEntry.attribute,
                     details = variant.details_fr ?: chartEntry.details_fr,
                     comment = variant.comment ?: chartEntry.comment,
                     forcedOptions = variant.forced_options ?: chartEntry.forced_options,
-                    score = matchingScore
+                    score = matchingScore,
+                    preDx = chartEntry.pre_dx
                 ))
                 matchingScore?.playId?.let { matchedScoreIds.add(it) }
             }
         } else {
-            val matchingScore = findMatchingScore(chartEntry.song, chartEntry.attribute, scores, matchedScoreIds)
+            val matchingScore = findMatchingScore(chartEntry.song, chartEntry.attribute, null, scores, matchedScoreIds)
             results.add(UtageDisplayItem(
                 songTitle = chartEntry.song,
                 attribute = chartEntry.attribute,
                 details = chartEntry.details_fr,
                 comment = chartEntry.comment,
                 forcedOptions = chartEntry.forced_options,
-                score = matchingScore
+                score = matchingScore,
+                preDx = chartEntry.pre_dx
             ))
             matchingScore?.playId?.let { matchedScoreIds.add(it) }
         }
@@ -144,19 +147,23 @@ fun mergeUtageData(
             details = null,
             comment = null,
             forcedOptions = null,
-            score = score
+            score = score,
+            preDx = null
         ))
     }
 
-    return results.sortedWith(
-        compareByDescending<UtageDisplayItem> { it.score?.achievement ?: -1.0 }
-            .thenBy { it.songTitle }
-    )
+    return results
+        .filter { it.preDx == true }
+        .sortedWith(
+            compareByDescending<UtageDisplayItem> { it.score?.achievement ?: -1.0 }
+                .thenBy { it.songTitle }
+        )
 }
 
 fun findMatchingScore(
     jsonSong: String, 
     jsonAttribute: String?, 
+    jsonKey: Int?,
     scores: List<PlayerBest30Response>,
     usedIds: Set<Int>
 ): PlayerBest30Response? {
@@ -188,6 +195,10 @@ fun findMatchingScore(
 
         if (!isExact) return@find false
 
+        if (jsonKey != null) {
+            return@find score.difficultyLevelJson?.key == jsonKey
+        }
+
         val apiAttr = score.difficultyLevelJson?.label?.replace("(", "")?.replace(")", "")?.trim() ?: ""
         
         when {
@@ -210,6 +221,10 @@ fun findMatchingScore(
         val isContainsEn = !normJsonEn.isNullOrEmpty() && normJsonEn.length > 3 && apiEn.isNotEmpty() && (apiEn.contains(normJsonEn) || normJsonEn.contains(apiEn))
 
         if (!isContainsJp && !isContainsEn) return@find false
+
+        if (jsonKey != null) {
+            return@find score.difficultyLevelJson?.key == jsonKey
+        }
 
         val apiAttr = score.difficultyLevelJson?.label?.replace("(", "")?.replace(")", "")?.trim() ?: ""
         

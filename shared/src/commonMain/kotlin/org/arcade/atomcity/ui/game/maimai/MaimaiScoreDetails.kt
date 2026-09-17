@@ -292,7 +292,6 @@ fun MaimaiScoresDetails(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Achievement Display
-                    // Achievement Display
                     BoxWithConstraints(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center

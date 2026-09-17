@@ -1,9 +1,12 @@
 package org.arcade.atomcity.utils
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import android.content.Intent
 import android.graphics.Bitmap
+import android.media.MediaPlayer
+import android.os.Process
 import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -14,6 +17,8 @@ import java.security.MessageDigest
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import org.arcade.atomcity.data.local.AndroidContextHolder
+import org.koin.java.KoinJavaComponent
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -44,10 +49,15 @@ actual object PlatformUtils {
     actual val isIos: Boolean = false
     actual val isAndroid: Boolean = true
     actual fun log(tag: String, message: String, isError: Boolean) {
-        if (isError) {
-            Log.e(tag, message)
-        } else {
-            Log.d(tag, message)
+        val maxLogLength = 3500
+        message.lineSequence().forEach { line ->
+            if (line.length <= maxLogLength) {
+                if (isError) Log.e(tag, line) else Log.d(tag, line)
+            } else {
+                line.chunked(maxLogLength).forEach { chunk ->
+                    if (isError) Log.e(tag, chunk) else Log.d(tag, chunk)
+                }
+            }
         }
     }
 
@@ -139,7 +149,51 @@ actual object PlatformUtils {
     }
 
     actual fun exitApp() {
-        android.os.Process.killProcess(android.os.Process.myPid())
+        stopBirthdayBgm()
+        Process.killProcess(Process.myPid())
+    }
+
+    private var mediaPlayer: MediaPlayer? = null
+
+    actual fun playBirthdayBgm() {
+        try {
+            stopBirthdayBgm()
+            val appContext = try {
+                KoinJavaComponent.get<Context>(Context::class.java)
+            } catch (_: Exception) {
+                null
+            } ?: return
+
+            val afd = try {
+                appContext.assets.openFd("maimai/database/birthday/maimai_circle_bgm.mp3")
+            } catch (_: Exception) {
+                appContext.assets.openFd("birthday/maimai_circle_bgm.mp3")
+            }
+
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                afd.close()
+                isLooping = true
+                prepare()
+                start()
+            }
+        } catch (e: Exception) {
+            log("PlatformUtils", "Error playing birthday BGM: ${e.message}", true)
+        }
+    }
+
+    actual fun stopBirthdayBgm() {
+        try {
+            mediaPlayer?.let {
+                if (it.isPlaying) {
+                    it.stop()
+                }
+                it.release()
+            }
+            mediaPlayer = null
+        } catch (e: Exception) {
+            log("PlatformUtils", "Error stopping birthday BGM: ${e.message}", true)
+        }
     }
 }
 
