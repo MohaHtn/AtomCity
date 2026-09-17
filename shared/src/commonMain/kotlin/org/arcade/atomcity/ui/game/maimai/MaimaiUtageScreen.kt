@@ -41,6 +41,7 @@ import org.arcade.atomcity.ui.game.maimai.utage.UtageExpressiveItem
 import org.arcade.atomcity.ui.game.maimai.utage.UtageInfoBottomSheet
 import org.arcade.atomcity.ui.game.maimai.utage.UtageSearchBar
 import org.arcade.atomcity.ui.game.maimai.utage.mergeUtageData
+import org.arcade.atomcity.utils.PlatformUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

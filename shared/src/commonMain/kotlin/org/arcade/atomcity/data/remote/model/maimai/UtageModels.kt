@@ -34,11 +34,13 @@ data class UtageChart(
     val comment: String? = null,
     val forced_options: String? = null,
     val details_fr: String? = null,
-    val variants: List<UtageVariant>? = null
+    val variants: List<UtageVariant>? = null,
+    val pre_dx: Boolean? = null
 )
 
 @Serializable
 data class UtageVariant(
+    val key: Int? = null,
     val comment: String? = null,
     val attribute: String? = null,
     val forced_options: String? = null,

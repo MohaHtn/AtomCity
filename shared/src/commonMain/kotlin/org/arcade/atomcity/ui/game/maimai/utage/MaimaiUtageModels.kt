@@ -22,7 +22,8 @@ data class UtageDisplayItem(
     val details: String?,
     val comment: String?,
     val forcedOptions: String?,
-    val score: PlayerBest30Response?
+    val score: PlayerBest30Response?,
+    val preDx: Boolean? = null
 )
 
 data class ForcedOptionInfo(
