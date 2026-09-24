@@ -88,7 +88,7 @@ internal fun ApiItem(
     val successDialogVisible = remember { mutableStateOf(false) }
     
     // Actual supported games (for now!)
-    val isGameSupported = name == "maimai"
+    val isGameSupported = name == "maimai" || name == "Taiko no Tatsujin"
 
     fun maskKey(key: String?): String {
         if (key.isNullOrBlank()) return ""

@@ -111,7 +111,7 @@ fun EditTaikoCredentialsDialog(
                     value = accessCode,
                     onValueChange = { accessCode = it },
                     label = { Text("Code d'accès") },
-                    placeholder = { Text("Exemple : 012E58B3B4D780AD") },
+                    placeholder = { Text("Exemple : 011F5AB8B4DC80AF") },
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
                         .fillMaxWidth()

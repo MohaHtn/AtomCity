@@ -5,20 +5,21 @@ import org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData
 fun findDifficultySettingCourse(id: String): Int? = when (id) {
     "Désactivé" -> 0
     "Configurer à chaque fois" -> 1
-    "Normal" -> 2
-    "Difficile" -> 3
-    "Oni" -> 4
-    "Ura" -> 5
+    "Facile" -> 2
+    "Normal" -> 3
+    "Difficile" -> 4
+    "Oni" -> 5
+    "Ura" -> 6
     else -> null
 }
 
 fun getCourseName(id: Int?): String = when (id) {
     0 -> "Désactivé"
     1 -> "Configurer à chaque fois"
-    2 -> "Normal"
-    3 -> "Difficile"
-    4 -> "Oni"
-    5 -> "Ura"
+    2 -> "Facile"
+    3 -> "Normal"
+    4 -> "Difficile"
+    5 -> "Oni"
     else -> "Désactivé"
 }
 
@@ -103,22 +104,6 @@ fun getToneName(id: Int?): String = when (id) {
 }
 
 fun findDifficultySettingSort(id: String): Int? = when (id) {
-    "★ 1" -> 0
-    "★ 2" -> 1
-    "★ 3" -> 2
-    "★ 4" -> 3
-    "★ 5" -> 4
-    "★ 6" -> 5
-    "★ 7" -> 6
-    "★ 8" -> 7
-    "★ 9" -> 8
-    "★ 10" -> 9
-    else -> null
-}
-
-fun getSortName(id: Int?): String = if (id != null && id in 0..9) "★ ${id + 1}" else "★ 1"
-
-fun findDifficultySettingStar(id: String): Int? = when (id) {
     "Désactivé" -> 0
     "Configurer à chaque fois" -> 1
     "Défaut" -> 2
@@ -128,13 +113,45 @@ fun findDifficultySettingStar(id: String): Int? = when (id) {
     else -> null
 }
 
-fun getStarName(id: Int?): String = when (id) {
+fun getSortName(id: Int?): String = when (id) {
     0 -> "Désactivé"
     1 -> "Configurer à chaque fois"
     2 -> "Défaut"
     3 -> "Pas Clear"
     4 -> "Pas Full Combo"
     5 -> "Pas Donderful Combo"
+    else -> "Désactivé"
+}
+
+fun findDifficultySettingStar(id: String?): Int = when (id) {
+    "Désactivé" -> 0
+    "Configurer à chaque fois" -> 1
+    "★ 1" -> 2
+    "★ 2" -> 3
+    "★ 3" -> 4
+    "★ 4" -> 5
+    "★ 5" -> 6
+    "★ 6" -> 7
+    "★ 7" -> 8
+    "★ 8" -> 9
+    "★ 9" -> 10
+    "★ 10" -> 11
+    else -> 0
+}
+
+fun getStarName(id: Int?): String = when (id) {
+    0 -> "Désactivé"
+    1 -> "Configurer à chaque fois"
+    2 -> "★ 1"
+    3 -> "★ 2"
+    4 -> "★ 3"
+    5 -> "★ 4"
+    6 -> "★ 5"
+    7 -> "★ 6"
+    8 -> "★ 7"
+    9 -> "★ 8"
+    10 -> "★ 9"
+    11 -> "★ 10"
     else -> "Désactivé"
 }
 

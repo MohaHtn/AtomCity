@@ -1,52 +1,28 @@
 package org.arcade.atomcity.ui.game.taiko
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
-import org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData
-import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerCostume
-import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.TaikoServerTitlesResponse
-import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.InfoCard
 import org.arcade.atomcity.ui.game.taiko.settings.*
@@ -282,15 +258,16 @@ fun TaikoUserSettings(
                             localSettings = data.copy(isDisplayAchievement = it)
                         }
 
-                        SettingToggle("Afficher les musques SouUchi", data.isDisplaySouUchi ?: false) {
+                        SettingToggle("Afficher les musiques SouUchi", data.isDisplaySouUchi ?: false) {
                             localSettings = data.copy(isDisplaySouUchi = it)
                         }
                         SettingToggle("Activer la voix de Don-chan en jeu", data.isVoiceOn ?: true) {
                             localSettings = data.copy(isVoiceOn = it)
                         }
 
+                        val isDisplayAchievement = data.isDisplayAchievement ?: false
                         val achievementRankPanelUrl = getAchievementRankPanelUrl(data.achievementDisplayDifficulty)
-                        if (achievementRankPanelUrl != null) {
+                        if (achievementRankPanelUrl != null && isDisplayAchievement) {
                             AsyncImage(
                                 model = achievementRankPanelUrl,
                                 contentDescription = null,
@@ -307,32 +284,46 @@ fun TaikoUserSettings(
                             description = "Affiche la carte de progression en fonction de la difficulté choisie.",
                             selectedOption = getAchievementDisplayDifficultyName(data.achievementDisplayDifficulty),
                             options = listOf("Désactivé", "Facile", "Normal", "Difficile", "Oni", "Oni/Ura"),
+                            enabled = isDisplayAchievement,
                             onOptionSelected = { localSettings = data.copy(achievementDisplayDifficulty = findAchievementDisplayDifficultyId(it)) }
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        SettingDropdown(
-                            label = "Mode recherche : Difficulté",
-                            description = "Propose le menu de filtre de la difficulté choisie.",
-                            selectedOption = getCourseName(data.difficultySettingCourse),
-                            options = listOf("Désactivé", "Configurer à chaque fois", "Normal", "Difficile", "Oni", "Ura"),
-                            onOptionSelected = { localSettings = data.copy(difficultySettingCourse = findDifficultySettingCourse(it)) }
+                        InfoCard(
+                            message = "Les paramètres ci-dessous permettent de modifier la catégorie \"Filtrer des charts\" du jeu.",
+                            modifier = Modifier.padding(bottom = 4.dp)
                         )
-                        SettingDropdown(
-                            label = "Mode recherche : Étoiles",
-                            description = "Propose le menu de filtre de la l'étoile de clear choisie.",
-                            selectedOption = getStarName(data.difficultySettingStar),
-                            options = listOf("Désactivé", "Configurer à chaque fois", "Défaut", "Pas Clear", "Pas Full Combo", "Pas Donderful Combo"),
-                            onOptionSelected = { localSettings = data.copy(difficultySettingStar = findDifficultySettingStar(it)) }
-                        )
-                        SettingDropdown(
-                            label = "Mode recherche : Tri",
-                            description = "Propose le menu de filtre de tri choisi.",
-                            selectedOption = getSortName(data.difficultySettingSort),
-                            options = (1..10).map { "★ $it" },
-                            onOptionSelected = { localSettings = data.copy(difficultySettingSort = findDifficultySettingSort(it)) }
-                        )
+
+                        Surface(
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                SettingDropdown(
+                                    label = "Mode recherche : Difficulté",
+                                    description = "Propose le menu de filtre de la difficulté choisie.",
+                                    selectedOption = getCourseName(data.difficultySettingCourse),
+                                    options = listOf("Désactivé", "Configurer à chaque fois", "Normal", "Difficile", "Oni", "Ura"),
+                                    onOptionSelected = { localSettings = data.copy(difficultySettingCourse = findDifficultySettingCourse(it)) }
+                                )
+                                SettingDropdown(
+                                    label = "Mode recherche : Étoiles",
+                                    description = "Propose le menu de filtre de la l'étoile de clear choisie.",
+                                    selectedOption = getStarName(data.difficultySettingStar),
+                                    options = listOf("Désactivé", "Configurer à chaque fois") + (1..10).map { "★ $it" },
+                                    onOptionSelected = { localSettings = data.copy(difficultySettingStar = findDifficultySettingStar(it)) }
+                                )
+                                SettingDropdown(
+                                    label = "Mode recherche : Tri",
+                                    description = "Propose le menu de filtre de tri choisi.",
+                                    selectedOption = getSortName(data.difficultySettingSort),
+                                    options = listOf("Désactivé", "Configurer à chaque fois", "Défaut", "Pas Clear", "Pas Full Combo", "Pas Donderful Combo"),
+                                    onOptionSelected = { localSettings = data.copy(difficultySettingSort = findDifficultySettingSort(it)) }
+                                )
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -363,8 +354,11 @@ fun TaikoUserSettings(
                             SettingToggle("Disparition", play.isVanishOn ?: false) {
                                 localSettings = data.copy(playSetting = play.copy(isVanishOn = it))
                             }
-                            SettingToggle("Inverse", play.isInverseOn ?: false) {
+                            SettingToggle("Inverser", play.isInverseOn ?: false) {
                                 localSettings = data.copy(playSetting = play.copy(isInverseOn = it))
+                            }
+                            SettingToggle("Passer le morceau", data.isSkipOn ?: false) {
+                                localSettings = data.copy(isSkipOn = it)
                             }
 
                             SettingDropdown(
