@@ -43,16 +43,44 @@ fun TaikoNameplate(
     nameFontSize: TextUnit? = null
 ) {
     val isDark = isAppInDarkTheme()
+
     val expandedTitleColor = if (isDark) {
         Color.White.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f))
     } else {
         Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f))
     }
 
-    Box(
-        modifier = modifier
+    BoxWithConstraints(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
     ) {
-        val nameplateBackgroundAlpha = collapsedFraction.coerceIn(0f, 1f)
+        val virtualWidth = 830f
+        val virtualHeight = 200f
+        
+        val scale = minOf(
+            maxWidth.value / virtualWidth,
+            maxHeight.value / virtualHeight
+        )
+        
+        val multiplier = 2.5f
+        
+        val vTitleOffsetX = (titleOffsetX.value * multiplier).dp
+        val vTitleOffsetY = (titleOffsetY.value * multiplier).dp
+        val vNameOffsetX = (nameOffsetX.value * multiplier).dp
+        val vNameOffsetY = (nameOffsetY.value * multiplier).dp
+        
+        val vTitleFontSize = ((titleFontSize?.value ?: 10f) * multiplier).sp
+        val vNameFontSize = ((nameFontSize?.value ?: 14f) * multiplier).sp
+
+        Box(
+            modifier = Modifier
+                .requiredSize(virtualWidth.dp, virtualHeight.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+        ) {
+            val nameplateBackgroundAlpha = collapsedFraction.coerceIn(0f, 1f)
         val nameplateDarkOverlayAlpha = ((1f - collapsedFraction) * 0.15f).coerceIn(0f, 0.15f)
 
         Box(
@@ -136,7 +164,7 @@ fun TaikoNameplate(
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontFamily = NijiiroFontFamily,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = titleFontSize ?: 10.sp,
+                                        fontSize = vTitleFontSize,
                                         letterSpacing = 0.sp
                                     ),
                                     color = if (isDark) Color.White else Color.Black,
@@ -147,10 +175,10 @@ fun TaikoNameplate(
                             }
 
                             Box(
-                                modifier = Modifier.fillMaxWidth().offset(x = nameOffsetX, y = nameOffsetY),
+                                modifier = Modifier.fillMaxWidth().offset(x = vNameOffsetX, y = vNameOffsetY),
                                 contentAlignment = Alignment.Center
                             ) {
-                                val fontSize = nameFontSize ?: 13.sp
+                                val fontSize = vNameFontSize
                                 val nameText = name ?: ""
 
                                 AutoResizedText(
@@ -193,7 +221,7 @@ fun TaikoNameplate(
                             modifier = Modifier
                                 .weight(0.38f)
                                 .fillMaxWidth()
-                                .offset(x = titleOffsetX, y = titleOffsetY),
+                                .offset(x = vTitleOffsetX, y = vTitleOffsetY),
                             contentAlignment = Alignment.Center
                         ) {
                             AutoResizedText(
@@ -201,7 +229,7 @@ fun TaikoNameplate(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontFamily = NijiiroFontFamily,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = titleFontSize ?: 10.sp,
+                                    fontSize = vTitleFontSize,
                                     letterSpacing = 0.sp,
                                     lineHeight = 10.sp
                                 ),
@@ -215,10 +243,10 @@ fun TaikoNameplate(
                             modifier = Modifier
                                 .weight(0.62f)
                                 .fillMaxWidth()
-                                .offset(x = nameOffsetX, y = nameOffsetY),
+                                .offset(x = vNameOffsetX, y = vNameOffsetY),
                             contentAlignment = Alignment.Center
                         ) {
-                            val fontSize = nameFontSize ?: 10.sp
+                            val fontSize = vNameFontSize
                             val nameText = name ?: ""
 
                             Box(
@@ -274,7 +302,7 @@ fun TaikoNameplate(
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontFamily = NijiiroFontFamily,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = titleFontSize ?: 14.sp,
+                                        fontSize = vTitleFontSize,
                                         letterSpacing = 0.sp
                                     ),
                                     color = if (isDark) Color.White else Color.Black,
@@ -285,10 +313,10 @@ fun TaikoNameplate(
                             }
 
                             Box(
-                                modifier = Modifier.fillMaxWidth().offset(x = nameOffsetX, y = nameOffsetY),
+                                modifier = Modifier.fillMaxWidth().offset(x = vNameOffsetX, y = vNameOffsetY),
                                 contentAlignment = Alignment.Center
                             ) {
-                                val fontSize = nameFontSize ?: 18.sp
+                                val fontSize = vNameFontSize
                                 val nameText = name ?: ""
 
                                 AutoResizedText(
@@ -331,10 +359,10 @@ fun TaikoNameplate(
                             modifier = Modifier
                                 .weight(0.38f)
                                 .fillMaxWidth()
-                                .offset(x = titleOffsetX, y = titleOffsetY),
+                                .offset(x = vTitleOffsetX, y = vTitleOffsetY),
                             contentAlignment = Alignment.Center
                         ) {
-                            val fontSize = titleFontSize ?: 12.sp
+                            val fontSize = vTitleFontSize
                             AutoResizedText(
                                 text = title ?: "",
                                 style = MaterialTheme.typography.labelSmall.copy(
@@ -354,10 +382,10 @@ fun TaikoNameplate(
                             modifier = Modifier
                                 .weight(0.62f)
                                 .fillMaxWidth()
-                                .offset(x = nameOffsetX, y = nameOffsetY),
+                                .offset(x = vNameOffsetX, y = vNameOffsetY),
                             contentAlignment = Alignment.Center
                         ) {
-                            val fontSize = nameFontSize ?: 14.sp
+                            val fontSize = vNameFontSize
                             val nameText = name ?: ""
 
                             Box(
@@ -419,7 +447,7 @@ fun TaikoNameplate(
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontFamily = NijiiroFontFamily,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = titleFontSize ?: 10.sp,
+                                        fontSize = vTitleFontSize,
                                         letterSpacing = 0.sp
                                     ),
                                     color = if (isDark) Color.White else Color.Black,
@@ -430,10 +458,10 @@ fun TaikoNameplate(
                             }
 
                             Box(
-                                modifier = Modifier.fillMaxWidth().offset(x = nameOffsetX, y = nameOffsetY),
+                                modifier = Modifier.fillMaxWidth().offset(x = vNameOffsetX, y = vNameOffsetY),
                                 contentAlignment = Alignment.Center
                             ) {
-                                val fontSize = nameFontSize ?: 13.sp
+                                val fontSize = vNameFontSize
                                 val nameText = name ?: ""
 
                                 AutoResizedText(
@@ -476,7 +504,7 @@ fun TaikoNameplate(
                             modifier = Modifier
                                 .weight(0.38f)
                                 .fillMaxWidth()
-                                .offset(x = titleOffsetX, y = titleOffsetY),
+                                .offset(x = vTitleOffsetX, y = vTitleOffsetY),
                             contentAlignment = Alignment.Center
                         ) {
                             AutoResizedText(
@@ -484,7 +512,7 @@ fun TaikoNameplate(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontFamily = NijiiroFontFamily,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = titleFontSize ?: 10.sp,
+                                    fontSize = vTitleFontSize,
                                     letterSpacing = 0.sp,
                                     lineHeight = 10.sp
                                 ),
@@ -498,10 +526,10 @@ fun TaikoNameplate(
                             modifier = Modifier
                                 .weight(0.62f)
                                 .fillMaxWidth()
-                                .offset(x = nameOffsetX, y = nameOffsetY),
+                                .offset(x = vNameOffsetX, y = vNameOffsetY),
                             contentAlignment = Alignment.Center
                         ) {
-                            val fontSize = nameFontSize ?: 10.sp
+                            val fontSize = vNameFontSize
                             val nameText = name ?: ""
 
                             Box(
@@ -557,7 +585,7 @@ fun TaikoNameplate(
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontFamily = NijiiroFontFamily,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = titleFontSize ?: 14.sp,
+                                        fontSize = vTitleFontSize,
                                         letterSpacing = 0.sp
                                     ),
                                     color = if (isDark) Color.White else Color.Black,
@@ -568,10 +596,10 @@ fun TaikoNameplate(
                             }
 
                             Box(
-                                modifier = Modifier.fillMaxWidth().offset(x = nameOffsetX, y = nameOffsetY),
+                                modifier = Modifier.fillMaxWidth().offset(x = vNameOffsetX, y = vNameOffsetY),
                                 contentAlignment = Alignment.Center
                             ) {
-                                val fontSize = nameFontSize ?: 18.sp
+                                val fontSize = vNameFontSize
                                 val nameText = name ?: ""
 
                                 AutoResizedText(
@@ -614,10 +642,10 @@ fun TaikoNameplate(
                             modifier = Modifier
                                 .weight(0.38f)
                                 .fillMaxWidth()
-                                .offset(x = titleOffsetX, y = titleOffsetY),
+                                .offset(x = vTitleOffsetX, y = vTitleOffsetY),
                             contentAlignment = Alignment.Center
                         ) {
-                            val fontSize = titleFontSize ?: 12.sp
+                            val fontSize = vTitleFontSize
                             AutoResizedText(
                                 text = title ?: "",
                                 style = MaterialTheme.typography.labelSmall.copy(
@@ -637,10 +665,10 @@ fun TaikoNameplate(
                             modifier = Modifier
                                 .weight(0.62f)
                                 .fillMaxWidth()
-                                .offset(x = nameOffsetX, y = nameOffsetY),
+                                .offset(x = vNameOffsetX, y = vNameOffsetY),
                             contentAlignment = Alignment.Center
                         ) {
-                            val fontSize = nameFontSize ?: 14.sp
+                            val fontSize = vNameFontSize
                             val nameText = name ?: ""
 
                             Box(
@@ -687,4 +715,5 @@ fun TaikoNameplate(
             }
         }
     }
+}
 }
