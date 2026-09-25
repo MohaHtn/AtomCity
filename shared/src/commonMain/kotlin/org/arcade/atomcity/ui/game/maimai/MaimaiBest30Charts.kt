@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -294,13 +293,13 @@ fun MaimaiBest30Charts(
             Box(
                 modifier = Modifier
                     .wrapContentSize(align = Alignment.TopStart, unbounded = true)
-                    .alpha(0.001f) // Kept in render tree for graphicsLayer recording
                     .drawWithContent {
                         if (isGeneratingImage) {
                             graphicsLayer.record {
                                 this@drawWithContent.drawContent()
                             }
                         }
+                        // Do not call drawContent() on parent canvas so it remains hidden from UI
                     }
             ) {
                 val player = playerData?.data?.firstOrNull()

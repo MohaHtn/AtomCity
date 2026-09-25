@@ -26,9 +26,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
+import androidx.compose.ui.unit.sp
 import atomcity.shared.generated.resources.*
 import coil3.compose.AsyncImage
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
@@ -36,8 +36,6 @@ import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.MarkdownText
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
-import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
-import org.arcade.atomcity.data.remote.TaikoUser
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
@@ -68,7 +66,7 @@ fun TaikoScores(
     val collapsedFraction = scrollBehavior.state.collapsedFraction
 
     val extraItems = listOf(
-        Triple("taikoUserSettings", "Paramètres", "oue les paramètres"),
+        Triple("taikoUserSettings", "Paramètres", "Modifier votre profil de jeu"),
         Triple("taikoUsers", "Utilisateurs", "Consulter les utilisateurs enregistrés")
     )
 
@@ -132,17 +130,19 @@ fun TaikoScores(
                         LargeTopAppBar(
                             title = {
                                 val titleOffsetX = lerp(0.dp, 0.dp, collapsedFraction)
-                                val titleOffsetY = lerp(0.dp, 0.dp, collapsedFraction)
+                                val titleOffsetY = lerp(6.dp, 0.dp, collapsedFraction)
                                 val nameOffsetX = lerp(0.dp, 0.dp, collapsedFraction)
-                                val nameOffsetY = lerp(0.dp, -(2).dp, collapsedFraction)
+                                val nameOffsetY = lerp(6.dp, -(2).dp, collapsedFraction)
 
                                 TaikoPlayerDetails(
                                     taikoViewModel = taikoViewModel,
                                     collapsedFraction = collapsedFraction,
                                     titleOffsetX = titleOffsetX,
-                                    titleOffsetY = titleOffsetY,
+                                    titleOffsetY = 6.dp,
                                     nameOffsetX = nameOffsetX,
-                                    nameOffsetY = nameOffsetY
+                                    nameOffsetY = nameOffsetY,
+                                    titleFontSize = 24.sp,
+                                    nameFontSize = 24.sp
                                 )
                             },
                             colors = TopAppBarDefaults.largeTopAppBarColors(
@@ -198,7 +198,7 @@ fun TaikoScores(
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                 } else {
-                    MyScoresList(
+                    ScoresList(
                         scores = filteredScores,
                         onNavigateToRoute = onNavigateToRoute,
                         onFavoriteToggle = taikoViewModel::toggleFavorite
@@ -309,7 +309,7 @@ private fun SearchBar(
 }
 
 @Composable
-private fun MyScoresList(
+private fun ScoresList(
     scores: List<TaikoServerHistoryEntry>,
     onNavigateToRoute: (String) -> Unit,
     onFavoriteToggle: (Int) -> Unit

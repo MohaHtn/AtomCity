@@ -219,13 +219,19 @@ fun buildImageUrl(type: String, filename: String?): String? {
     }
 }
 
+fun getRandomName(id: Int?): String = when (id) {
+    1 -> "Fantaisiste"
+    2 -> "Désordonné"
+    else -> "Normal"
+}
+
 fun getItemDisplayName(type: String, item: String): String {
     return when (type) {
         "speed" -> "Vitesse ${getSpeedName(extractId(item))}"
         "random" -> when(item) {
-            "Random_Whimsical.png" -> "Capricieux"
-            "Random_Messy.png" -> "Chaotique"
-            else -> "Normal"
+            "Random_Whimsical.png" -> getRandomName(1)
+            "Random_Messy.png" -> getRandomName(2)
+            else -> getRandomName(0)
         }
         "kigurumi", "head", "body", "face", "puchi" -> "ID: ${extractId(item)}"
         "title" -> if (item.startsWith("nameplate_")) {

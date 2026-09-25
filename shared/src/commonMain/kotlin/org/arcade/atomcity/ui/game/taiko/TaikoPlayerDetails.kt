@@ -1,5 +1,11 @@
 package org.arcade.atomcity.ui.game.taiko
 
+import androidx.compose.animation.core.EaseInOutSine
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,28 +13,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
-import org.arcade.atomcity.ui.theme.NijiiroFontFamily
 
 @Composable
 fun TaikoPlayerDetails(
@@ -70,7 +66,7 @@ fun TaikoPlayerDetailsContent(
     collapsedFraction: Float,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
     taikoViewModel: TaikoViewModel? = null,
-    userSettings: org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse? = null,
+    userSettings: TaikoServerUserSettingsResponse? = null,
     titleOffsetX: Dp = 0.dp,
     titleOffsetY: Dp = 0.dp,
     nameOffsetX: Dp = 0.dp,
@@ -90,46 +86,50 @@ fun TaikoPlayerDetailsContent(
     ) {
         val isNarrow = maxWidth <= 360.dp
         val avatarSize = if (isNarrow) {
-            lerp(72.dp, 48.dp, collapsedFraction)
+            lerp(96.dp, 72.dp, collapsedFraction)
         } else {
-            lerp(110.dp, 64.dp, collapsedFraction)
+            lerp(150.dp, 110.dp, collapsedFraction)
         }
         val nameplateHeight = if (isNarrow) {
-            lerp(68.dp, 48.dp, collapsedFraction)
+            lerp(68.dp, 56.dp, collapsedFraction)
         } else {
-            lerp(90.dp, 52.dp, collapsedFraction)
+            lerp(90.dp, 72.dp, collapsedFraction)
         }
         val nameplateYOffset = lerp(0.dp, 2.dp, collapsedFraction)
 
         Row(
-            modifier = Modifier.wrapContentWidth()
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(start = 8.dp, end = 4.dp, top = 2.dp, bottom = 2.dp)
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
+                Column(
+                    modifier = Modifier
+                        .padding(start = 0.dp, end = 4.dp, top = 2.dp, bottom = 2.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
                 Text(
                     text = "Taiko",
                     fontWeight = FontWeight.Bold,
                     color = textColor,
-                    fontSize = if (isNarrow) lerp(18.sp, 14.sp, collapsedFraction) else lerp(25.sp, 16.sp, collapsedFraction),
-                    lineHeight = if (isNarrow) lerp(14.sp, 11.sp, collapsedFraction) else lerp(16.sp, 12.sp, collapsedFraction)
+                    fontSize = if (isNarrow) lerp(18.sp, 16.sp, collapsedFraction) else lerp(25.sp, 21.sp, collapsedFraction),
+                    lineHeight = if (isNarrow) lerp(14.sp, 12.sp, collapsedFraction) else lerp(18.sp, 16.sp, collapsedFraction)
                 )
                 Text(
                     text = "no Tatsujin",
                     fontWeight = FontWeight.Bold,
                     color = textColor,
-                    fontSize = if (isNarrow) lerp(18.sp, 14.sp, collapsedFraction) else lerp(25.sp, 16.sp, collapsedFraction),
-                    lineHeight = if (isNarrow) lerp(14.sp, 11.sp, collapsedFraction) else lerp(16.sp, 12.sp, collapsedFraction)
+                    fontSize = if (isNarrow) lerp(18.sp, 16.sp, collapsedFraction) else lerp(25.sp, 21.sp, collapsedFraction),
+                    lineHeight = if (isNarrow) lerp(14.sp, 12.sp, collapsedFraction) else lerp(18.sp, 16.sp, collapsedFraction)
                 )
             }
 
-            Column (modifier = Modifier.align(Alignment.CenterVertically)
-            ){
                 VerticalDivider(
                     modifier = Modifier
-                        .height(lerp(36.dp, 24.dp, collapsedFraction))
+                        .height(lerp(48.dp, 36.dp, collapsedFraction))
                         .padding(horizontal = 4.dp),
                     thickness = 2.dp,
                     color = Color.Black
@@ -137,15 +137,21 @@ fun TaikoPlayerDetailsContent(
             }
 
 
-            // Taiko Avatar Rendering
+            // Taiko Avatar
+
+            // Dynamic Y offset, ensuring for all screens that the avatar will be centered
+            // It was a pain in the ass, fuck
+            val dynamicYOffset = -(avatarSize * 0.10f)
             Box(
                 modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(0.dp)
-                    .offset(y = if (!isNarrow) (-4).dp else 0.dp)
-                    .requiredSize(avatarSize + 14.dp),
-                contentAlignment = Alignment.CenterStart
+                    .weight(1f)
+                    .offset(y = dynamicYOffset),
+                contentAlignment = Alignment.Center
             ) {
+                Box(
+                    modifier = Modifier.requiredSize(avatarSize + 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                 if (taikoViewModel != null && userSettings != null) {
                     val avatarImageModifier = Modifier.fillMaxSize()
                     val isKigurumi = (userSettings.kigurumi ?: 0) > 0
@@ -221,11 +227,21 @@ fun TaikoPlayerDetailsContent(
                     }
 
                     if (userSettings.puchi != null && userSettings.puchi != 0) {
+                        val infiniteTransition = rememberInfiniteTransition()
+                        val puchiOffsetY by infiniteTransition.animateFloat(
+                            initialValue = -3f,
+                            targetValue = 3f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(1000, easing = EaseInOutSine),
+                                repeatMode = RepeatMode.Reverse
+                            )
+                        )
                         AsyncImage(
                             model = taikoViewModel.getCostumeImageUrl("puchi", userSettings.puchi),
                             contentDescription = null,
                             modifier = Modifier
                                 .fillMaxSize()
+                                .offset(y = puchiOffsetY.dp)
                                 .padding(bottom = 4.dp, end = 4.dp)
                                 .align(Alignment.Center),
                             contentScale = ContentScale.Fit
@@ -237,28 +253,29 @@ fun TaikoPlayerDetailsContent(
                         color = Color.Transparent
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            // Compensate for the avatar size
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .offset(y = lerp(16.dp, 0.dp, collapsedFraction))
+                            )
                         }
                     }
                 }
+                }
             }
 
-            val nameplateModifier = if (collapsedFraction >= 0.5f) {
-                Modifier
-                    .align(Alignment.CenterVertically)
-                    .height(nameplateHeight)
-                    .offset(y = if (isNarrow) 0.dp else nameplateYOffset)
-                    .aspectRatio(4.15f, matchHeightConstraintsFirst = true)
-            } else {
-                Modifier
-                    .weight(1f)
-                    .align(Alignment.CenterVertically)
-                    .height(nameplateHeight)
-                    .offset(y = if (isNarrow) 0.dp else nameplateYOffset)
-            }
+            val nameplateModifier = Modifier
+                .fillMaxWidth()
+                .height(nameplateHeight)
+                .offset(y = if (isNarrow) 0.dp else nameplateYOffset)
 
-            TaikoNameplate(
-                name = name,
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                TaikoNameplate(
+                playerName = name,
                 title = title,
                 nameplateUrls = nameplateUrls,
                 collapsedFraction = collapsedFraction,
@@ -271,6 +288,7 @@ fun TaikoPlayerDetailsContent(
                 titleFontSize = titleFontSize,
                 nameFontSize = nameFontSize
             )
+            }
         }
     }
 }

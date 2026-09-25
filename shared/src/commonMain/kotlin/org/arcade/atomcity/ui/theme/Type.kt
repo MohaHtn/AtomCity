@@ -10,9 +10,15 @@ import atomcity.shared.generated.resources.Res
 import atomcity.shared.generated.resources.nijiiro
 import org.jetbrains.compose.resources.Font
 
+import androidx.compose.ui.platform.LocalInspectionMode
+
 val NijiiroFontFamily: FontFamily
     @Composable
-    get() = FontFamily(Font(Res.font.nijiiro))
+    get() = if (LocalInspectionMode.current) {
+        FontFamily.Default
+    } else {
+        FontFamily(Font(Res.font.nijiiro))
+    }
 
 // Set of Material typography styles to start with
 val Typography = Typography(

@@ -144,8 +144,8 @@ fun TaikoUserSettings(
                             imagesData,
                             nameplateUrls,
                             taikoViewModel,
-                            titleFontSize = 14.sp,
-                            nameFontSize = 14.sp)
+                            titleFontSize = 18.sp,
+                            nameFontSize = 18.sp)
 
                         InfoCard("Les couleurs sont utilisables uniquement si vous avez sélectionné aucun kigurumi. Les couleurs des membres sont uniquement visible en jeu.", modifier = Modifier.padding(bottom = 8.dp))
 
@@ -342,11 +342,7 @@ fun TaikoUserSettings(
                                     2 -> "Random_Messy.png"
                                     else -> null
                                 }
-                                ExpressiveGridItem("Random", when(play.randomType) {
-                                    1 -> "Capricieux"
-                                    2 -> "Chaotique"
-                                    else -> "Normal"
-                                }, if (randomImg != null) buildImageUrl("random", randomImg) else null, type = "random", onClick = { showDialogFor = "random" }, modifier = itemModifier)
+                                ExpressiveGridItem("Random", getRandomName(play.randomType), if (randomImg != null) buildImageUrl("random", randomImg) else null, type = "random", onClick = { showDialogFor = "random" }, modifier = itemModifier)
                             }
                             
                             Spacer(modifier = Modifier.height(12.dp))

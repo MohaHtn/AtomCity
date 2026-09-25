@@ -343,6 +343,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_CADisableMinimumFrameDurationOnPhone[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_CADisableMinimumFrameDurationOnPhone[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Enregistrer les images de B30 dans votre photothèque";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Enregistrer les images de B30 dans votre photothèque";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -386,6 +388,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_CADisableMinimumFrameDurationOnPhone[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_CADisableMinimumFrameDurationOnPhone[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Enregistrer les images de B30 dans votre photothèque";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Enregistrer les images de B30 dans votre photothèque";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;

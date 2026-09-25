@@ -3,6 +3,7 @@ package org.arcade.atomcity.ui.game.taiko.settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -65,10 +66,12 @@ fun SelectionDialog(
     var searchQuery by remember { mutableStateOf("") }
     
     val filteredItems = remember(items, searchQuery, costumes, type) {
+        val baseItems = items.filter { !(type == "puchi" && extractId(it) == 9999) }
+        
         if (searchQuery.isBlank()) {
-            items
+            baseItems
         } else {
-            items.filter { item ->
+            baseItems.filter { item ->
                 val id = extractId(item)
                 val idStr = id.toString()
                 val costume = costumes?.find { it.costumeId == id && it.costumeType == type }
@@ -182,12 +185,21 @@ fun SelectionDialog(
                                         val isPlain = id == 0
                                         
                                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                            val imageModifier = Modifier.requiredSize(48.dp).then(
+                                                when (type) {
+                                                    "puchi" -> Modifier.scale(2.4f).offset(y = -(6).dp, x = 10.dp)
+                                                    "face" -> Modifier.scale(3f).offset(y = -(6).dp, x = -(2).dp)
+                                                    "title", "speed", "random" -> Modifier
+                                                    else -> Modifier.scale(1.5f)
+                                                }
+                                            )
+                                            
                                             if (isPlain && settings != null) {
                                                 if (type == "body") {
                                                     AsyncImage(
                                                         model = taikoViewModel.getMaskImageUrl("body", "body", id),
                                                         contentDescription = null,
-                                                        modifier = Modifier.fillMaxSize(),
+                                                        modifier = imageModifier,
                                                         contentScale = ContentScale.Fit,
                                                         colorFilter = ColorFilter.tint(taikoViewModel.getDonColor(settings.bodyColor))
                                                     )
@@ -195,7 +207,7 @@ fun SelectionDialog(
                                                     AsyncImage(
                                                         model = taikoViewModel.getMaskImageUrl("body", "face", id),
                                                         contentDescription = null,
-                                                        modifier = Modifier.fillMaxSize(),
+                                                        modifier = imageModifier,
                                                         contentScale = ContentScale.Fit,
                                                         colorFilter = ColorFilter.tint(taikoViewModel.getDonColor(settings.faceColor))
                                                     )
@@ -203,7 +215,7 @@ fun SelectionDialog(
                                                     AsyncImage(
                                                         model = taikoViewModel.getMaskImageUrl("head", "head", id),
                                                         contentDescription = null,
-                                                        modifier = Modifier.fillMaxSize(),
+                                                        modifier = imageModifier,
                                                         contentScale = ContentScale.Fit,
                                                         colorFilter = ColorFilter.tint(taikoViewModel.getDonColor(settings.bodyColor))
                                                     )
@@ -217,9 +229,7 @@ fun SelectionDialog(
                                                     taikoViewModel.getCostumeImageUrl(type, id)
                                                 },
                                                 contentDescription = null,
-                                                modifier = Modifier.fillMaxSize().then(
-                                                    if (type == "puchi") Modifier.scale(2.2f).offset( y= -(10).dp, x= (12).dp) else Modifier
-                                                ),
+                                                modifier = imageModifier,
                                                 contentScale = ContentScale.Fit,
                                                 filterQuality = if (type == "speed" || type == "random") FilterQuality.None else FilterQuality.Low
                                             )

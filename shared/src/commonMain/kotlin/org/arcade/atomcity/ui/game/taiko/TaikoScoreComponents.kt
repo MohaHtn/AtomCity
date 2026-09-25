@@ -38,7 +38,7 @@ fun TaikoScoreItem(
                 }
             },
         colors = setDifficultyColorBackground(score.difficulty),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(24.dp)
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -105,14 +105,16 @@ fun TaikoScoreItem(
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "${displayDifficultyName(score.difficulty)} (${score.stars ?: 0})",
+                            text = displayDifficultyName(score.difficulty),
                             style = MaterialTheme.typography.labelMedium,
                             color = Color.White
                         )
                         Text(
-                            text = "★".repeat(score.stars ?: 0),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Yellow
+                            text = score.stars?.toString() ?: "0",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.ExtraBold
+                            ),
+                            color = Color.White
                         )
                     }
                 }
@@ -124,7 +126,7 @@ fun TaikoScoreItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Column {
+                    Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                         Text(
                             text = score.score.toString(),
                             style = MaterialTheme.typography.headlineLarge.copy(
@@ -132,17 +134,27 @@ fun TaikoScoreItem(
                             ),
                             color = Color.White
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            ScoreBadge("GOOD", score.goodCount, Color(0xFFFFD700))
-                            ScoreBadge("OK", score.okCount, Color(0xFFC0C0C0))
-                            ScoreBadge("MISS", score.missCount, Color(0xFFE57373))
+                        BoxWithConstraints {
+                            if (maxWidth < 200.dp) {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    ScoreBadge("GOOD", score.goodCount, Color(0xFFFFD700))
+                                    ScoreBadge("OK", score.okCount, Color(0xFFC0C0C0))
+                                    ScoreBadge("MISS", score.missCount, Color(0xFFE57373))
+                                }
+                            } else {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    ScoreBadge("GOOD", score.goodCount, Color(0xFFFFD700))
+                                    ScoreBadge("OK", score.okCount, Color(0xFFC0C0C0))
+                                    ScoreBadge("MISS", score.missCount, Color(0xFFE57373))
+                                }
+                            }
                         }
                     }
 
                     Column(horizontalAlignment = Alignment.End) {
                         if ((score.comboCount ?: 0) > 0) {
                             Text(
-                                text = "COMBO ${score.comboCount}",
+                                text = "MAX COMBO ${score.comboCount}",
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.Bold
                                 ),

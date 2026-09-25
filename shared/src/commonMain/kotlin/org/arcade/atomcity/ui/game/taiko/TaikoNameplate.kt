@@ -15,20 +15,20 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.arcade.atomcity.ui.core.AutoResizedText
 import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.theme.NijiiroFontFamily
 
 @Composable
 fun TaikoNameplate(
-    name: String?,
+    playerName: String?,
     title: String?,
     nameplateUrls: List<String>,
     collapsedFraction: Float = 0f,
@@ -44,31 +44,28 @@ fun TaikoNameplate(
 ) {
     val isDark = isAppInDarkTheme()
 
-    val expandedTitleColor = if (isDark) {
-        Color.White.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f))
-    } else {
-        Color.Black.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 1f))
-    }
-
     BoxWithConstraints(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         val virtualWidth = 830f
         val virtualHeight = 200f
-        
+
         val scale = minOf(
             maxWidth.value / virtualWidth,
             maxHeight.value / virtualHeight
         )
-        
+
         val multiplier = 2.5f
-        
+
+        val hasDan = nameplateUrls.any { it.contains("nameplate_dan") }
+        val danPadding = if (hasDan) 280.dp else 0.dp
+
         val vTitleOffsetX = (titleOffsetX.value * multiplier).dp
         val vTitleOffsetY = (titleOffsetY.value * multiplier).dp
         val vNameOffsetX = (nameOffsetX.value * multiplier).dp
         val vNameOffsetY = (nameOffsetY.value * multiplier).dp
-        
+
         val vTitleFontSize = ((titleFontSize?.value ?: 10f) * multiplier).sp
         val vNameFontSize = ((nameFontSize?.value ?: 14f) * multiplier).sp
 
@@ -81,639 +78,244 @@ fun TaikoNameplate(
                 }
         ) {
             val nameplateBackgroundAlpha = collapsedFraction.coerceIn(0f, 1f)
-        val nameplateDarkOverlayAlpha = ((1f - collapsedFraction) * 0.15f).coerceIn(0f, 0.15f)
+            val nameplateDarkOverlayAlpha = ((1f - collapsedFraction) * 0.15f).coerceIn(0f, 0.15f)
 
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .padding(4.dp)
-                .background(
-                    color = Color.Black.copy(alpha = nameplateDarkOverlayAlpha),
-                    shape = RoundedCornerShape(24.dp)
-                )
-        )
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .padding(12.dp)
+                    .background(
+                        color = Color.Black.copy(alpha = nameplateDarkOverlayAlpha),
+                        shape = RoundedCornerShape(45.dp)
+                    )
+            )
 
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .alpha(nameplateBackgroundAlpha)
-        ) {
-            val danPlates = nameplateUrls.filter { it.contains("nameplate_dan") }
-            val specialPlates = nameplateUrls.filter { it.contains("AprilFool") || it.contains("Toho") }
-            val basePlates = nameplateUrls.filterNot { it.contains("nameplate_dan") || it.contains("AprilFool") || it.contains("Toho") }
-
-            // 1. Draw base plates (Standard size, defines the box bounds)
-            basePlates.forEach { url ->
-                AsyncImage(
-                    model = url,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds
-                )
-            }
-
-            // 2. Draw special plates (Maintain aspect ratio, allow overflow for characters)
-            specialPlates.forEach { url ->
-                AsyncImage(
-                    model = url,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .matchParentSize()
-                        .wrapContentHeight(unbounded = true, align = Alignment.Bottom)
-                        .zIndex(1f),
-                    contentScale = ContentScale.FillWidth,
-                    alignment = Alignment.BottomCenter
-                )
-            }
-
-            // 3. Draw Dan overlay (Always on top)
-            danPlates.forEach { url ->
-                AsyncImage(
-                    model = url,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .matchParentSize()
-                        .wrapContentHeight(unbounded = true, align = Alignment.Bottom)
-                        .zIndex(2f),
-                    contentScale = ContentScale.FillWidth,
-                    alignment = Alignment.BottomCenter
-                )
-            }
-        }
-
-        val isDanPlate = nameplateUrls.any { it.contains("nameplate_dan") }
-
-        val textContainerModifier = Modifier
-            .matchParentSize()
-            .then(textModifier)
-
-        if (isDanPlate) {
-            Column(
-                modifier = textContainerModifier
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .alpha(nameplateBackgroundAlpha)
             ) {
-                if (isNarrow) {
-                    if (collapsedFraction < 0.5f) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            if (!title.isNullOrBlank()) {
-                                AutoResizedText(
-                                    text = title,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = NijiiroFontFamily,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = vTitleFontSize,
-                                        letterSpacing = 0.sp
-                                    ),
-                                    color = if (isDark) Color.White else Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp,
-                                    modifier = Modifier.padding(bottom = 2.dp)
-                                )
-                            }
+                val danPlates = nameplateUrls.filter { it.contains("nameplate_dan") }
+                val specialPlates = nameplateUrls.filter { it.contains("AprilFool") || it.contains("Toho") }
+                val basePlates = nameplateUrls.filterNot { it.contains("nameplate_dan") || it.contains("AprilFool") || it.contains("Toho") }
 
-                            Box(
-                                modifier = Modifier.fillMaxWidth().offset(x = vNameOffsetX, y = vNameOffsetY),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                val fontSize = vNameFontSize
-                                val nameText = name ?: ""
+                // 1. Draw baseplates
+                basePlates.forEach { url ->
+                    AsyncImage(
+                        model = url,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
+                }
 
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        drawStyle = Stroke(
-                                            miter = 10f,
-                                            width = 12f,
-                                            join = StrokeJoin.Round
-                                        )
-                                    ),
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp
-                                )
+                // 2. Draw special plates
+                specialPlates.forEach { url ->
+                    AsyncImage(
+                        model = url,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .matchParentSize()
+                            .wrapContentHeight(unbounded = true, align = Alignment.Bottom)
+                            .zIndex(1f),
+                        contentScale = ContentScale.FillWidth,
+                        alignment = Alignment.BottomCenter
+                    )
+                }
 
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily
-                                    ),
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp
-                                )
-                            }
-                        }
-                    } else {
-                        // Compact mode (collapsedFraction >= 0.5f)
-                        Box(
-                            modifier = Modifier
-                                .weight(0.38f)
-                                .fillMaxWidth()
-                                .offset(x = vTitleOffsetX, y = vTitleOffsetY),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            AutoResizedText(
-                                text = title ?: "",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = NijiiroFontFamily,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = vTitleFontSize,
-                                    letterSpacing = 0.sp,
-                                    lineHeight = 10.sp
-                                ),
-                                color = Color.Black,
-                                maxLines = 1,
-                                minFontSize = 6.sp
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .weight(0.62f)
-                                .fillMaxWidth()
-                                .offset(x = vNameOffsetX, y = vNameOffsetY),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val fontSize = vNameFontSize
-                            val nameText = name ?: ""
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        lineHeight = fontSize,
-                                        drawStyle = Stroke(
-                                            miter = 10f,
-                                            width = 10f,
-                                            join = StrokeJoin.Round
-                                        )
-                                    ),
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp
-                                )
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        lineHeight = fontSize
-                                    ),
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    if (collapsedFraction < 0.5f) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            if (!title.isNullOrBlank()) {
-                                AutoResizedText(
-                                    text = title,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = NijiiroFontFamily,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = vTitleFontSize,
-                                        letterSpacing = 0.sp
-                                    ),
-                                    color = if (isDark) Color.White else Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp,
-                                    modifier = Modifier.padding(bottom = 2.dp)
-                                )
-                            }
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth().offset(x = vNameOffsetX, y = vNameOffsetY),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                val fontSize = vNameFontSize
-                                val nameText = name ?: ""
-
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        drawStyle = Stroke(
-                                            miter = 10f,
-                                            width = 12f,
-                                            join = StrokeJoin.Round
-                                        )
-                                    ),
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 8.sp
-                                )
-
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily
-                                    ),
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    minFontSize = 8.sp
-                                )
-                            }
-                        }
-                    } else {
-                        // Compact mode (collapsedFraction >= 0.5f)
-                        Box(
-                            modifier = Modifier
-                                .weight(0.38f)
-                                .fillMaxWidth()
-                                .offset(x = vTitleOffsetX, y = vTitleOffsetY),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val fontSize = vTitleFontSize
-                            AutoResizedText(
-                                text = title ?: "",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = NijiiroFontFamily,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = fontSize,
-                                    letterSpacing = 0.sp,
-                                    lineHeight = fontSize
-                                ),
-                                color = Color.Black,
-                                maxLines = 1,
-                                minFontSize = 6.sp
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .weight(0.62f)
-                                .fillMaxWidth()
-                                .offset(x = vNameOffsetX, y = vNameOffsetY),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val fontSize = vNameFontSize
-                            val nameText = name ?: ""
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        lineHeight = fontSize,
-                                        drawStyle = Stroke(
-                                            miter = 10f,
-                                            width = 12f,
-                                            join = StrokeJoin.Round
-                                        )
-                                    ),
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 8.sp
-                                )
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        lineHeight = fontSize
-                                    ),
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    minFontSize = 8.sp
-                                )
-                            }
-                        }
-                    }
+                // 3. Draw Dan overlay
+                danPlates.forEach { url ->
+                    AsyncImage(
+                        model = url,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .matchParentSize()
+                            .wrapContentHeight(unbounded = true, align = Alignment.Bottom)
+                            .zIndex(2f),
+                        contentScale = ContentScale.FillWidth,
+                        alignment = Alignment.BottomCenter
+                    )
                 }
             }
-        } else {
+
+            val nameMinFontSize = if (isNarrow) 7.sp else 8.sp
+            val player = playerName ?: ""
+
             Column(
-                modifier = textContainerModifier
+                modifier = Modifier
+                    .matchParentSize()
+                    .then(textModifier)
             ) {
-                if (isNarrow) {
-                    if (collapsedFraction < 0.5f) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            if (!title.isNullOrBlank()) {
-                                AutoResizedText(
-                                    text = title,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = NijiiroFontFamily,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = vTitleFontSize,
-                                        letterSpacing = 0.sp
-                                    ),
-                                    color = if (isDark) Color.White else Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp,
-                                    modifier = Modifier.padding(bottom = 2.dp)
-                                )
-                            }
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth().offset(x = vNameOffsetX, y = vNameOffsetY),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                val fontSize = vNameFontSize
-                                val nameText = name ?: ""
-
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        drawStyle = Stroke(
-                                            miter = 10f,
-                                            width = 12f,
-                                            join = StrokeJoin.Round
-                                        )
-                                    ),
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp
-                                )
-
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily
-                                    ),
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp
-                                )
-                            }
-                        }
-                    } else {
-                        // Compact mode (collapsedFraction >= 0.5f)
-                        Box(
-                            modifier = Modifier
-                                .weight(0.38f)
-                                .fillMaxWidth()
-                                .offset(x = vTitleOffsetX, y = vTitleOffsetY),
-                            contentAlignment = Alignment.Center
-                        ) {
+                if (collapsedFraction < 0.5f) {
+                    // Expanded mode
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        if (!title.isNullOrBlank()) {
                             AutoResizedText(
-                                text = title ?: "",
+                                text = title,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontFamily = NijiiroFontFamily,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = vTitleFontSize,
-                                    letterSpacing = 0.sp,
-                                    lineHeight = 10.sp
+                                    letterSpacing = 0.sp
                                 ),
-                                color = Color.Black,
+                                color = if (isDark) Color.White else Color.Black,
                                 maxLines = 1,
-                                minFontSize = 6.sp
+                                minFontSize = 7.sp,
+                                modifier = Modifier.padding(bottom = 2.dp)
                             )
                         }
 
-                        Box(
-                            modifier = Modifier
-                                .weight(0.62f)
-                                .fillMaxWidth()
-                                .offset(x = vNameOffsetX, y = vNameOffsetY),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val fontSize = vNameFontSize
-                            val nameText = name ?: ""
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                AutoResizedText(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = nameText,
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        lineHeight = fontSize,
-                                        drawStyle = Stroke(
-                                            miter = 10f,
-                                            width = 10f,
-                                            join = StrokeJoin.Round
-                                        )
-                                    ),
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp
-                                )
-                                AutoResizedText(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = nameText,
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        lineHeight = fontSize
-                                    ),
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp
-                                )
-                            }
-                        }
+                        OutlinedNameText(
+                            text = player,
+                            fontSize = vNameFontSize,
+                            strokeWidth = 30f,
+                            minFontSize = nameMinFontSize,
+                            modifier = Modifier.offset(x = vNameOffsetX, y = vNameOffsetY)
+                        )
                     }
                 } else {
-                    if (collapsedFraction < 0.5f) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            if (!title.isNullOrBlank()) {
-                                AutoResizedText(
-                                    text = title,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = NijiiroFontFamily,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = vTitleFontSize,
-                                        letterSpacing = 0.sp
-                                    ),
-                                    color = if (isDark) Color.White else Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 7.sp,
-                                    modifier = Modifier.padding(bottom = 2.dp)
-                                )
-                            }
+                    // Compact mode
+                    val titleLineHeight = if (isNarrow) 10.sp else vTitleFontSize
 
-                            Box(
-                                modifier = Modifier.fillMaxWidth().offset(x = vNameOffsetX, y = vNameOffsetY),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                val fontSize = vNameFontSize
-                                val nameText = name ?: ""
+                    Box(
+                        modifier = Modifier
+                            .weight(0.38f)
+                            .fillMaxWidth()
+                            .offset(x = vTitleOffsetX, y = vTitleOffsetY),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AutoResizedText(
+                            text = title ?: "",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = NijiiroFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = vTitleFontSize,
+                                letterSpacing = 0.sp,
+                                lineHeight = titleLineHeight
+                            ),
+                            color = Color.Black,
+                            maxLines = 1,
+                            minFontSize = 6.sp
+                        )
+                    }
 
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        drawStyle = Stroke(
-                                            miter = 10f,
-                                            width = 12f,
-                                            join = StrokeJoin.Round
-                                        )
-                                    ),
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 8.sp
-                                )
-
-                                AutoResizedText(
-                                    text = nameText,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily
-                                    ),
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    minFontSize = 8.sp
-                                )
-                            }
-                        }
-                    } else {
-                        // Compact mode (collapsedFraction >= 0.5f)
-                        Box(
-                            modifier = Modifier
-                                .weight(0.38f)
-                                .fillMaxWidth()
-                                .offset(x = vTitleOffsetX, y = vTitleOffsetY),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val fontSize = vTitleFontSize
-                            AutoResizedText(
-                                text = title ?: "",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = NijiiroFontFamily,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = fontSize,
-                                    letterSpacing = 0.sp,
-                                    lineHeight = fontSize
-                                ),
-                                color = Color.Black,
-                                maxLines = 1,
-                                minFontSize = 6.sp
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .weight(0.62f)
-                                .fillMaxWidth()
-                                .offset(x = vNameOffsetX, y = vNameOffsetY),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val fontSize = vNameFontSize
-                            val nameText = name ?: ""
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                AutoResizedText(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = nameText,
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        lineHeight = fontSize,
-                                        drawStyle = Stroke(
-                                            miter = 10f,
-                                            width = 12f,
-                                            join = StrokeJoin.Round
-                                        )
-                                    ),
-                                    color = Color.Black,
-                                    maxLines = 1,
-                                    minFontSize = 8.sp
-                                )
-                                AutoResizedText(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = nameText,
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontSize = fontSize,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = NijiiroFontFamily,
-                                        lineHeight = fontSize
-                                    ),
-                                    color = Color.White,
-                                    maxLines = 1,
-                                    minFontSize = 8.sp
-                                )
-                            }
-                        }
+                    Box(
+                        modifier = Modifier
+                            .weight(0.62f)
+                            .fillMaxWidth()
+                            .offset(x = vNameOffsetX, y = vNameOffsetY)
+                            .padding(start = danPadding),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        OutlinedNameText(
+                            text = player,
+                            fontSize = vNameFontSize,
+                            strokeWidth = 30f,
+                            minFontSize = nameMinFontSize,
+                            lineHeight = vNameFontSize
+                        )
                     }
                 }
             }
         }
     }
 }
+
+@Composable
+private fun OutlinedNameText(
+    text: String,
+    fontSize: TextUnit,
+    strokeWidth: Float,
+    minFontSize: TextUnit,
+    modifier: Modifier = Modifier,
+    lineHeight: TextUnit = TextUnit.Unspecified
+) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        val baseStyle = MaterialTheme.typography.titleMedium.copy(
+            fontSize = fontSize,
+            fontWeight = FontWeight.Black,
+            fontFamily = NijiiroFontFamily
+        )
+        val style = if (lineHeight != TextUnit.Unspecified) baseStyle.copy(lineHeight = lineHeight) else baseStyle
+
+        // Stroke layer
+        AutoResizedText(
+            text = text,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            style = style.copy(
+                drawStyle = Stroke(
+                    miter = 10f,
+                    width = strokeWidth,
+                    join = StrokeJoin.Round
+                )
+            ),
+            color = Color.Black,
+            maxLines = 1,
+            minFontSize = minFontSize
+        )
+
+        // Fill layer
+        AutoResizedText(
+            text = text,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            style = style,
+            color = Color.White,
+            maxLines = 1,
+            minFontSize = minFontSize
+        )
+    }
 }
+
+@Preview
+@Composable
+fun TaikoNameplateExpandedPreview() {
+    MaterialTheme {
+        Box(
+            modifier = Modifier
+                .background(Color(0xFF222222))
+                .padding(12.dp)
+                .size(width = 332.dp, height = 80.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            TaikoNameplate(
+                playerName = "ドンちゃん",
+                title = "太鼓の達人",
+                nameplateUrls = emptyList(),
+                collapsedFraction = 0f,
+                modifier = Modifier.size(width = 332.dp, height = 80.dp)
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun TaikoNameplateCompactPreview() {
+    MaterialTheme {
+        Box(
+            modifier = Modifier
+                .background(Color(0xFF222222))
+                .padding(12.dp)
+                .size(width = 332.dp, height = 80.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            TaikoNameplate(
+                playerName = "ドンちゃん",
+                title = "名人",
+                nameplateUrls = emptyList(),
+                collapsedFraction = 1f,
+                modifier = Modifier.size(width = 332.dp, height = 80.dp)
+            )
+        }
+    }
+}
+
