@@ -55,6 +55,32 @@ fun getAchievementRankPanelUrl(id: Int?): String? {
     return buildImageUrl("rank_panel", filename)
 }
 
+fun getScoreRankImageUrl(scoreRank: Int?): String? {
+    val filename = when (scoreRank) {
+        1, 2 -> "rank_White.webp"
+        3 -> "rank_Bronze.webp"
+        4 -> "rank_Silver.webp"
+        5 -> "rank_Gold.webp"
+        6 -> "rank_Sakura.webp"
+        7 -> "rank_Purple.webp"
+        8 -> "rank_Dondaful.webp"
+        else -> null
+    } ?: return null
+    return "https://taiko.farewell.dev/images/$filename"
+}
+
+fun getDifficultyPanelUrl(difficulty: Int?): String {
+    val filename = when (difficulty) {
+        1 -> "rank_panel_Easy.webp"
+        2 -> "rank_panel_Normal.webp"
+        3 -> "rank_panel_Hard.webp"
+        4 -> "rank_panel_Oni.webp"
+        5 -> "rank_panel_Ura_Oni.webp"
+        else -> "rank_panel_Easy.webp"
+    }
+    return "https://taiko.farewell.dev/images/$filename"
+}
+
 fun findTone(id: String?): Int? = when (id) {
     "Taiko" -> 0
     "Festival" -> 1

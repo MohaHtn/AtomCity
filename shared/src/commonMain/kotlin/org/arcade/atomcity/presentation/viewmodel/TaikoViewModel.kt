@@ -1,9 +1,11 @@
 package org.arcade.atomcity.presentation.viewmodel
 
 import androidx.compose.ui.graphics.Color
+import kotlinx.datetime.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import androidx.lifecycle.ViewModel
@@ -19,6 +21,7 @@ import org.arcade.atomcity.data.remote.model.taikoserver.TaikoImagesData
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.utils.UserPreferencesManager
 import org.arcade.atomcity.utils.PlatformUtils
+import org.arcade.atomcity.ui.game.taiko.getTaikoGenreInfo
 import kotlinx.coroutines.flow.firstOrNull
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import atomcity.shared.generated.resources.*
@@ -26,6 +29,12 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import io.ktor.util.decodeBase64String
+import org.arcade.atomcity.data.remote.model.taikoserver.dan.DanCourseData
+import org.arcade.atomcity.data.remote.model.taikoserver.dan.TaikoServerDanBestDataResponse
+import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
+import org.arcade.atomcity.ui.game.taiko.stats.TaikoMostPlayedEntry
+import org.arcade.atomcity.ui.game.taiko.stats.TaikoOverallProgressStats
+import org.arcade.atomcity.ui.game.taiko.stats.TaikoProgressStats
 
 class TaikoViewModel(
     private val usecase: GetTaikoServerDataUseCase,
@@ -70,9 +79,9 @@ class TaikoViewModel(
     private val _showOnlyFavorites = MutableStateFlow(false)
     val showOnlyFavorites = _showOnlyFavorites
 
-    val favoriteSongIds = userPreferencesManager.favoriteSongIds.stateIn(
-        viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet()
-    )
+    val favoriteSongIds: StateFlow<Set<Int>> = scoresData.map { scores ->
+        scores?.songHistoryData?.filter { it.isFavorite == true }?.mapNotNull { it.songId }?.toSet() ?: emptySet()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     fun onToggleShowOnlyFavorites() {
         _showOnlyFavorites.value = !_showOnlyFavorites.value
@@ -80,11 +89,46 @@ class TaikoViewModel(
 
     fun toggleFavorite(songId: Int) {
         viewModelScope.launch {
-            userPreferencesManager.toggleFavoriteSong(songId)
+            val currentScores = _scoresData.value
+            val currentEntry = currentScores?.songHistoryData?.firstOrNull { it.songId == songId }
+            val isCurrentlyFavorite = currentEntry?.isFavorite == true
+            val newFavoriteState = !isCurrentlyFavorite
+
+            if (currentScores != null) {
+                val updatedHistory = currentScores.songHistoryData.map { entry ->
+                    if (entry.songId == songId) {
+                        entry.copy(isFavorite = newFavoriteState)
+                    } else {
+                        entry
+                    }
+                }
+                _scoresData.value = currentScores.copy(songHistoryData = updatedHistory)
+            }
+
+            val baid = loggedInBaid
+            if (baid != null) {
+                try {
+                    val token = apiKeyManager.getTaikoAuthToken()
+                    usecase.postFavoriteSong(
+                        request = TaikoFavoriteSongRequest(
+                            baid = baid,
+                            songId = songId,
+                            isFavorite = newFavoriteState
+                        ),
+                        authToken = token
+                    )
+                    PlatformUtils.log("TaikoViewModel", "Posted favorite song: baid=$baid, songId=$songId, isFavorite=$newFavoriteState")
+                } catch (e: Exception) {
+                    PlatformUtils.log("TaikoViewModel", "Error posting favorite song: ${e.message}", true)
+                    if (currentScores != null) {
+                        _scoresData.value = currentScores
+                    }
+                }
+            }
         }
     }
 
-    val filteredScores: StateFlow<List<org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry>> = combine(scoresData, _searchQuery, favoriteSongIds, _showOnlyFavorites) { scores, query, favorites, onlyFavs ->
+    val filteredScores: StateFlow<List<TaikoServerHistoryEntry>> = combine(scoresData, _searchQuery, _showOnlyFavorites) { scores, query, onlyFavs ->
         val list = if (query.isBlank()) {
             scores?.songHistoryData ?: emptyList()
         } else {
@@ -96,14 +140,15 @@ class TaikoViewModel(
                 score.musicArtist?.contains(query, ignoreCase = true) == true ||
                 score.musicArtistEN?.contains(query, ignoreCase = true) == true ||
                 score.musicArtistCN?.contains(query, ignoreCase = true) == true ||
-                score.musicArtistKO?.contains(query, ignoreCase = true) == true
+                score.musicArtistKO?.contains(query, ignoreCase = true) == true ||
+                getTaikoGenreInfo(score.genre)?.name?.contains(query, ignoreCase = true) == true
             } ?: emptyList()
         }
 
-        list.map { score ->
-            score.copy(isFavorite = favorites.contains(score.songId))
-        }.filter { 
-            if (onlyFavs) it.isFavorite == true else true
+        if (onlyFavs) {
+            list.filter { it.isFavorite == true }
+        } else {
+            list
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -124,6 +169,7 @@ class TaikoViewModel(
     val snackbarMessage: StateFlow<String?> = _snackbarMessage
 
     private var currentBaid: Int? = null
+    val loggedInBaid: Int? get() = currentBaid ?: _userSettingsData.value?.baid
 
     fun showSnackbar(message: String) {
         _snackbarMessage.value = message
@@ -151,6 +197,324 @@ class TaikoViewModel(
         _showDashboardTrigger.value = false
     }
 
+    private val _mostPlayedCharts = MutableStateFlow<List<TaikoMostPlayedEntry>>(emptyList())
+    val mostPlayedCharts: StateFlow<List<TaikoMostPlayedEntry>> = _mostPlayedCharts
+
+    private val _bestScores = MutableStateFlow<List<TaikoServerHistoryEntry>>(emptyList())
+    val bestScores: StateFlow<List<TaikoServerHistoryEntry>> = _bestScores
+
+    private val _isLoadingStats = MutableStateFlow(false)
+    val isLoadingStats: StateFlow<Boolean> = _isLoadingStats
+
+    private val _danCourses = MutableStateFlow<List<DanCourseData>>(emptyList())
+    val danCourses: StateFlow<List<DanCourseData>> = _danCourses
+
+    private val _userDanBestData = MutableStateFlow<TaikoServerDanBestDataResponse?>(null)
+    val userDanBestData: StateFlow<TaikoServerDanBestDataResponse?> = _userDanBestData
+
+    private val _isLoadingDan = MutableStateFlow(false)
+    val isLoadingDan: StateFlow<Boolean> = _isLoadingDan
+
+    fun fetchDanData() {
+        viewModelScope.launch {
+            _isLoadingDan.value = true
+            try {
+                if (_musicDetailsData.value == null) {
+                    fetchMusicDetails()
+                }
+                usecase.getDanDataFlow().collect { courses ->
+                    _danCourses.value = courses
+                }
+            } catch (e: Exception) {
+                PlatformUtils.log("TaikoViewModel", "Error fetching Dan data: ${e.message}")
+            } finally {
+                _isLoadingDan.value = false
+            }
+        }
+
+        val baid = currentBaid
+        if (baid != null) {
+            viewModelScope.launch {
+                try {
+                    usecase.getDanBestDataFlow(baid.toString()).collect { bestData ->
+                        _userDanBestData.value = bestData
+                    }
+                } catch (e: Exception) {
+                    PlatformUtils.log("TaikoViewModel", "Error fetching Dan best data: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun fetchBestScores() {
+        viewModelScope.launch {
+            _isLoadingStats.value = true
+            val history = _scoresData.value?.songHistoryData ?: emptyList()
+            val best = history.sortedByDescending { it.score }.take(30)
+            _bestScores.value = best
+            _isLoadingStats.value = false
+        }
+    }
+
+    fun fetchMostPlayedCharts(
+        isGlobal: Boolean,
+        period: String = "alltime",
+        date: String? = null
+    ) {
+        viewModelScope.launch {
+            _isLoadingStats.value = true
+            
+            if (_musicDetailsData.value == null) {
+                try {
+                    fetchMusicDetails()
+                } catch (e: Exception) {
+                    PlatformUtils.log("TaikoViewModel", "Error fetching music details in most played: ${e.message}")
+                }
+            }
+
+            val myName = _userDetailedSettings.value?.myDonName?.takeIf { it.isNotBlank() } ?: "Moi"
+
+            // Get all community entries with user names
+            val communityEntries: List<Pair<String, TaikoServerHistoryEntry>> = if (isGlobal) {
+                _communityScores.value.flatMap { (baid, historyResponse) ->
+                    val user = _taikoUsers.value.find { it.baid == baid }
+                    val userLabel = if (baid == currentBaid) {
+                        myName
+                    } else {
+                        user?.nickname?.takeIf { it.isNotBlank() } ?: "Joueur $baid"
+                    }
+                    historyResponse.songHistoryData.map { entry -> userLabel to entry }
+                }
+            } else {
+                (_scoresData.value?.songHistoryData ?: emptyList()).map { entry -> myName to entry }
+            }
+
+            // Ensure current user's local history is included if global and current user is not in communityScores
+            val currentUserHistory = if (isGlobal && (currentBaid == null || !_communityScores.value.containsKey(currentBaid))) {
+                (_scoresData.value?.songHistoryData ?: emptyList()).map { entry -> myName to entry }
+            } else {
+                emptyList()
+            }
+
+            val allHistoryWithUser = communityEntries + currentUserHistory
+
+            val filteredEntries = if (period != "alltime" && !date.isNullOrBlank()) {
+                allHistoryWithUser.filter { (_, entry) ->
+                    val playTime = entry.playTime ?: return@filter false
+                    when (period) {
+                        "day" -> playTime.startsWith(date)
+                        "month" -> playTime.startsWith(date)
+                        "week" -> {
+                            try {
+                                val playDateStr = playTime.take(10)
+                                val playDate = LocalDate.parse(playDateStr)
+                                val startOfWeek = if (date.length == 10) {
+                                    LocalDate.parse(date)
+                                } else {
+                                    val parts = date.split("-")
+                                    if (parts.size == 2) {
+                                        val year = parts[0].toInt()
+                                        val week = parts[1].toInt()
+                                        val jan4 = LocalDate(year, 1, 4)
+                                        val dayOfWeekJan4 = jan4.dayOfWeek.isoDayNumber
+                                        val firstMonday = jan4.minus(DatePeriod(days = dayOfWeekJan4 - 1))
+                                        firstMonday.plus(DatePeriod(days = (week - 1) * 7))
+                                    } else null
+                                }
+                                if (startOfWeek != null) {
+                                    val endOfWeek = startOfWeek.plus(DatePeriod(days = 6))
+                                    playDate in startOfWeek..endOfWeek
+                                } else {
+                                    playTime.startsWith(date) || playTime.contains(date)
+                                }
+                            } catch (e: Exception) {
+                                false
+                            }
+                        }
+                        else -> true
+                    }
+                }
+            } else {
+                allHistoryWithUser
+            }
+
+            val grouped = filteredEntries.groupBy { (_, entry) ->
+                (entry.songId ?: 0) to (entry.difficulty ?: 0)
+            }
+            
+            val mostPlayed = grouped.map { (key, plays) ->
+                val (songId, difficulty) = key
+                val musicDetail = musicDetailsData.value?.get(songId.toString())
+                val firstPlayWithName = plays.map { it.second }.find { !it.musicName.isNullOrBlank() }
+                
+                val musicName = firstPlayWithName?.musicName?.takeIf { it.isNotBlank() }
+                    ?: musicDetail?.songName?.takeIf { it.isNotBlank() }
+                    ?: "Morceau #${songId}"
+                
+                val musicNameEN = firstPlayWithName?.musicNameEN?.takeIf { it.isNotBlank() }
+                    ?: musicDetail?.songNameEN?.takeIf { it.isNotBlank() }
+                
+                val musicArtist = firstPlayWithName?.musicArtist?.takeIf { it.isNotBlank() }
+                    ?: musicDetail?.artistName?.takeIf { it.isNotBlank() }
+                    ?: ""
+                
+                val musicArtistEN = firstPlayWithName?.musicArtistEN?.takeIf { it.isNotBlank() }
+                    ?: musicDetail?.artistNameEN?.takeIf { it.isNotBlank() }
+                
+                val uniquePlayers = plays.map { it.first }.distinct().size
+                val userDistribution = if (isGlobal) {
+                    plays.groupBy { it.first }.mapValues { it.value.size }
+                } else null
+
+                val stars = when (difficulty) {
+                    1 -> musicDetail?.starEasy
+                    2 -> musicDetail?.starNormal
+                    3 -> musicDetail?.starHard
+                    4 -> musicDetail?.starOni
+                    5 -> musicDetail?.starUra
+                    else -> firstPlayWithName?.stars
+                } ?: firstPlayWithName?.stars
+
+                TaikoMostPlayedEntry(
+                    songId = songId,
+                    musicName = musicName,
+                    musicNameEN = musicNameEN,
+                    musicArtist = musicArtist,
+                    musicArtistEN = musicArtistEN,
+                    difficulty = if (difficulty > 0) difficulty else null,
+                    stars = stars,
+                    playCount = plays.size,
+                    uniquePlayers = if (isGlobal) uniquePlayers else null,
+                    userPlayCounts = userDistribution,
+                    hasCurrentUserPlayed = plays.any { (user, _) -> user == myName || user == "Moi" }
+                )
+            }.sortedByDescending { it.playCount }.take(30)
+
+            _mostPlayedCharts.value = mostPlayed
+            _isLoadingStats.value = false
+        }
+    }
+
+    private val _progressStats = MutableStateFlow<List<TaikoProgressStats>>(emptyList())
+    val progressStats: StateFlow<List<TaikoProgressStats>> = _progressStats
+
+    private val _overallProgressStats = MutableStateFlow<TaikoOverallProgressStats?>(null)
+    val overallProgressStats: StateFlow<TaikoOverallProgressStats?> = _overallProgressStats
+
+    fun fetchProgress() {
+        fetchProgressForBaid(null)
+    }
+
+    fun fetchProgressForBaid(baid: Int? = null) {
+        viewModelScope.launch {
+            _isLoadingStats.value = true
+
+            val historyResponse = if (baid == null) {
+                _scoresData.value
+            } else {
+                var cached = _communityScores.value[baid]
+                if (cached == null) {
+                    try {
+                        usecase.getPlayHistoryFlow(baid.toString()).collect { res ->
+                            if (res != null) {
+                                cached = res
+                                val updatedMap = _communityScores.value.toMutableMap()
+                                updatedMap[baid] = res
+                                _communityScores.value = updatedMap
+                            }
+                        }
+                    } catch (e: Exception) {
+                        PlatformUtils.log("TaikoViewModel", "Error loading stats for baid $baid: ${e.message}")
+                    }
+                }
+                cached
+            }
+
+            val history = historyResponse?.songHistoryData ?: emptyList()
+            val musicDetails = _musicDetailsData.value ?: emptyMap()
+            val totalSongsCount = musicDetails.size
+
+            val statsList = (1..5).map { diff ->
+                val scoresForDiff = history.filter { it.difficulty == diff }
+                val bestScoresPerSong = scoresForDiff.groupBy { it.songId }.mapNotNull { (_, plays) ->
+                    plays.maxByOrNull { it.score ?: 0 }
+                }
+
+                val playedSongs = bestScoresPerSong.size
+                val clearCount = bestScoresPerSong.count { (it.crown ?: 0) >= 1 }
+                val fullComboCount = bestScoresPerSong.count { (it.crown ?: 0) >= 2 }
+                val donderfulCount = bestScoresPerSong.count { (it.crown ?: 0) == 3 }
+
+                val kiwamiCount = bestScoresPerSong.count { (it.scoreRank ?: 0) == 8 }
+                val miyabiGoldCount = bestScoresPerSong.count { (it.scoreRank ?: 0) == 5 }
+                val miyabiPinkCount = bestScoresPerSong.count { (it.scoreRank ?: 0) == 6 }
+                val miyabiPurpleCount = bestScoresPerSong.count { (it.scoreRank ?: 0) == 7 }
+                val ikiWhiteCount = bestScoresPerSong.count { (it.scoreRank ?: 0) == 2 }
+                val ikiBronzeCount = bestScoresPerSong.count { (it.scoreRank ?: 0) == 3 }
+                val ikiBlueCount = bestScoresPerSong.count { (it.scoreRank ?: 0) == 4 }
+
+                // Compter uniquement les chansons du catalogue qui possèdent cette difficulté
+                val totalSongsForDiffInCatalog = musicDetails.values.count { detail ->
+                    val stars = when (diff) {
+                        1 -> detail.starEasy
+                        2 -> detail.starNormal
+                        3 -> detail.starHard
+                        4 -> detail.starOni
+                        5 -> detail.starUra
+                        else -> null
+                    }
+                    (stars ?: 0) > 0
+                }
+
+                val finalTotalSongs = if (totalSongsForDiffInCatalog > 0) {
+                    totalSongsForDiffInCatalog
+                } else if (totalSongsCount > 0 && diff != 5) {
+                    totalSongsCount
+                } else {
+                    playedSongs
+                }
+
+                TaikoProgressStats(
+                    difficulty = diff,
+                    totalSongs = finalTotalSongs,
+                    playedSongs = playedSongs,
+                    clearCount = clearCount,
+                    fullComboCount = fullComboCount,
+                    donderfulComboCount = donderfulCount,
+                    rankKiwamiCount = kiwamiCount,
+                    rankMiyabiGoldCount = miyabiGoldCount,
+                    rankMiyabiPinkCount = miyabiPinkCount,
+                    rankMiyabiPurpleCount = miyabiPurpleCount,
+                    rankIkiWhiteCount = ikiWhiteCount,
+                    rankIkiBronzeCount = ikiBronzeCount,
+                    rankIkiBlueCount = ikiBlueCount
+                )
+            }
+
+            // Progression globale unique (indépendante de la difficulté)
+            val bestScoresPerSongOverall = history.groupBy { it.songId }.mapNotNull { (_, plays) ->
+                plays.maxByOrNull { it.crown ?: 0 }
+            }
+
+            val overallPlayed = bestScoresPerSongOverall.size
+            val overallClear = bestScoresPerSongOverall.count { (it.crown ?: 0) >= 1 }
+            val overallFullCombo = bestScoresPerSongOverall.count { (it.crown ?: 0) >= 2 }
+            val overallDonderful = bestScoresPerSongOverall.count { (it.crown ?: 0) == 3 }
+
+            val overallStats = TaikoOverallProgressStats(
+                totalSongs = if (totalSongsCount > 0) totalSongsCount else overallPlayed,
+                playedSongs = overallPlayed,
+                clearCount = overallClear,
+                fullComboCount = overallFullCombo,
+                donderfulComboCount = overallDonderful
+            )
+
+            _progressStats.value = statsList
+            _overallProgressStats.value = overallStats
+            _isLoadingStats.value = false
+        }
+    }
+
     suspend fun fetchPlayHistoryPlayData(userNumber: Int) {
         isLoadingScores.value = true
         try {
@@ -169,6 +533,7 @@ class TaikoViewModel(
         try {
             usecase.getMusicDetailsFlow().collect { response ->
                 _musicDetailsData.value = response
+                mergeMusicDetailsWithScores()
             }
         } catch (e: Exception) {
             isLoadingMusicDetails.value = false
@@ -266,15 +631,16 @@ class TaikoViewModel(
                         else -> 0
                     }
                     score.copy(
-                        musicName = musicDetail.songName,
-                        musicNameEN = musicDetail.songNameEN,
-                        musicNameCN = musicDetail.songNameCN,
-                        musicNameKO = musicDetail.songNameKO,
-                        musicArtist = musicDetail.artistName,
-                        musicArtistEN = musicDetail.artistNameEN,
-                        musicArtistCN = musicDetail.artistNameCN,
-                        musicArtistKO = musicDetail.artistNameKO,
-                        stars = difficultyStars
+                        genre = musicDetail.genre ?: score.genre,
+                        musicName = musicDetail.songName ?: score.musicName,
+                        musicNameEN = musicDetail.songNameEN ?: score.musicNameEN,
+                        musicNameCN = musicDetail.songNameCN ?: score.musicNameCN,
+                        musicNameKO = musicDetail.songNameKO ?: score.musicNameKO,
+                        musicArtist = musicDetail.artistName ?: score.musicArtist,
+                        musicArtistEN = musicDetail.artistNameEN ?: score.musicArtistEN,
+                        musicArtistCN = musicDetail.artistNameCN ?: score.musicArtistCN,
+                        musicArtistKO = musicDetail.artistNameKO ?: score.musicArtistKO,
+                        stars = if (difficultyStars != 0 && difficultyStars != null) difficultyStars else score.stars
                     )
                 } else {
                     score

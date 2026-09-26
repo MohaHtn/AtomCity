@@ -14,10 +14,14 @@ import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.*
 import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
+import org.arcade.atomcity.data.remote.model.taikoserver.dan.*
 
 class TaikoServerClient(private val client: HttpClient, private val baseUrl: String = "https://taiko.farewell.dev/") {
     suspend fun getDashboard(): String =
         client.get("${baseUrl}Dashboard.md").body()
+
+    suspend fun getDanData(): List<DanCourseData> =
+        client.get("${baseUrl}data/dan_data.json").body()
 
     suspend fun getPlayHistory(userNumber: String): TaikoServerPlayHistoryResponse =
         client.get("${baseUrl}api/PlayHistory/$userNumber").body()
@@ -82,4 +86,14 @@ class TaikoServerClient(private val client: HttpClient, private val baseUrl: Str
             contentType(ContentType.Application.Json)
             setBody(passwordRequest)
         }.body()
+
+    suspend fun postFavoriteSong(request: TaikoFavoriteSongRequest, authToken: String? = null) {
+        client.post("${baseUrl}api/FavoriteSongs") {
+            contentType(ContentType.Application.Json)
+            if (!authToken.isNullOrBlank()) {
+                header("Authorization", "Bearer $authToken")
+            }
+            setBody(request)
+        }
+    }
 }

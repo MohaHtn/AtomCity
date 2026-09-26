@@ -1,9 +1,8 @@
 package org.arcade.atomcity.ui.game.taiko
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,38 +15,35 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.foundation.border
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import androidx.compose.foundation.lazy.rememberLazyListState
+import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.game.taiko.details.*
+import org.arcade.atomcity.ui.game.taiko.settings.getScoreRankImageUrl
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.formatPlayDate
 import org.jetbrains.compose.resources.painterResource
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaikoScoresDetails(
     songId: Int,
+    targetDifficultyArg: Int? = null,
+    targetScoreArg: Int? = null,
+    targetPlayTimeArg: String? = null,
     taikoViewModel: TaikoViewModel,
+    onNavigateToRoute: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
     val scoresData by taikoViewModel.scoresData.collectAsState()
@@ -61,8 +57,48 @@ fun TaikoScoresDetails(
     var sortByScore by remember { mutableStateOf(false) }
     var sortAscending by remember { mutableStateOf(false) }
 
-    val filteredScores = remember(scoresData, songId) {
-        scoresData?.songHistoryData?.filter { it.songId == songId } ?: emptyList()
+    val filteredScores = remember(scoresData, songId, targetDifficultyArg) {
+        val allSongScores = scoresData?.songHistoryData?.filter { it.songId == songId } ?: emptyList()
+        if (targetDifficultyArg != null) {
+            allSongScores.filter { it.difficulty == targetDifficultyArg }
+        } else {
+            allSongScores
+        }
+    }
+
+    val targetEntry = remember(filteredScores, targetScoreArg, targetPlayTimeArg) {
+        val normalizedTargetTime = targetPlayTimeArg?.replace("T", " ")?.replace(" ", "")
+        
+        filteredScores.find { entry ->
+            val matchesScore = targetScoreArg != null && entry.score == targetScoreArg
+            val matchesTime = if (!normalizedTargetTime.isNullOrBlank() && entry.playTime != null) {
+                entry.playTime.replace("T", " ").replace(" ", "") == normalizedTargetTime
+            } else false
+            
+            if (targetScoreArg != null && !normalizedTargetTime.isNullOrBlank()) {
+                matchesScore && matchesTime
+            } else {
+                matchesScore || matchesTime
+            }
+        } ?: if (targetScoreArg != null) {
+            filteredScores.find { it.score == targetScoreArg }
+        } else if (!normalizedTargetTime.isNullOrBlank()) {
+            filteredScores.find { entry ->
+                entry.playTime != null && entry.playTime.replace("T", " ").replace(" ", "") == normalizedTargetTime
+            }
+        } else null
+    }
+
+    val bestScoreEntry = remember(filteredScores) {
+        filteredScores.maxByOrNull { it.score ?: 0 }
+    }
+
+    var selectedScore by remember(filteredScores, targetEntry, bestScoreEntry) {
+        mutableStateOf(targetEntry ?: bestScoreEntry)
+    }
+
+    LaunchedEffect(filteredScores, targetEntry, bestScoreEntry) {
+        selectedScore = targetEntry ?: bestScoreEntry
     }
 
     val sortedHistory = remember(filteredScores, sortByScore, sortAscending) {
@@ -81,10 +117,13 @@ fun TaikoScoresDetails(
         }
     }
 
-    val communityBestScores = remember(communityScores, songId) {
+    val songInfo = selectedScore ?: filteredScores.firstOrNull() ?: scoresData?.songHistoryData?.firstOrNull { it.songId == songId }
+    val targetDifficulty = targetDifficultyArg ?: songInfo?.difficulty
+
+    val communityBestScores = remember(communityScores, songId, targetDifficulty) {
         communityScores.mapNotNull { (baid, history) ->
             val bestScore = history.songHistoryData
-                .filter { it.songId == songId }
+                .filter { it.songId == songId && (targetDifficulty == null || it.difficulty == targetDifficulty) }
                 .maxByOrNull { it.score ?: 0 }
             
             if (bestScore != null) {
@@ -95,35 +134,36 @@ fun TaikoScoresDetails(
         }.sortedByDescending { it.second.score ?: 0 }
     }
 
-    val songInfo = filteredScores.firstOrNull()
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { 
                     Column {
+                        val titleText = songInfo?.musicNameEN.takeIf { !it.isNullOrBlank() } ?: songInfo?.musicName ?: "Détails de la musique"
                         Text(
-                            text = songInfo?.musicName ?: "Détails de la musique",
+                            text = titleText,
                             style = MaterialTheme.typography.titleMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        if (!songInfo?.musicNameEN.isNullOrBlank() && songInfo.musicNameEN != songInfo.musicName) {
+                        if (!songInfo?.musicName.isNullOrBlank() && songInfo.musicName != titleText) {
                             Text(
-                                text = songInfo.musicNameEN,
+                                text = songInfo.musicName,
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                        Text(
-                            text = songInfo?.musicArtist ?: "",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        if (!songInfo?.musicArtist.isNullOrBlank()) {
+                            Text(
+                                text = songInfo.musicArtist,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 },
                 navigationIcon = {
@@ -132,6 +172,14 @@ fun TaikoScoresDetails(
                     }
                 },
                 actions = {
+                    val musicDetailsData by taikoViewModel.musicDetailsData.collectAsState()
+                    val songGenre = songInfo?.genre ?: musicDetailsData?.get(songId.toString())?.genre
+                    if (getTaikoGenreInfo(songGenre) != null) {
+                        TaikoGenreBadge(
+                            genre = songGenre,
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
+                    }
                     IconButton(onClick = { taikoViewModel.toggleFavorite(songId) }) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -143,6 +191,9 @@ fun TaikoScoresDetails(
             )
         }
     ) { paddingValues ->
+        val listState = rememberLazyListState()
+        val coroutineScope = rememberCoroutineScope()
+
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -153,15 +204,27 @@ fun TaikoScoresDetails(
             }
         } else {
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Top Featured Score Card
+                item {
+                    selectedScore?.let { score ->
+                        TaikoScoreCard(
+                            entry = score,
+                            isBestScore = (score.score == bestScoreEntry?.score && score.playTime == bestScoreEntry?.playTime),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                }
+
                 if (communityBestScores.isNotEmpty()) {
                     item {
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "MEILLEURS SCORES D'ATOM CITY DE CETTE CHART",
                             style = MaterialTheme.typography.labelLarge.copy(
@@ -185,8 +248,10 @@ fun TaikoScoresDetails(
                         }
 
                         Card(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                            colors = setDifficultyColorBackground(score.difficulty).copy(containerColor = getDifficultyColor(score.difficulty).copy(alpha = 0.6f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            colors = setDifficultyColorBackground(score.difficulty),
                             shape = RoundedCornerShape(16.dp)
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
@@ -204,7 +269,7 @@ fun TaikoScoresDetails(
                                 ) {
                                     Column {
                                         Text(
-                                            text = score.score.toString(),
+                                            text = formatTaikoScore(score.score),
                                             style = MaterialTheme.typography.titleMedium,
                                             color = Color.White,
                                             fontWeight = FontWeight.Black
@@ -238,7 +303,7 @@ fun TaikoScoresDetails(
 
                 if (filteredScores.size < 3) {
                     item {
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         ElevatedCard(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -264,7 +329,7 @@ fun TaikoScoresDetails(
                     }
                 } else {
                     item {
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         val history = filteredScores.sortedByDescending { it.score }.take(15).sortedBy { it.score }
                         TaikoDetailGraph(
                             title = "MEILLEURS SCORES (TOP 15)",
@@ -274,7 +339,7 @@ fun TaikoScoresDetails(
                         )
                     }
                     item {
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         val history = filteredScores.sortedBy { it.playTime }.takeLast(15)
                         TaikoDetailGraph(
                             title = "PROGRESSION DES SCORES (15 DERNIERS)",
@@ -286,7 +351,7 @@ fun TaikoScoresDetails(
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "HISTORIQUE DES SCORES • ${filteredScores.size} ESSAI(S)",
                         style = MaterialTheme.typography.labelLarge.copy(
@@ -375,8 +440,29 @@ fun TaikoScoresDetails(
                 }
 
                 items(sortedHistory) { score ->
+                    val isSelected = (selectedScore == score)
                     Card(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                            .clickable {
+                                if (score == selectedScore) {
+                                    coroutineScope.launch {
+                                        listState.animateScrollToItem(0)
+                                    }
+                                    PlatformUtils.hapticImpact()
+                                } else {
+                                    val route = buildTaikoScoreRoute(score)
+                                    if (route != null) {
+                                        onNavigateToRoute(route)
+                                        PlatformUtils.hapticImpact()
+                                    }
+                                }
+                            }
+                            .then(
+                                if (isSelected) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
+                                else Modifier
+                            ),
                         colors = setDifficultyColorBackground(score.difficulty),
                         shape = RoundedCornerShape(16.dp)
                     ) {
@@ -394,16 +480,76 @@ fun TaikoScoresDetails(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.weight(1f, fill = false)
+                                    ) {
+                                        Text(
+                                            text = displayDifficultyName(score.difficulty),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold
+                                        )
+
+                                        // Crown Badge
+                                        val crownUrl = getCrownImageUrl(score.crown)
+                                        val crownTitle = getCrownTitle(score.crown)
+                                        Surface(
+                                            color = Color.Black.copy(alpha = 0.35f),
+                                            shape = RoundedCornerShape(6.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                AsyncImage(
+                                                    model = crownUrl,
+                                                    contentDescription = crownTitle,
+                                                    modifier = Modifier.height(18.dp),
+                                                    contentScale = ContentScale.Fit
+                                                )
+                                                Text(
+                                                    text = crownTitle,
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 10.sp
+                                                    ),
+                                                    color = Color.White
+                                                )
+                                            }
+                                        }
+
+                                        // Rank Badge
+                                        val rankUrl = getScoreRankImageUrl(score.scoreRank)
+                                        if (rankUrl != null) {
+                                            Surface(
+                                                color = Color.Black.copy(alpha = 0.35f),
+                                                shape = RoundedCornerShape(6.dp)
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    AsyncImage(
+                                                        model = rankUrl,
+                                                        contentDescription = "Rank",
+                                                        modifier = Modifier.height(18.dp),
+                                                        contentScale = ContentScale.Fit
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Number Difficulty rating on the right (White stars)
                                     Text(
-                                        text = "${displayDifficultyName(score.difficulty)} (${score.stars ?: 0})",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = "★".repeat(score.stars ?: 0),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = Color.Yellow
+                                        text = "★ ${score.stars ?: 0}",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Black
+                                        ),
+                                        color = Color.White
                                     )
                                 }
 
@@ -416,12 +562,15 @@ fun TaikoScoresDetails(
                                 ) {
                                     Column {
                                         Text(
-                                            text = score.score.toString(),
+                                            text = formatTaikoScore(score.score),
                                             style = MaterialTheme.typography.headlineSmall,
                                             color = Color.White,
                                             fontWeight = FontWeight.Black
                                         )
-                                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                            modifier = Modifier.padding(top = 4.dp)
+                                        ) {
                                             MiniScoreBadge("G", score.goodCount, Color(0xFFFFD700))
                                             MiniScoreBadge("O", score.okCount, Color(0xFFC0C0C0))
                                             MiniScoreBadge("M", score.missCount, Color(0xFFE57373))
@@ -453,3 +602,23 @@ fun TaikoScoresDetails(
     }
 }
 
+fun buildTaikoScoreRoute(entry: TaikoServerHistoryEntry): String? {
+    val id = entry.songId ?: return null
+    val diff = entry.difficulty
+    val scoreVal = entry.score
+    val time = entry.playTime
+    return buildString {
+        append("taikoScoresDetails/$id")
+        val params = mutableListOf<String>()
+        if (diff != null) params.add("difficulty=$diff")
+        if (scoreVal != null) params.add("score=$scoreVal")
+        if (!time.isNullOrBlank()) {
+            val encodedTime = time.replace(" ", "T")
+            params.add("playTime=$encodedTime")
+        }
+        if (params.isNotEmpty()) {
+            append("?")
+            append(params.joinToString("&"))
+        }
+    }
+}

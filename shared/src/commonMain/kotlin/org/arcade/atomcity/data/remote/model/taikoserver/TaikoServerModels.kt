@@ -35,12 +35,6 @@ data class TaikoServerUserSettingsResponse(
     val title: String? = null
 )
 
-@Serializable
-data class TaikoServerDanBestDataResponse(
-    val baid: Int? = null,
-    val danId: Int? = null,
-    val status: Int? = null
-)
 
 @Serializable
 data class TaikoServerUserResponse(
@@ -76,4 +70,11 @@ data class TaikoServerAuthResponse(
 data class TaikoLoginRequest(
     val accessCode: String,
     val password: String
+)
+
+@Serializable
+data class TaikoFavoriteSongRequest(
+    val baid: Int,
+    val songId: Int,
+    val isFavorite: Boolean
 )

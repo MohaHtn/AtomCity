@@ -6,9 +6,11 @@ import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.*
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
+import org.arcade.atomcity.data.remote.model.taikoserver.dan.*
 
 interface ITaikoServerRepository {
     fun getDashboardFlow(): Flow<String?>
+    fun getDanDataFlow(): Flow<List<DanCourseData>>
     fun getPlayHistoryFlow(userNumber: String): Flow<TaikoServerPlayHistoryResponse?>
     fun getMusicDetailsFlow(): Flow<TaikoServerMusicDetailsResponse?>
     fun getUserSettingsFlow(userNumber: String): Flow<TaikoServerUserSettingsResponse?>
@@ -23,4 +25,5 @@ interface ITaikoServerRepository {
     suspend fun login(loginRequest: TaikoLoginRequest): TaikoServerAuthResponse
     suspend fun updateUserSettings(baid: Int, settings: TaikoServerUserSettingsResponse, authToken: String)
     suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse
+    suspend fun postFavoriteSong(request: TaikoFavoriteSongRequest, authToken: String? = null)
 }

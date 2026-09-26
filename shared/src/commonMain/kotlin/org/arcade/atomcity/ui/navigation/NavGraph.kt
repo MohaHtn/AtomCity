@@ -41,6 +41,10 @@ import org.arcade.atomcity.ui.game.taiko.TaikoScores
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.arcade.atomcity.ui.game.maimai.MaimaiUtageScreen
+import org.arcade.atomcity.ui.game.taiko.stats.TaikoBestScores
+import org.arcade.atomcity.ui.game.taiko.stats.TaikoMostPlayedChart
+import org.arcade.atomcity.ui.game.taiko.stats.TaikoProgress
+import org.arcade.atomcity.ui.game.taiko.dan.TaikoDanScreen
 import org.koin.compose.koinInject
 
 sealed class Screen(val route: String) {
@@ -162,6 +166,37 @@ fun AppNavigation(
                 )
             }
 
+            composable("taikoMostPlayed") {
+                TaikoMostPlayedChart(
+                    onBackClick = { navController.popBackStack() },
+                    navController = navController,
+                    taikoViewModel = taikoViewModel
+                )
+            }
+
+            composable("taikoBestScores") {
+                TaikoBestScores(
+                    onBackClick = { navController.popBackStack() },
+                    navController = navController,
+                    taikoViewModel = taikoViewModel
+                )
+            }
+
+            composable("taikoProgress") {
+                TaikoProgress(
+                    onBackClick = { navController.popBackStack() },
+                    navController = navController,
+                    taikoViewModel = taikoViewModel
+                )
+            }
+
+            composable("taikoDan") {
+                TaikoDanScreen(
+                    onBackClick = { navController.popBackStack() },
+                    taikoViewModel = taikoViewModel
+                )
+            }
+
             composable(Screen.Settings.route) {
                 SettingsScreen(
                     onBackClick = { navController.popBackStack() },
@@ -265,13 +300,35 @@ fun AppNavigation(
             }
 
             composable(
-                route = "taikoScoresDetails/{songId}",
-                arguments = listOf(navArgument("songId") { type = NavType.IntType })
+                route = "taikoScoresDetails/{songId}?difficulty={difficulty}&score={score}&playTime={playTime}",
+                arguments = listOf(
+                    navArgument("songId") { type = NavType.IntType },
+                    navArgument("difficulty") {
+                        type = NavType.IntType
+                        defaultValue = -1
+                    },
+                    navArgument("score") {
+                        type = NavType.IntType
+                        defaultValue = -1
+                    },
+                    navArgument("playTime") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
             ) { backStackEntry ->
                 val songId = backStackEntry.arguments?.getInt("songId") ?: 0
+                val difficulty = backStackEntry.arguments?.getInt("difficulty")?.takeIf { it != -1 }
+                val score = backStackEntry.arguments?.getInt("score")?.takeIf { it != -1 }
+                val playTime = backStackEntry.arguments?.getString("playTime")
                 TaikoScoresDetails(
                     songId = songId,
+                    targetDifficultyArg = difficulty,
+                    targetScoreArg = score,
+                    targetPlayTimeArg = playTime,
                     taikoViewModel = taikoViewModel,
+                    onNavigateToRoute = { route -> navController.navigate(route) },
                     onBackClick = { navController.popBackStack() }
                 )
             }

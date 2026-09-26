@@ -9,10 +9,15 @@ import org.arcade.atomcity.data.remote.model.taikoserver.gamedata.*
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerPlayHistoryResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.musicDetails.TaikoServerMusicDetailsResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.usersettings.TaikoServerUserSettingsResponse
+import org.arcade.atomcity.data.remote.model.taikoserver.dan.*
 
 class TaikoServerRepository(private val client: TaikoServerClient) : ITaikoServerRepository {
     override fun getDashboardFlow(): Flow<String?> = flow {
         emit(client.getDashboard())
+    }
+
+    override fun getDanDataFlow(): Flow<List<DanCourseData>> = flow {
+        emit(client.getDanData())
     }
 
     override fun getPlayHistoryFlow(userNumber: String): Flow<TaikoServerPlayHistoryResponse?> = flow {
@@ -76,4 +81,7 @@ class TaikoServerRepository(private val client: TaikoServerClient) : ITaikoServe
 
     override suspend fun changePassword(passwordRequest: Map<String, String>): TaikoServerAuthResponse =
         client.changePassword(passwordRequest)
+
+    override suspend fun postFavoriteSong(request: TaikoFavoriteSongRequest, authToken: String?) =
+        client.postFavoriteSong(request, authToken)
 }

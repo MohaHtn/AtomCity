@@ -66,6 +66,10 @@ fun TaikoScores(
     val collapsedFraction = scrollBehavior.state.collapsedFraction
 
     val extraItems = listOf(
+        Triple("taikoMostPlayed", "Les plus joués", "Statistiques de jeu"),
+        Triple("taikoBestScores", "Top 30", "Meilleurs scores"),
+        Triple("taikoProgress", "Complétion", "Progression par difficulté"),
+        Triple("taikoDan", "Dan Dojo", "Épreuves de qualification"),
         Triple("taikoUserSettings", "Paramètres", "Modifier votre profil de jeu"),
         Triple("taikoUsers", "Utilisateurs", "Consulter les utilisateurs enregistrés")
     )
