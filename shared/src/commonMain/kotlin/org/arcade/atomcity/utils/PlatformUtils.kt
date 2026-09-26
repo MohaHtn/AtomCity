@@ -15,8 +15,6 @@ expect object PlatformUtils {
     fun encrypt(text: String): String
     fun decrypt(encryptedText: String): String
     fun exitApp()
-    fun playBirthdayBgm()
-    fun stopBirthdayBgm()
 }
 
 @Composable

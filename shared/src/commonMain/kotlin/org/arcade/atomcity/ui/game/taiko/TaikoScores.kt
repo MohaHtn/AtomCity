@@ -80,7 +80,6 @@ fun TaikoScores(
         taikoViewModel.getScores()
         taikoViewModel.fetchCommunityScores()
     }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

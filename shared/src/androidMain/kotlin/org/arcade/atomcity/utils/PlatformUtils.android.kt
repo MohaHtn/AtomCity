@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import android.content.Intent
 import android.graphics.Bitmap
-import android.media.MediaPlayer
 import android.os.Process
 import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
@@ -183,51 +182,7 @@ actual object PlatformUtils {
     }
 
     actual fun exitApp() {
-        stopBirthdayBgm()
         Process.killProcess(Process.myPid())
-    }
-
-    private var mediaPlayer: MediaPlayer? = null
-
-    actual fun playBirthdayBgm() {
-        try {
-            stopBirthdayBgm()
-            val appContext = try {
-                KoinJavaComponent.get<Context>(Context::class.java)
-            } catch (_: Exception) {
-                null
-            } ?: return
-
-            val afd = try {
-                appContext.assets.openFd("maimai/database/birthday/maimai_circle_bgm.mp3")
-            } catch (_: Exception) {
-                appContext.assets.openFd("birthday/maimai_circle_bgm.mp3")
-            }
-
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-                afd.close()
-                isLooping = true
-                prepare()
-                start()
-            }
-        } catch (e: Exception) {
-            log("PlatformUtils", "Error playing birthday BGM: ${e.message}", true)
-        }
-    }
-
-    actual fun stopBirthdayBgm() {
-        try {
-            mediaPlayer?.let {
-                if (it.isPlaying) {
-                    it.stop()
-                }
-                it.release()
-            }
-            mediaPlayer = null
-        } catch (e: Exception) {
-            log("PlatformUtils", "Error stopping birthday BGM: ${e.message}", true)
-        }
     }
 }
 
