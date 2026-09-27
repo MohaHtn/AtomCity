@@ -29,6 +29,15 @@ import androidx.lifecycle.viewModelScope
 import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
 import kotlin.concurrent.Volatile
 
+/**
+ * ViewModel managing the UI state and business logic for the Maimai section of the application.
+ *
+ * It bridges the gap between the UI components and the underlying Domain Use Cases.
+ * By decoupling the data fetching logic using use cases, it adheres to the 
+ * Single Responsibility Principle (SRP) and the Separation of Concerns.
+ *
+ * It exposes data to the UI using reactive StateFlow streams.
+ */
 class MaimaiViewModel(
     private val scoresUseCase: GetScorefetcherScoresUseCase,
     private val profileUseCase: GetScorefetcherProfileUseCase,
