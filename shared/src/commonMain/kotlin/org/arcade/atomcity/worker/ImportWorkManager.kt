@@ -1,3 +1,8 @@
+/**
+ * Import Work Manager Interface
+ *
+ * Contract for scheduling and observing background import worker tasks across platforms.
+ */
 package org.arcade.atomcity.worker
 
 import kotlinx.coroutines.flow.Flow

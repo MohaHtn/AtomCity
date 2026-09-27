@@ -1,3 +1,8 @@
+/**
+ * Song Data Access Object
+ *
+ * Provides SQL queries for accessing and querying songs and level data from the local Room database.
+ */
 package org.arcade.atomcity.data.local
 
 import androidx.room.Dao

@@ -1,3 +1,8 @@
+/**
+ * Application Room Database
+ *
+ * Defines the local SQLite Room database configuration, entities, database constructor, and DAO accessors for multiplatform persistence.
+ */
 package org.arcade.atomcity.data.local
 
 import androidx.room.ConstructedBy
@@ -23,5 +28,3 @@ abstract class AppDatabase : RoomDatabase() {
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
     override fun initialize(): AppDatabase
 }
-
-

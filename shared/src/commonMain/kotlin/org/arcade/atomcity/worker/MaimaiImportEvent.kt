@@ -1,3 +1,8 @@
+/**
+ * Maimai Import Event Model
+ *
+ * Data model representing server-sent events (SSE) during Maimai score data imports.
+ */
 package org.arcade.atomcity.worker
 
 import kotlinx.serialization.Serializable

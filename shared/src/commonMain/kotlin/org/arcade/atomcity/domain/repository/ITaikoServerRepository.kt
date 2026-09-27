@@ -1,3 +1,8 @@
+/**
+ * Taiko Server Repository Interface
+ *
+ * Contract defining data operations and network communications for Taiko server game data, leaderboards, and authentication.
+ */
 package org.arcade.atomcity.domain.repository
 
 import kotlinx.coroutines.flow.Flow

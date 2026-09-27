@@ -1,3 +1,8 @@
+/**
+ * Android Import Work Manager
+ *
+ * Manages background import tasks using Android WorkManager for scheduling and monitoring data synchronization jobs.
+ */
 package org.arcade.atomcity.worker
 
 import android.content.Context

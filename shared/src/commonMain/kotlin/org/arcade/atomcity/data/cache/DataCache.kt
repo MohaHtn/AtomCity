@@ -1,3 +1,8 @@
+/**
+ * Data Cache Utility
+ *
+ * Generic cache container providing TTL-based data validity checking and storage for repository data sources.
+ */
 package org.arcade.atomcity.data.cache
 
 import org.arcade.atomcity.utils.PlatformUtils

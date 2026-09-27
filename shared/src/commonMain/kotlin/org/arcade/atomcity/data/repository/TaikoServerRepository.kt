@@ -1,3 +1,8 @@
+/**
+ * Taiko Server Repository Implementation
+ *
+ * Implements [ITaikoServerRepository] to fetch Taiko game data, leaderboards, and user settings from the Taiko server.
+ */
 package org.arcade.atomcity.data.repository
 
 import kotlinx.coroutines.flow.Flow

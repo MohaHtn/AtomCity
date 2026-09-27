@@ -1,3 +1,9 @@
+/**
+ * Shared Dependency Injection Module
+ *
+ * Configures Koin dependency injection modules for KMP networking (Ktor HTTP client, serialization, error validators),
+ * Room database instances, API clients, repositories, use cases, and utility managers.
+ */
 package org.arcade.atomcity.di
 
 import io.ktor.client.HttpClient

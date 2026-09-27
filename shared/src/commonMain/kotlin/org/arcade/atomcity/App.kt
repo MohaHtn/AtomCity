@@ -1,3 +1,8 @@
+/**
+ * Application Entry Point
+ *
+ * Serves as the root composable for the shared KMP application, configuring Coil image loaders, theme wrapping, and top-level navigation graphs.
+ */
 package org.arcade.atomcity
 
 import androidx.compose.foundation.layout.fillMaxSize

@@ -1,3 +1,8 @@
+/**
+ * Level Entity
+ *
+ * Room database entity storing specific chart level metadata and foreign key relations to songs.
+ */
 package org.arcade.atomcity.data.local
 
 import androidx.room.Entity

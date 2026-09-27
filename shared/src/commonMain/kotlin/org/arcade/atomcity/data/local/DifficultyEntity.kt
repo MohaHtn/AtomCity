@@ -1,3 +1,8 @@
+/**
+ * Difficulty Entity
+ *
+ * Room database entity representing song difficulty metadata and level details.
+ */
 package org.arcade.atomcity.data.local
 
 import androidx.room.Entity

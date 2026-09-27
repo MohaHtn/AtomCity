@@ -1,3 +1,8 @@
+/**
+ * Song Level Row Model
+ *
+ * Data transfer model representing joined query results of songs and their corresponding levels.
+ */
 package org.arcade.atomcity.data.local
 
 data class SongLevelRow(

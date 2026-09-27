@@ -1,3 +1,8 @@
+/**
+ * Base Repository Interface
+ *
+ * Defines standard CRUD operations for generic repository implementations across the data and domain layers.
+ */
 package org.arcade.atomcity.domain.repository
 
 import kotlinx.coroutines.flow.Flow

@@ -1,3 +1,8 @@
+/**
+ * Main Activity
+ *
+ * Serves as the main entry point for the Android application, handling edge-to-edge display, system splash screen, notification permissions, application initialization, and launching the Compose UI tree.
+ */
 package org.arcade.atomcity
 
 import android.Manifest
@@ -26,6 +31,7 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 
 import kotlinx.coroutines.flow.first
+import org.arcade.atomcity.domain.repository.IScorefetcherRepository
 
 class AtomCityApplication : Application() {
     private val startupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -43,7 +49,7 @@ class AtomCityApplication : Application() {
 
     private fun preloadMaimaiImportState() {
         startupScope.launch {
-            val repository = GlobalContext.get().get<org.arcade.atomcity.domain.repository.IScorefetcherRepository>()
+            val repository = GlobalContext.get().get<IScorefetcherRepository>()
             val isImporting = repository.isImportWorkerActive().first()
             GlobalUIState.isImportingMaimaiScores.value = isImporting
             GlobalUIState.isMaimaiImportStateReady.value = true

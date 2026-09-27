@@ -1,3 +1,8 @@
+/**
+ * Number Formatting Utilities
+ *
+ * Extension functions for formatting and rounding double precision numbers to specified decimal places.
+ */
 package org.arcade.atomcity.utils
 
 import kotlin.math.roundToLong

@@ -1,3 +1,8 @@
+/**
+ * Get Scorefetcher Scores Use Case
+ *
+ * Encapsulates business logic for fetching paginated scores, best 30 charts, Utage scores, and searching charts.
+ */
 package org.arcade.atomcity.domain.usecase
 
 import kotlinx.coroutines.flow.Flow

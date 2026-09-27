@@ -1,3 +1,8 @@
+/**
+ * ViewModel Dependency Injection Module
+ *
+ * Defines Koin factory definitions for Maimai and Taiko ViewModels.
+ */
 package org.arcade.atomcity.di
 
 import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel

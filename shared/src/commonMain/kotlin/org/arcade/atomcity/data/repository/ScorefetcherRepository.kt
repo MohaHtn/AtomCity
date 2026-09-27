@@ -1,3 +1,8 @@
+/**
+ * Scorefetcher Repository Implementation
+ *
+ * Implements [IScorefetcherRepository] to coordinate network calls, caching, and database operations for Maimai scores and profiles.
+ */
 package org.arcade.atomcity.data.repository
 
 import kotlinx.coroutines.flow.Flow
@@ -22,10 +27,12 @@ import io.ktor.http.HttpStatusCode
 import org.arcade.atomcity.data.cache.DataCache
 import org.arcade.atomcity.utils.PlatformUtils
 import kotlinx.coroutines.flow.map
+import org.arcade.atomcity.data.remote.TaikoUser
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
 import org.arcade.atomcity.domain.repository.IScorefetcherRepository
 import org.arcade.atomcity.domain.model.ImportWorkerStatus
 import org.arcade.atomcity.domain.model.LevelInfo
+import org.arcade.atomcity.ui.game.maimai.getDifficultyIndex
 
 class ScorefetcherRepository(
     private val profileClient: ScorefetcherProfileClient,
@@ -274,7 +281,7 @@ class ScorefetcherRepository(
                     ?: entry.songName?.let { findJacketUrlBySongName(it) }
 
                 // Fetch level info
-                val diffIndex = org.arcade.atomcity.ui.game.maimai.getDifficultyIndex(entry.difficulty)
+                val diffIndex = getDifficultyIndex(entry.difficulty)
                 if (diffIndex != -1) {
                     val songId = entry.songJson?.id ?: -1
                     entry.levelInfo = difficultyRepository.getLevelByDifficulty(
@@ -319,7 +326,7 @@ class ScorefetcherRepository(
                     ?: entry.songName?.let { findJacketUrlBySongName(it) }
 
                 // Fetch level info
-                val diffIndex = org.arcade.atomcity.ui.game.maimai.getDifficultyIndex(entry.difficulty)
+                val diffIndex = getDifficultyIndex(entry.difficulty)
                 if (diffIndex != -1) {
                     val songId = entry.songJson?.id ?: -1
                     entry.levelInfo = difficultyRepository.getLevelByDifficulty(
@@ -375,7 +382,7 @@ class ScorefetcherRepository(
         }
     }
 
-    override fun getTaikoUsers(): Flow<List<org.arcade.atomcity.data.remote.TaikoUser>> = flow {
+    override fun getTaikoUsers(): Flow<List<TaikoUser>> = flow {
         try {
             emit(scorefetcherClient.getTaikoUsers())
         } catch (e: Exception) {

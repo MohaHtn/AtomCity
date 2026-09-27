@@ -1,3 +1,8 @@
+/**
+ * Scorefetcher Repository Interface
+ *
+ * Contract defining data operations for fetching Maimai player statistics, scores, analytics, and managing API keys.
+ */
 package org.arcade.atomcity.domain.repository
 
 import kotlinx.coroutines.flow.Flow
@@ -11,6 +16,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.Scorefet
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
 import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
 import org.arcade.atomcity.data.remote.DeleteApiKeyResponse
+import org.arcade.atomcity.data.remote.TaikoUser
 
 /**
  * Interface defining the data operations for the Scorefetcher API.
@@ -212,5 +218,5 @@ interface IScorefetcherRepository {
      *
      * @return A [Flow] emitting the list of Taiko users.
      */
-    fun getTaikoUsers(): Flow<List<org.arcade.atomcity.data.remote.TaikoUser>>
+    fun getTaikoUsers(): Flow<List<TaikoUser>>
 }

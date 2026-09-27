@@ -1,3 +1,8 @@
+/**
+ * Song Entity
+ *
+ * Room database entity representing song metadata, names, artists, and matching details.
+ */
 package org.arcade.atomcity.data.local
 
 import androidx.room.Entity

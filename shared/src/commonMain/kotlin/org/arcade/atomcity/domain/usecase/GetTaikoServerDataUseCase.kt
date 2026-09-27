@@ -1,3 +1,8 @@
+/**
+ * Get Taiko Server Data Use Case
+ *
+ * Encapsulates business logic for retrieving Taiko server game data, user settings, leaderboards, and authentication.
+ */
 package org.arcade.atomcity.domain.usecase
 
 import kotlinx.coroutines.flow.Flow

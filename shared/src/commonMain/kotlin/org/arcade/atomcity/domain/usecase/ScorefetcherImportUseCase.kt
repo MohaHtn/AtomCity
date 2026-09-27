@@ -1,3 +1,8 @@
+/**
+ * Scorefetcher Import Use Case
+ *
+ * Encapsulates business logic for managing background score import tasks and worker status.
+ */
 package org.arcade.atomcity.domain.usecase
 
 import kotlinx.coroutines.flow.Flow

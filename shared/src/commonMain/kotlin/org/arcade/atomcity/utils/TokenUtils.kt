@@ -1,3 +1,8 @@
+/**
+ * Token Utilities
+ *
+ * Provides helper functions for decoding JWT authentication tokens and extracting user claims such as BAID.
+ */
 package org.arcade.atomcity.utils
 
 import io.ktor.util.decodeBase64String

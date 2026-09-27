@@ -1,3 +1,8 @@
+/**
+ * Get Scorefetcher Analytics Use Case
+ *
+ * Encapsulates business logic for retrieving analytics, chart histories, most played stats, and rank progressions.
+ */
 package org.arcade.atomcity.domain.usecase
 
 import kotlinx.coroutines.flow.Flow

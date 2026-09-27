@@ -1,3 +1,8 @@
+/**
+ * Difficulty Repository Interface
+ *
+ * Contract for retrieving song level and difficulty metadata from local storage.
+ */
 package org.arcade.atomcity.domain.repository
 
 import org.arcade.atomcity.domain.model.LevelInfo

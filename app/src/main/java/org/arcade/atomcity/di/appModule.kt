@@ -1,3 +1,8 @@
+/**
+ * App Module Dependency Injection
+ *
+ * Defines the Koin dependency injection module for Android-specific components, including DataStore preferences, workers, network error handlers, and view models.
+ */
 package org.arcade.atomcity.di
 
 import android.content.Context

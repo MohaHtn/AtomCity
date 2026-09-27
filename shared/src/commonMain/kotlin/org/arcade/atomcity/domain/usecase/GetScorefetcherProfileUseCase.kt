@@ -1,3 +1,8 @@
+/**
+ * Get Scorefetcher Profile Use Case
+ *
+ * Encapsulates business logic for retrieving player profile details, ratings, and profile mappings.
+ */
 package org.arcade.atomcity.domain.usecase
 
 import kotlinx.coroutines.flow.Flow

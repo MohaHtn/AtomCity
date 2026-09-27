@@ -1,3 +1,8 @@
+/**
+ * Date Formatting Utilities
+ *
+ * Provides multiplatform functions for parsing, formatting, and handling play timestamps and dates.
+ */
 package org.arcade.atomcity.utils
 
 /**

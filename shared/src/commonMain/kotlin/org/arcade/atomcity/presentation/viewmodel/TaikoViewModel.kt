@@ -1,3 +1,8 @@
+/**
+ * Taiko View Model
+ *
+ * ViewModel managing the UI state, authentication, settings, and gameplay statistics for Taiko no Tatsujin features.
+ */
 package org.arcade.atomcity.presentation.viewmodel
 
 import androidx.compose.ui.graphics.Color
@@ -29,9 +34,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import io.ktor.util.decodeBase64String
+import org.arcade.atomcity.data.remote.TaikoUser
 import org.arcade.atomcity.data.remote.model.taikoserver.dan.DanCourseData
 import org.arcade.atomcity.data.remote.model.taikoserver.dan.TaikoServerDanBestDataResponse
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
+import org.arcade.atomcity.domain.repository.IScorefetcherRepository
 import org.arcade.atomcity.ui.game.taiko.stats.TaikoMostPlayedEntry
 import org.arcade.atomcity.ui.game.taiko.stats.TaikoOverallProgressStats
 import org.arcade.atomcity.ui.game.taiko.stats.TaikoProgressStats
@@ -40,7 +47,7 @@ class TaikoViewModel(
     private val usecase: GetTaikoServerDataUseCase,
     private val apiKeyManager: ApiKeyManager,
     private val userPreferencesManager: UserPreferencesManager,
-    private val scorefetcherRepository: org.arcade.atomcity.domain.repository.IScorefetcherRepository
+    private val scorefetcherRepository: IScorefetcherRepository
 ) : ViewModel() {
 
     // StateFlow to hold the music details data
@@ -753,7 +760,7 @@ class TaikoViewModel(
     private val _communityScores = MutableStateFlow<Map<Int, TaikoServerPlayHistoryResponse>>(emptyMap())
     val communityScores = _communityScores
 
-    private val _taikoUsers = MutableStateFlow<List<org.arcade.atomcity.data.remote.TaikoUser>>(emptyList())
+    private val _taikoUsers = MutableStateFlow<List<TaikoUser>>(emptyList())
     val taikoUsers = _taikoUsers
 
     fun fetchCommunityScores() {

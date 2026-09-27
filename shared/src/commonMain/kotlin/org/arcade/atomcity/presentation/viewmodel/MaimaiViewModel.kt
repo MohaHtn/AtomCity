@@ -1,3 +1,8 @@
+/**
+ * Maimai View Model
+ *
+ * ViewModel managing the UI state, user interactions, and score statistics fetching for Maimai gameplay features.
+ */
 package org.arcade.atomcity.presentation.viewmodel
 
 import kotlinx.coroutines.FlowPreview
@@ -27,6 +32,9 @@ import kotlin.time.Duration.Companion.milliseconds
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
+import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.concurrent.Volatile
 
 /**
@@ -79,24 +87,24 @@ class MaimaiViewModel(
     val chartHistory: StateFlow<List<ChartHistoryResponse>> = _chartHistory
 
     // StateFlow to hold best-per-player responses
-    private val _bestPerPlayer = MutableStateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>>(emptyList())
-    val bestPerPlayer: StateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>> = _bestPerPlayer
+    private val _bestPerPlayer = MutableStateFlow<List<BestPerPlayerResponse>>(emptyList())
+    val bestPerPlayer: StateFlow<List<BestPerPlayerResponse>> = _bestPerPlayer
 
     // StateFlow to hold search results
-    private val _searchResults = MutableStateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>>(emptyList())
-    val searchResults: StateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>> = _searchResults
+    private val _searchResults = MutableStateFlow<List<BestPerPlayerResponse>>(emptyList())
+    val searchResults: StateFlow<List<BestPerPlayerResponse>> = _searchResults
 
     // StateFlow to hold most played charts
-    private val _mostPlayedCharts = MutableStateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry>>(emptyList())
-    val mostPlayedCharts: StateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry>> = _mostPlayedCharts
+    private val _mostPlayedCharts = MutableStateFlow<List<MaimaiMostPlayedEntry>>(emptyList())
+    val mostPlayedCharts: StateFlow<List<MaimaiMostPlayedEntry>> = _mostPlayedCharts
 
     // StateFlow to hold Utage static data
     private val _utageStaticData = MutableStateFlow<UtageData?>(null)
     val utageStaticData: StateFlow<UtageData?> = _utageStaticData
 
     // StateFlow to hold rank progression
-    private val _rankProgression = MutableStateFlow<org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse?>(null)
-    val rankProgression: StateFlow<org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse?> = _rankProgression
+    private val _rankProgression = MutableStateFlow<RankProgressionResponse?>(null)
+    val rankProgression: StateFlow<RankProgressionResponse?> = _rankProgression
 
 
     // Expose the current page
@@ -138,8 +146,8 @@ class MaimaiViewModel(
     private val _isUpdatingVisibility = MutableStateFlow(false)
     val isUpdatingVisibility: StateFlow<Boolean> = _isUpdatingVisibility
 
-    private val _rankCharts = MutableStateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>>(emptyList())
-    val rankCharts: StateFlow<List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>> = _rankCharts
+    private val _rankCharts = MutableStateFlow<List<BestPerPlayerResponse>>(emptyList())
+    val rankCharts: StateFlow<List<BestPerPlayerResponse>> = _rankCharts
 
     private val _isLoadingRankCharts = MutableStateFlow(false)
     val isLoadingRankCharts: StateFlow<Boolean> = _isLoadingRankCharts
@@ -353,7 +361,7 @@ class MaimaiViewModel(
         }
     }
 
-    @OptIn(org.jetbrains.compose.resources.ExperimentalResourceApi::class)
+    @OptIn(ExperimentalResourceApi::class)
     fun fetchUtageStaticData() {
         viewModelScope.launch {
             try {
@@ -551,9 +559,9 @@ class MaimaiViewModel(
     }
 
     private fun filterByRank(
-        list: List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse>,
+        list: List<BestPerPlayerResponse>,
         targetRank: String
-    ): List<org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse> {
+    ): List<BestPerPlayerResponse> {
         val target = targetRank.uppercase().trim()
         return list.filter { item ->
             val r = item.rank?.uppercase()?.trim() ?: ""

@@ -1,3 +1,8 @@
+/**
+ * Get Scorefetcher Jacket Use Case
+ *
+ * Encapsulates business logic for finding song jacket image URLs.
+ */
 package org.arcade.atomcity.domain.usecase
 
 import org.arcade.atomcity.domain.repository.IScorefetcherRepository

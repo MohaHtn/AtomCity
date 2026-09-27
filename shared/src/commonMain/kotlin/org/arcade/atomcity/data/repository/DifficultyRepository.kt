@@ -1,3 +1,8 @@
+/**
+ * Difficulty Repository Implementation
+ *
+ * Implements [IDifficultyRepository] to resolve song level information using local Room database queries and fallbacks.
+ */
 package org.arcade.atomcity.data.repository
 
 import org.arcade.atomcity.data.local.AppDatabase

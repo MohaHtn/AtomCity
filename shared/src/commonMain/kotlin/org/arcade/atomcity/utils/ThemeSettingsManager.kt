@@ -1,3 +1,8 @@
+/**
+ * Theme Settings Manager Utility
+ *
+ * Manages user preferences for theme modes, primary theme colors, and AMOLED dark mode using DataStore.
+ */
 package org.arcade.atomcity.utils
 
 import androidx.compose.ui.graphics.Color

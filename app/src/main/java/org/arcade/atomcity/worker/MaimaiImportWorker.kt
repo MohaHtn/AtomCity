@@ -1,5 +1,11 @@
+/**
+ * Maimai Import Worker
+ *
+ * Background coroutine worker that executes the Maimai score import stream, handles foreground notifications, and tracks import progress.
+ */
 package org.arcade.atomcity.worker
 
+import android.R
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -150,7 +156,7 @@ class MaimaiImportWorker(
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setContentTitle("Importation terminé !")
             .setContentText(message)
-            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setSmallIcon(R.drawable.stat_sys_download_done)
             .setAutoCancel(true)
             .build()
         notificationManager.notify(NOTIFICATION_ID + 1, notification)
@@ -160,7 +166,7 @@ class MaimaiImportWorker(
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setContentTitle("Préparation • Importation de tous les scores maimai FiNALE ...")
             .setContentText(message)
-            .setSmallIcon(android.R.drawable.stat_notify_sync)
+            .setSmallIcon(R.drawable.stat_notify_sync)
             .setOngoing(true)
             .setProgress(100, progress, false)
             .build()

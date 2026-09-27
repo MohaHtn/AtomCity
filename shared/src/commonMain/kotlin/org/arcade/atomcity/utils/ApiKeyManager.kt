@@ -1,3 +1,8 @@
+/**
+ * API Key Manager Utility
+ *
+ * Manages encrypted storage, retrieval, and checklist states for game API keys and credentials using DataStore preferences.
+ */
 package org.arcade.atomcity.utils
 
 import androidx.datastore.core.DataStore

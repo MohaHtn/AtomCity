@@ -1,3 +1,8 @@
+/**
+ * User Preferences Manager Utility
+ *
+ * Manages user preferences and settings for Taiko dashboards, hashes, and favorite songs using DataStore.
+ */
 package org.arcade.atomcity.utils
 
 import androidx.datastore.core.DataStore
