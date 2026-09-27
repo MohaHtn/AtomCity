@@ -5,7 +5,6 @@
  */
 package org.arcade.atomcity.worker
 
-import android.R
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -156,7 +155,7 @@ class MaimaiImportWorker(
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setContentTitle("Importation terminé !")
             .setContentText(message)
-            .setSmallIcon(R.drawable.stat_sys_download_done)
+            .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setAutoCancel(true)
             .build()
         notificationManager.notify(NOTIFICATION_ID + 1, notification)
@@ -166,7 +165,7 @@ class MaimaiImportWorker(
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setContentTitle("Préparation • Importation de tous les scores maimai FiNALE ...")
             .setContentText(message)
-            .setSmallIcon(R.drawable.stat_notify_sync)
+            .setSmallIcon(android.R.drawable.stat_notify_sync)
             .setOngoing(true)
             .setProgress(100, progress, false)
             .build()

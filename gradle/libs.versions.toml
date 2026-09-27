@@ -5,7 +5,7 @@ agp = "9.0.0"
 compose-multiplatform = "1.7.3"
 kotlin = "2.0.21"
 kotlinxSerialization = "1.8.0"
-kotlinx-datetime = "0.6.0"
+kotlinx-datetime = "0.8.0"
 ktor = "3.1.0"
 coroutines = "1.10.1"
 coreKtx = "1.16.0"
@@ -35,7 +35,6 @@ moshi = "1.15.2"
 coreSplashscreen = "1.2.0"
 roomCompiler = "2.7.2"
 ksp = "2.3.11"
-roomCompilerVersion = "2.5.2"
 workRuntimeKtx = "2.10.0"
 runtime = "1.7.3"
 vico = "3.2.3"
@@ -50,7 +49,6 @@ accompanist-coil = { module = "com.google.accompanist:accompanist-coil", version
 accompanist-svg = { module = "com.google.accompanist:accompanist-svg", version.ref = "accompanistSvg" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-androidx-room-compiler-v252 = { module = "androidx.room:room-compiler", version.ref = "roomCompilerVersion" }
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }

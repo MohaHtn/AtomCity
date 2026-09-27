@@ -21,7 +21,7 @@ fun getAppDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {
         .build()
 }
 
-@Database(entities = [SongEntity::class, LevelEntity::class], version = 2, exportSchema = true)
+@Database(entities = [SongEntity::class, LevelEntity::class], version = 2, exportSchema = false)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun songDao(): SongDao

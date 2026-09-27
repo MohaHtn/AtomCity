@@ -56,8 +56,8 @@ kotlin {
             api(libs.ktor.client.logging)
             api(libs.ktor.serialization.kotlinx.json)
             api(libs.koin.core)
-            implementation("io.insert-koin:koin-compose:4.0.0")
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
+            implementation(libs.koinComposeMultiplatform)
+            implementation(libs.kotlinx.datetime)
             api(libs.androidx.datastore.preferences.core)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.androidx.room.runtime)
@@ -93,8 +93,9 @@ kotlin {
     }
 }
 
-val copyComposeResourcesToAndroidAssets by tasks.registering(Copy::class) {
+val copyComposeResourcesToAndroidAssets = tasks.register<Copy>("copyComposeResourcesToAndroidAssets") {
     group = "compose resources"
+    description = "Copies Compose resources to Android assets"
     from(project.file("src/commonMain/composeResources"))
     into(project.file("src/androidMain/assets/composeResources/atomcity.shared.generated.resources"))
     includeEmptyDirs = false
@@ -102,7 +103,7 @@ val copyComposeResourcesToAndroidAssets by tasks.registering(Copy::class) {
 }
 
 afterEvaluate {
-    tasks.findByName("preBuild")?.dependsOn("copyComposeResourcesToAndroidAssets")
+    tasks.findByName("preBuild")?.dependsOn(copyComposeResourcesToAndroidAssets)
 }
 
 dependencies {

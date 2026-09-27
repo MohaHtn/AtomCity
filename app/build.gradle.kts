@@ -100,14 +100,13 @@ play {
 }
 
 dependencies {
-    implementation(project(":shared"))
+    implementation(dependencyFactory.createProjectDependency(":shared"))
     
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
