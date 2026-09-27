@@ -450,9 +450,10 @@ private fun DanSongsSection(
             val mainArtist = detail?.artistName?.takeIf { it.isNotBlank() } ?: ""
             val englishArtist = detail?.artistNameEN?.takeIf { it.isNotBlank() && it != mainArtist }
 
-            Card(
-                shape = RoundedCornerShape(20.dp),
+            ElevatedCard(
+                shape = RoundedCornerShape(24.dp),
                 colors = setDifficultyColorBackground(diffLevel),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {

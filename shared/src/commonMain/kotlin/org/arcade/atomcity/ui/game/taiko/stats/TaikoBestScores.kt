@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
@@ -111,7 +112,7 @@ fun TaikoBestScores(
     navController: NavHostController,
     taikoViewModel: TaikoViewModel,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val bestScores by taikoViewModel.bestScores.collectAsState()
     val isLoading by taikoViewModel.isLoadingStats.collectAsState()
     val userSettings by taikoViewModel.userSettingsData.collectAsState()
@@ -252,7 +253,7 @@ fun TaikoBestScores(
                                 targetWidthDp = 600.dp
                             ) {
                                 Surface(
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = RoundedCornerShape(24.dp),
                                     tonalElevation = 2.dp,
                                     shadowElevation = 4.dp
                                 ) {
@@ -323,24 +324,24 @@ fun TaikoBestScores(
                 }
             }
             
-            // Hidden capture area
-            Box(
-                modifier = Modifier
-                    .wrapContentSize(align = Alignment.TopStart, unbounded = true)
-                    .drawWithContent {
-                        if (isGeneratingImage) {
+            // Hidden capture area (only included during image generation to avoid touch interception)
+            if (isGeneratingImage) {
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize(align = Alignment.TopStart, unbounded = true)
+                        .drawWithContent {
                             graphicsLayer.record {
                                 this@drawWithContent.drawContent()
                             }
                         }
-                    }
-            ) {
-                TaikoBestScoresSummary(
-                    playerName = userSettings?.myDonName,
-                    scores = bestScores,
-                    modifier = Modifier.width(600.dp),
-                    isCapture = true
-                )
+                ) {
+                    TaikoBestScoresSummary(
+                        playerName = userSettings?.myDonName,
+                        scores = bestScores,
+                        modifier = Modifier.width(600.dp),
+                        isCapture = true
+                    )
+                }
             }
 
             if (isGeneratingImage) {
@@ -541,62 +542,67 @@ private fun ZoomableBox(
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(containerWidth, containerHeight) {
-                    detectTransformGestures { centroid, pan, zoom, _ ->
-                        val currentScale = scaleAnim.value
-                        val currentOffset = Offset(offsetXAnim.value, offsetYAnim.value)
+                    coroutineScope {
+                        launch {
+                            detectTransformGestures { centroid, pan, zoom, _ ->
+                                val currentScale = scaleAnim.value
+                                val currentOffset = Offset(offsetXAnim.value, offsetYAnim.value)
 
-                        val newScale = (currentScale * zoom).coerceIn(1f, 5f)
-                        val factor = if (currentScale > 0f) newScale / currentScale else 1f
+                                val newScale = (currentScale * zoom).coerceIn(1f, 5f)
+                                val factor = if (currentScale > 0f) newScale / currentScale else 1f
 
-                        val pivot = centroid - containerCenter
+                                val pivot = centroid - containerCenter
 
-                        val newOffset = if (newScale > 1f) {
-                            val rawOffset = currentOffset * factor + pan - pivot * (factor - 1f)
-                            val maxOffsetX = (containerWidth * (newScale - 1f)) / 2f
-                            val maxOffsetY = (containerHeight * (newScale - 1f)) / 2f
-                            Offset(
-                                x = rawOffset.x.coerceIn(-maxOffsetX, maxOffsetX),
-                                y = rawOffset.y.coerceIn(-maxOffsetY, maxOffsetY)
-                            )
-                        } else {
-                            Offset.Zero
-                        }
-
-                        scope.launch {
-                            scaleAnim.snapTo(newScale)
-                            offsetXAnim.snapTo(newOffset.x)
-                            offsetYAnim.snapTo(newOffset.y)
-                        }
-                    }
-                }
-                .pointerInput(containerWidth, containerHeight) {
-                    detectTapGestures(
-                        onDoubleTap = { tapOffset ->
-                            scope.launch {
-                                if (scaleAnim.value > 1.1f) {
-                                    launch { scaleAnim.animateTo(1f, spring(stiffness = Spring.StiffnessMediumLow)) }
-                                    launch { offsetXAnim.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow)) }
-                                    launch { offsetYAnim.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow)) }
+                                val newOffset = if (newScale > 1f) {
+                                    val rawOffset = currentOffset * factor + pan - pivot * (factor - 1f)
+                                    val maxOffsetX = (containerWidth * (newScale - 1f)) / 2f
+                                    val maxOffsetY = (containerHeight * (newScale - 1f)) / 2f
+                                    Offset(
+                                        x = rawOffset.x.coerceIn(-maxOffsetX, maxOffsetX),
+                                        y = rawOffset.y.coerceIn(-maxOffsetY, maxOffsetY)
+                                    )
                                 } else {
-                                    val targetScale = 2.5f
-                                    val maxOffsetX = (containerWidth * (targetScale - 1f)) / 2f
-                                    val maxOffsetY = (containerHeight * (targetScale - 1f)) / 2f
+                                    Offset.Zero
+                                }
 
-                                    val pivot = tapOffset - containerCenter
-                                    val targetOffset = (-pivot * (targetScale - 1f)).let {
-                                        Offset(
-                                            x = it.x.coerceIn(-maxOffsetX, maxOffsetX),
-                                            y = it.y.coerceIn(-maxOffsetY, maxOffsetY)
-                                        )
-                                    }
-
-                                    launch { scaleAnim.animateTo(targetScale, spring(stiffness = Spring.StiffnessMediumLow)) }
-                                    launch { offsetXAnim.animateTo(targetOffset.x, spring(stiffness = Spring.StiffnessMediumLow)) }
-                                    launch { offsetYAnim.animateTo(targetOffset.y, spring(stiffness = Spring.StiffnessMediumLow)) }
+                                scope.launch {
+                                    scaleAnim.snapTo(newScale)
+                                    offsetXAnim.snapTo(newOffset.x)
+                                    offsetYAnim.snapTo(newOffset.y)
                                 }
                             }
                         }
-                    )
+
+                        launch {
+                            detectTapGestures(
+                                onDoubleTap = { tapOffset ->
+                                    scope.launch {
+                                        if (scaleAnim.value > 1.1f) {
+                                            launch { scaleAnim.animateTo(1f, spring(stiffness = Spring.StiffnessMediumLow)) }
+                                            launch { offsetXAnim.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow)) }
+                                            launch { offsetYAnim.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow)) }
+                                        } else {
+                                            val targetScale = 2.5f
+                                            val maxOffsetX = (containerWidth * (targetScale - 1f)) / 2f
+                                            val maxOffsetY = (containerHeight * (targetScale - 1f)) / 2f
+
+                                            val pivot = tapOffset - containerCenter
+                                            val targetOffset = (-pivot * (targetScale - 1f)).let {
+                                                Offset(
+                                                    x = it.x.coerceIn(-maxOffsetX, maxOffsetX),
+                                                    y = it.y.coerceIn(-maxOffsetY, maxOffsetY)
+                                                )
+                                            }
+
+                                            launch { scaleAnim.animateTo(targetScale, spring(stiffness = Spring.StiffnessMediumLow)) }
+                                            launch { offsetXAnim.animateTo(targetOffset.x, spring(stiffness = Spring.StiffnessMediumLow)) }
+                                            launch { offsetYAnim.animateTo(targetOffset.y, spring(stiffness = Spring.StiffnessMediumLow)) }
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
                 .graphicsLayer {
                     scaleX = scaleAnim.value

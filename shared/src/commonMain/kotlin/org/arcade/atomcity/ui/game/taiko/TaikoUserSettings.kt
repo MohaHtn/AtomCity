@@ -297,7 +297,7 @@ fun TaikoUserSettings(
 
                         Surface(
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(24.dp),
                             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {

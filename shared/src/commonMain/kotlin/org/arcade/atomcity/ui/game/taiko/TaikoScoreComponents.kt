@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import atomcity.shared.generated.resources.*
 import coil3.compose.AsyncImage
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
+import org.arcade.atomcity.ui.game.taiko.details.formatTaikoScore
 import org.arcade.atomcity.ui.game.taiko.settings.getScoreRankImageUrl
 import org.arcade.atomcity.utils.formatPlayDate
 import org.jetbrains.compose.resources.DrawableResource
@@ -32,9 +34,9 @@ fun TaikoScoreItem(
     onNavigateToRoute: (String) -> Unit,
     onFavoriteToggle: (Int) -> Unit
 ) {
-    Card(
+    ElevatedCard(
         modifier = Modifier
-            .padding(8.dp)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
             .fillMaxWidth()
             .clickable {
                 score.songId?.let { id ->
@@ -59,7 +61,8 @@ fun TaikoScoreItem(
                 }
             },
         colors = setDifficultyColorBackground(score.difficulty),
-        shape = RoundedCornerShape(24.dp)
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -67,222 +70,194 @@ fun TaikoScoreItem(
             Image(
                 painter = painterResource(getDifficultyDrawable(score.difficulty)),
                 contentDescription = null,
-                modifier = Modifier.align(Alignment.BottomEnd)
-                    .size(120.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(90.dp),
                 contentScale = ContentScale.Fit,
-                alpha = 0.3f
+                alpha = 0.25f
             )
-            IconButton(
-                onClick = { score.songId?.let { onFavoriteToggle(it) } },
+
+            Row(
                 modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 8.dp)
-                    .size(40.dp)
-            ) {
-                Icon(
-                    imageVector = if (score.isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "Favorite",
-                    tint = if (score.isFavorite == true) Color.Red else Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .padding(start = 40.dp)
                     .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
+                IconButton(
+                    onClick = { score.songId?.let { onFavoriteToggle(it) } },
+                    modifier = Modifier
+                        .size(36.dp)
+                        .padding(end = 8.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = score.musicName ?: "Song ${score.songId}",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = Color.White
-                        )
-                        if (!score.musicNameEN.isNullOrBlank() && score.musicNameEN != score.musicName) {
-                            Text(
-                                text = score.musicNameEN,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = Color.White.copy(alpha = 0.9f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                        Text(
-                            text = score.musicArtist ?: "",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.7f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        val genreInfo = getTaikoGenreInfo(score.genre)
-                        if (genreInfo != null) {
-                            TaikoGenreBadge(
-                                genre = score.genre,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-                        Text(
-                            text = displayDifficultyName(score.difficulty),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "★ ${score.stars ?: 0}",
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontWeight = FontWeight.ExtraBold
-                            ),
-                            color = Color.White
-                        )
-                    }
+                    Icon(
+                        imageVector = if (score.isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = if (score.isFavorite == true) Color.Red else Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                        Text(
-                            text = score.score.toString(),
-                            style = MaterialTheme.typography.headlineLarge.copy(
-                                fontWeight = FontWeight.Black
-                            ),
-                            color = Color.White
-                        )
-
-                        // Crown and Rank Badges Row below score
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        ) {
-                            // Crown Badge
-                            val crownUrl = getCrownImageUrl(score.crown)
-                            val crownTitle = getCrownTitle(score.crown)
-                            Surface(
-                                color = Color.Black.copy(alpha = 0.35f),
-                                shape = RoundedCornerShape(6.dp),
-                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    AsyncImage(
-                                        model = crownUrl,
-                                        contentDescription = crownTitle,
-                                        modifier = Modifier.height(16.dp),
-                                        contentScale = ContentScale.Fit
-                                    )
-                                    Text(
-                                        text = crownTitle,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 10.sp
-                                        ),
-                                        color = Color.White
-                                    )
-                                }
+                    // Title and Difficulty header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                            Text(
+                                text = score.musicName ?: "Morceau ${score.songId}",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color.White
+                            )
+                            if (!score.musicNameEN.isNullOrBlank() && score.musicNameEN != score.musicName) {
+                                Text(
+                                    text = score.musicNameEN,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
+                            if (!score.musicArtist.isNullOrBlank()) {
+                                Text(
+                                    text = score.musicArtist,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
 
-                            // Rank Badge
-                            val rankUrl = getScoreRankImageUrl(score.scoreRank)
-                            if (rankUrl != null) {
+                        Column(horizontalAlignment = Alignment.End) {
+                            val genreInfo = getTaikoGenreInfo(score.genre)
+                            if (genreInfo != null) {
+                                TaikoGenreBadge(
+                                    genre = score.genre,
+                                    modifier = Modifier.padding(bottom = 2.dp)
+                                )
+                            }
+                            Text(
+                                text = displayDifficultyName(score.difficulty),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.9f)
+                            )
+                        }
+                    }
+
+                    // Score, Badges, Combo and Date
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                            Text(
+                                text = formatTaikoScore(score.score),
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Black
+                                ),
+                                color = Color.White
+                            )
+
+                            // Crown and Rank Badges Row
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.padding(top = 2.dp)
+                            ) {
+                                val crownUrl = getCrownImageUrl(score.crown)
+                                val crownTitle = getCrownTitle(score.crown)
                                 Surface(
                                     color = Color.Black.copy(alpha = 0.35f),
-                                    shape = RoundedCornerShape(6.dp),
+                                    shape = RoundedCornerShape(4.dp),
                                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         AsyncImage(
-                                            model = rankUrl,
-                                            contentDescription = "Rank",
-                                            modifier = Modifier.height(16.dp),
+                                            model = crownUrl,
+                                            contentDescription = crownTitle,
+                                            modifier = Modifier.height(14.dp),
                                             contentScale = ContentScale.Fit
                                         )
+                                        Text(
+                                            text = crownTitle,
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 9.sp
+                                            ),
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+
+                                val rankUrl = getScoreRankImageUrl(score.scoreRank)
+                                if (rankUrl != null) {
+                                    Surface(
+                                        color = Color.Black.copy(alpha = 0.35f),
+                                        shape = RoundedCornerShape(4.dp),
+                                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            AsyncImage(
+                                                model = rankUrl,
+                                                contentDescription = "Rank",
+                                                modifier = Modifier.height(14.dp),
+                                                contentScale = ContentScale.Fit
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        BoxWithConstraints {
-                            if (maxWidth < 200.dp) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    ScoreBadge("GOOD", score.goodCount, Color(0xFFFFD700))
-                                    ScoreBadge("OK", score.okCount, Color(0xFFC0C0C0))
-                                    ScoreBadge("MISS", score.missCount, Color(0xFFE57373))
-                                }
-                            } else {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    ScoreBadge("GOOD", score.goodCount, Color(0xFFFFD700))
-                                    ScoreBadge("OK", score.okCount, Color(0xFFC0C0C0))
-                                    ScoreBadge("MISS", score.missCount, Color(0xFFE57373))
-                                }
+                        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Surface(
+                                color = Color.Black.copy(alpha = 0.35f),
+                                shape = RoundedCornerShape(50)
+                            ) {
+                                Text(
+                                    text = "★ ${score.stars ?: 0}",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Black
+                                    ),
+                                    color = Color.White,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                )
+                            }
+                            Surface(
+                                color = Color.White.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = formatPlayDate(score.playTime.toString(), isUtc = false),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    ),
+                                    maxLines = 1,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
                             }
                         }
                     }
-
-                    Column(horizontalAlignment = Alignment.End) {
-                        if ((score.comboCount ?: 0) > 0) {
-                            Text(
-                                text = "MAX COMBO ${score.comboCount}",
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = Color.White
-                            )
-                        }
-                        Text(
-                            text = formatPlayDate(score.playTime.toString()),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.7f)
-                        )
-                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun ScoreBadge(label: String, count: Int?, color: Color) {
-    Surface(
-        color = Color.Black.copy(alpha = 0.35f),
-        shape = RoundedCornerShape(6.dp),
-        border = BorderStroke(1.dp, color.copy(alpha = 0.6f))
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "$label: ",
-                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                color = color
-            )
-            Text(
-                text = count?.toString() ?: "0",
-                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold),
-                color = Color.White
-            )
         }
     }
 }
@@ -311,18 +286,22 @@ fun getDifficultyDrawable(difficulty: Int?): DrawableResource {
 
 fun getDifficultyColor(difficulty: Int?): Color {
     return when (difficulty) {
-        1 -> Color(0xFFCF2C00)
-        2 -> Color(0xFF657E25)
-        3 -> Color(0xFF223004)
-        4 -> Color(0xFFCE2D76)
-        5 -> Color(0xFF6B1D8C)
+        1 -> Color(0xFFD64A38) // Kantan (Facile) - Softened Red
+        2 -> Color(0xFF7A9A3E) // Futsuu (Normal) - Softened Green
+        3 -> Color(0xFF3F5927) // Muzukashii (Difficile) - Softened Forest Green
+        4 -> Color(0xFFD4518A) // Oni (Démoniaque) - Softened Magenta
+        5 -> Color(0xFF8B3BAF) // Ura Oni (Ultra) - Softened Purple
         else -> Color.Gray
     }
 }
 
 @Composable
 fun setDifficultyColorBackground(difficulty: Int?): CardColors {
-    return CardDefaults.cardColors(containerColor = getDifficultyColor(difficulty))
+    val diffColor = getDifficultyColor(difficulty)
+    return CardDefaults.elevatedCardColors(
+        containerColor = diffColor,
+        contentColor = Color.White
+    )
 }
 
 data class TaikoGenreInfo(
@@ -334,9 +313,9 @@ data class TaikoGenreInfo(
 
 fun getTaikoGenreInfo(genre: Int?): TaikoGenreInfo? {
     return when (genre) {
-        0 -> TaikoGenreInfo(0, "Pop", Color(0xFF42C0D2), Color.Black)
-        1 -> TaikoGenreInfo(1, "Anime", Color(0xFFFF90D3), Color.Black)
-        2 -> TaikoGenreInfo(2, "Enfants", Color(0xFFFEC000), Color.Black)
+        0 -> TaikoGenreInfo(0, "Pop", Color(0xFF42C0D2), Color.White)
+        1 -> TaikoGenreInfo(1, "Anime", Color(0xFFFF90D3), Color.White)
+        2 -> TaikoGenreInfo(2, "Enfants", Color(0xFFFEC000), Color.White)
         3 -> TaikoGenreInfo(3, "Vocaloid", Color(0xFFDDDDDD), Color.Black)
         4 -> TaikoGenreInfo(4, "Musique de jeu", Color(0xFFCC8AEA), Color.White)
         5 -> TaikoGenreInfo(5, "Original NAMCO", Color(0xFFFF7027), Color.White)
@@ -352,9 +331,12 @@ fun TaikoGenreBadge(
     modifier: Modifier = Modifier
 ) {
     val genreInfo = getTaikoGenreInfo(genre) ?: return
+    val isDark = isAppInDarkTheme()
+    val textColor = genreInfo.textColor
+
     Surface(
         color = genreInfo.color,
-        shape = RoundedCornerShape(6.dp),
+        shape = RoundedCornerShape(8.dp),
         shadowElevation = 1.dp,
         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
         modifier = modifier
@@ -365,9 +347,9 @@ fun TaikoGenreBadge(
                 fontWeight = FontWeight.Bold,
                 fontSize = 10.sp
             ),
-            color = genreInfo.textColor,
+            color = textColor,
             maxLines = 1,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
         )
     }
 }

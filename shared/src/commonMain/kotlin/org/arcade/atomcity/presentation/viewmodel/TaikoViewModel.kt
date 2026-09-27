@@ -157,7 +157,7 @@ class TaikoViewModel(
 
     val showDashboardPreference = userPreferencesManager.showTaikoDashboard
 
-    val isLoading = MutableStateFlow(false)
+    val isLoading = MutableStateFlow(_scoresData.value == null)
     val isRefreshing = MutableStateFlow(false)
     val isLoadingMusicDetails = MutableStateFlow(false)
     val isLoadingUserSettings = MutableStateFlow(false)
@@ -807,7 +807,10 @@ class TaikoViewModel(
     }
 
     fun getScores(forceRefresh: Boolean = false) {
-        if (!forceRefresh && _scoresData.value != null) return
+        if (!forceRefresh && _scoresData.value != null) {
+            isLoading.value = false
+            return
+        }
 
         viewModelScope.launch {
             val accessCode = apiKeyManager.getTaikoAccessCode()
@@ -849,6 +852,9 @@ class TaikoViewModel(
                     isLoading.value = false
                     isRefreshing.value = false
                 }
+            } else {
+                isLoading.value = false
+                isRefreshing.value = false
             }
         }
     }

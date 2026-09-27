@@ -118,7 +118,7 @@ fun TaikoDetailGraph(
                                 shape = RoundedCornerShape(6.dp)
                             ) {
                                 Text(
-                                    text = formatPlayDate(entry.playTime.toString()),
+                                    text = formatPlayDate(entry.playTime.toString(), isUtc = false),
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer

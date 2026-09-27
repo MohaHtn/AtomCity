@@ -17,6 +17,7 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
                 when {
                     name == "taiko_access_code" -> "taiko"
                     name.startsWith("taiko_") -> null // Filter out other taiko internal keys
+                    name == "last_opened_game" -> null
                     else -> name
                 }
             }.distinct()
@@ -98,6 +99,7 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
                 when {
                     name == "taiko_access_code" -> "taiko"
                     name.startsWith("taiko_") -> null
+                    name == "last_opened_game" -> null
                     else -> name
                 }
             }.distinct()
@@ -106,4 +108,20 @@ class ApiKeyManager(private val dataStore: DataStore<Preferences>) {
             emptyList()
         }
     }
+
+    suspend fun saveLastOpenedGame(gameName: String) {
+        val key = stringPreferencesKey("last_opened_game")
+        dataStore.edit { preferences ->
+            preferences[key] = gameName
+        }
+    }
+
+    fun getLastOpenedGameFlow(): Flow<String?> {
+        val key = stringPreferencesKey("last_opened_game")
+        return dataStore.data.map { preferences ->
+            preferences[key]
+        }
+    }
+
+    suspend fun getLastOpenedGame(): String? = getLastOpenedGameFlow().firstOrNull()
 }

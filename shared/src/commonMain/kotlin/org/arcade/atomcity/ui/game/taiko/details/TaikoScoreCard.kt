@@ -28,10 +28,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.draw.clip
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
 import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
+import org.arcade.atomcity.ui.game.taiko.TaikoGenreBadge
 import org.arcade.atomcity.ui.game.taiko.displayDifficultyName
 import org.arcade.atomcity.ui.game.taiko.getDifficultyColor
 import org.arcade.atomcity.ui.game.taiko.getDifficultyDrawable
+import org.arcade.atomcity.ui.game.taiko.getTaikoGenreInfo
+import org.arcade.atomcity.ui.game.taiko.settings.getRandomName
 import org.arcade.atomcity.ui.game.taiko.settings.getScoreRankImageUrl
+import org.arcade.atomcity.ui.game.taiko.settings.getSpeedName
 import org.arcade.atomcity.ui.game.taiko.stats.RankPanelLegendCard
 import org.arcade.atomcity.utils.format
 import org.arcade.atomcity.utils.formatPlayDate
@@ -95,7 +99,7 @@ fun getCrownBadgeInfo(crown: Int?): CrownBadgeInfo {
 }
 
 fun formatTaikoScore(score: Int?): String {
-    if (score == null) return "0"
+    if (score == null) return "N/A"
     return score.toString().reversed().chunked(3).joinToString(" ").reversed()
 }
 
@@ -179,81 +183,54 @@ fun TaikoBadgeWithImage(
 fun TaikoScoreBadgeRow(
     entry: TaikoServerHistoryEntry,
     isBestScore: Boolean = false,
-    onShowThresholdsInfo: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val difficultyColor = getDifficultyColor(entry.difficulty)
+    val isLightBackground = difficultyColor.luminance() > 0.5f
+    val topContentColor = if (isLightBackground) Color.Black else Color.White
+
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         horizontalAlignment = Alignment.Start,
         modifier = modifier
     ) {
         if (isBestScore) {
-            TaikoBadge(
-                text = "MEILLEUR SCORE",
-                containerColor = Color(0xFFFFD700),
-                contentColor = Color.Black
-            )
-        }
-
-        // Crown Badge
-        val crownInfo = getCrownBadgeInfo(entry.crown)
-        val rankInfo = getScoreRankBadgeInfo(entry.scoreRank)
-
-        TaikoBadgeWithImage(
-            imageUrl = crownInfo.imageUrl,
-            text = crownInfo.title,
-            containerColor = crownInfo.containerColor,
-            contentColor = crownInfo.contentColor,
-            onInfoClick = if (rankInfo == null) onShowThresholdsInfo else null
-        )
-
-        // Score Rank Image & Text Badge
-        if (rankInfo != null) {
-            TaikoBadgeWithImage(
-                imageUrl = rankInfo.imageUrl,
-                text = rankInfo.title,
-                containerColor = rankInfo.containerColor,
-                contentColor = rankInfo.contentColor,
-                onInfoClick = onShowThresholdsInfo
-            )
-        }
-
-        // Play Setting Badges
-        entry.playSetting?.let { setting ->
-            setting.speed?.let { speed ->
-                if (speed != 10 && speed > 0) {
-                    val speedStr = (speed / 10f).toString().removeSuffix(".0")
-                    TaikoBadge(
-                        text = "VITESSE ${speedStr}x",
-                        containerColor = Color(0xFFEDE7F6),
-                        contentColor = Color(0xFF512DA8)
-                    )
-                }
-            }
-            if (setting.isVanishOn == true) {
-                TaikoBadge(
-                    text = "DORON (VANISH)",
-                    containerColor = Color(0xFFE0F7FA),
-                    contentColor = Color(0xFF00838F)
+            Surface(
+                color = topContentColor.copy(alpha = 0.15f),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, topContentColor.copy(alpha = 0.3f))
+            ) {
+                Text(
+                    text = "MEILLEUR SCORE",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = topContentColor
+                    ),
+                    maxLines = 1,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                 )
             }
+        }
+
+        // Left Play Setting Badges (Speed & Inverse if active)
+        entry.playSetting?.let { setting ->
+            setting.speed?.let { speedVal ->
+                val speedStr = getSpeedName(speedVal)
+                val speedImgUrl = "https://taiko.farewell.dev/images/Speed/${if (speedVal in 0..14) speedVal else 0}.png"
+                TaikoBadgeWithImage(
+                    imageUrl = speedImgUrl,
+                    text = "VITESSE $speedStr",
+                    containerColor = Color(0xFFEDE7F6),
+                    contentColor = Color(0xFF512DA8)
+                )
+            }
+
             if (setting.isInverseOn == true) {
-                TaikoBadge(
-                    text = "ABEKOBE (REVERSE)",
+                TaikoBadgeWithImage(
+                    imageUrl = "https://taiko.farewell.dev/images/Mirror.png",
+                    text = "INVERSER",
                     containerColor = Color(0xFFFCE4EC),
                     contentColor = Color(0xFFC2185B)
-                )
-            }
-            when (setting.randomType) {
-                1 -> TaikoBadge(
-                    text = "KIMAGURE (20%)",
-                    containerColor = Color(0xFFFFF3E0),
-                    contentColor = Color(0xFFE65100)
-                )
-                2 -> TaikoBadge(
-                    text = "DETARAME (50%)",
-                    containerColor = Color(0xFFFFE0B2),
-                    contentColor = Color(0xFFBF360C)
                 )
             }
         }
@@ -280,19 +257,19 @@ fun TaikoJudgmentsBreakdown(
 
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         modifier = modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = "DÉTAILS DES NOTES",
-                style = MaterialTheme.typography.labelMedium.copy(
+                style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 12.dp)
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
             Row(
@@ -390,7 +367,7 @@ fun TaikoMetricsRow(
 private fun MetricCard(label: String, value: String, color: Color, modifier: Modifier = Modifier) {
     Surface(
         color = color.copy(alpha = 0.08f),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
         border = BorderStroke(1.dp, color.copy(alpha = 0.2f)),
         modifier = modifier
     ) {
@@ -454,7 +431,6 @@ fun TaikoScoreCard(
                     TaikoScoreBadgeRow(
                         entry = entry,
                         isBestScore = isBestScore,
-                        onShowThresholdsInfo = { showScoreThresholdsSheet = true },
                         modifier = Modifier.weight(1f, fill = false)
                     )
 
@@ -469,7 +445,7 @@ fun TaikoScoreCard(
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(
-                                text = formatPlayDate(entry.playTime.toString()),
+                                text = formatPlayDate(entry.playTime.toString(), isUtc = false),
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = topContentColor
@@ -477,6 +453,31 @@ fun TaikoScoreCard(
                                 maxLines = 1,
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                             )
+                        }
+
+                        // Right Play Setting Badges (Vanish & Random if active) under the date
+                        entry.playSetting?.let { setting ->
+                            if (setting.isVanishOn == true) {
+                                TaikoBadgeWithImage(
+                                    imageUrl = "https://taiko.farewell.dev/images/Doron.png",
+                                    text = "DISPARITION",
+                                    containerColor = Color(0xFFE0F7FA),
+                                    contentColor = Color(0xFF00838F)
+                                )
+                            }
+
+                            val randomVal = setting.randomType ?: 0
+                            if (randomVal == 1 || randomVal == 2) {
+                                val randomImg = if (randomVal == 2) "Random_Messy.png" else "Random_Whimsical.png"
+                                val container = if (randomVal == 1) Color(0xFFFFF3E0) else Color(0xFFFFE0B2)
+                                val content = if (randomVal == 1) Color(0xFFE65100) else Color(0xFFBF360C)
+                                TaikoBadgeWithImage(
+                                    imageUrl = "https://taiko.farewell.dev/images/$randomImg",
+                                    text = getRandomName(randomVal).uppercase(),
+                                    containerColor = container,
+                                    contentColor = content
+                                )
+                            }
                         }
                     }
                 }
@@ -611,6 +612,36 @@ fun TaikoScoreCard(
                         )
                     )
 
+                    val crownInfo = getCrownBadgeInfo(entry.crown)
+                    val rankInfo = getScoreRankBadgeInfo(entry.scoreRank)
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Crown Badge (Clear badge)
+                        TaikoBadgeWithImage(
+                            imageUrl = crownInfo.imageUrl,
+                            text = crownInfo.title,
+                            containerColor = crownInfo.containerColor,
+                            contentColor = crownInfo.contentColor,
+                            onInfoClick = if (rankInfo == null) { { showScoreThresholdsSheet = true } } else null
+                        )
+
+                        // Rank Badge (if present)
+                        if (rankInfo != null) {
+                            TaikoBadgeWithImage(
+                                imageUrl = rankInfo.imageUrl,
+                                text = rankInfo.title,
+                                containerColor = rankInfo.containerColor,
+                                contentColor = rankInfo.contentColor,
+                                onInfoClick = { showScoreThresholdsSheet = true }
+                            )
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(28.dp))
 
                     // Hit Judgments Breakdown
@@ -647,7 +678,7 @@ fun TaikoScoreCard(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = "Paliers de score & Légende",
+                    text = "Rangs de score",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )

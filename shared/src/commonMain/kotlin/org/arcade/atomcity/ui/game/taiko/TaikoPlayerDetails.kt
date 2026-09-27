@@ -81,7 +81,7 @@ fun TaikoPlayerDetailsContent(
             .padding(horizontal = 2.dp, vertical = 2.dp)
             .background(
                 color = MaterialTheme.colorScheme.surface.copy(alpha = (1f - collapsedFraction).coerceIn(0f, 0.7f)),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(24.dp),
             )
     ) {
         val isNarrow = maxWidth <= 360.dp
@@ -157,7 +157,6 @@ fun TaikoPlayerDetailsContent(
                     val isKigurumi = (userSettings.kigurumi ?: 0) > 0
                     val faceColor = taikoViewModel.getDonColor(userSettings.faceColor)
                     val bodyColor = taikoViewModel.getDonColor(userSettings.bodyColor)
-                    val limbColor = taikoViewModel.getDonColor(userSettings.limbColor)
 
                     val bodyId = userSettings.body ?: 0
                     val faceId = userSettings.face ?: 0

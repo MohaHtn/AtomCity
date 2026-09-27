@@ -47,6 +47,7 @@ fun BottomBarPill(
         
         NavigationBarItem(
             selected = false,
+            enabled = !isLoading,
             onClick = onMenuClick,
             icon = {
                 Icon(
@@ -65,6 +66,7 @@ fun BottomBarPill(
 
         NavigationBarItem(
             selected = false,
+            enabled = !isLoading,
             onClick = onHomeClick,
             icon = {
                 Icon(
@@ -83,6 +85,7 @@ fun BottomBarPill(
 
         NavigationBarItem(
             selected = false,
+            enabled = !isLoading,
             onClick = onSettingsClick,
             icon = {
                 Icon(

@@ -240,7 +240,7 @@ fun TaikoProgress(
                     ElevatedCard(
                         onClick = { showUserMenu = true },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.elevatedCardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                         )
@@ -511,7 +511,7 @@ fun TaikoRankPanelCard(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1.65f)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(24.dp))
     ) {
         val cardWidth = maxWidth
         val cardHeight = maxHeight
@@ -596,10 +596,11 @@ fun TotalProgressCard(overallStats: TaikoOverallProgressStats) {
     val animatedTotalSongs by animateIntAsState(totalSongs, tween(500), label = "totalSongs")
     val animatedTotalClear by animateIntAsState(totalClear, tween(500), label = "totalClear")
 
-    Card(
+    ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )
     ) {
@@ -710,9 +711,10 @@ fun ProgressCard(
     val animatedClearCount by animateIntAsState(stat.clearCount, tween(500), label = "cardClearCount")
     val animatedTotalSongs by animateIntAsState(stat.totalSongs, tween(500), label = "cardTotalSongs")
 
-    Card(
+    ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
         colors = setDifficultyColorBackground(stat.difficulty)
     ) {
         Box(
@@ -877,7 +879,7 @@ fun RankPanelLegendCard(
 ) {
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )

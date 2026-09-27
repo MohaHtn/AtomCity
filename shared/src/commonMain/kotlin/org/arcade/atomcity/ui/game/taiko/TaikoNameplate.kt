@@ -2,12 +2,10 @@ package org.arcade.atomcity.ui.game.taiko
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -23,7 +21,6 @@ import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.arcade.atomcity.ui.core.AutoResizedText
-import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.theme.NijiiroFontFamily
 
 @Composable
@@ -31,7 +28,7 @@ fun TaikoNameplate(
     playerName: String?,
     title: String?,
     nameplateUrls: List<String>,
-    collapsedFraction: Float = 0f,
+    @Suppress("UNUSED_PARAMETER") collapsedFraction: Float = 0f,
     modifier: Modifier = Modifier,
     isNarrow: Boolean = false,
     textModifier: Modifier = Modifier.padding(horizontal = 12.dp),
@@ -40,10 +37,8 @@ fun TaikoNameplate(
     nameOffsetX: Dp = 0.dp,
     nameOffsetY: Dp = 0.dp,
     titleFontSize: TextUnit? = null,
-    nameFontSize: TextUnit? = null
+    nameFontSize: TextUnit? = null,
 ) {
-    val isDark = isAppInDarkTheme()
-
     BoxWithConstraints(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -58,7 +53,11 @@ fun TaikoNameplate(
 
         val multiplier = 2.5f
 
-        val hasDan = nameplateUrls.any { it.contains("nameplate_dan") }
+        val effectiveNameplateUrls = nameplateUrls.ifEmpty {
+            listOf("https://taiko.farewell.dev/images/Nameplates/nameplate.webp")
+        }
+
+        val hasDan = effectiveNameplateUrls.any { it.contains("nameplate_dan") }
         val danPadding = if (hasDan) 280.dp else 0.dp
 
         val vTitleOffsetX = (titleOffsetX.value * multiplier).dp
@@ -66,8 +65,8 @@ fun TaikoNameplate(
         val vNameOffsetX = (nameOffsetX.value * multiplier).dp
         val vNameOffsetY = (nameOffsetY.value * multiplier).dp
 
-        val vTitleFontSize = ((titleFontSize?.value ?: 10f) * multiplier).sp
-        val vNameFontSize = ((nameFontSize?.value ?: 14f) * multiplier).sp
+        val vTitleFontSize = ((titleFontSize?.value ?: 26f) * multiplier).sp
+        val vNameFontSize = ((nameFontSize?.value ?: 24f) * multiplier).sp
 
         Box(
             modifier = Modifier
@@ -77,27 +76,12 @@ fun TaikoNameplate(
                     scaleY = scale
                 }
         ) {
-            val nameplateBackgroundAlpha = collapsedFraction.coerceIn(0f, 1f)
-            val nameplateDarkOverlayAlpha = ((1f - collapsedFraction) * 0.15f).coerceIn(0f, 0.15f)
-
             Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .padding(12.dp)
-                    .background(
-                        color = Color.Black.copy(alpha = nameplateDarkOverlayAlpha),
-                        shape = RoundedCornerShape(45.dp)
-                    )
-            )
-
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .alpha(nameplateBackgroundAlpha)
+                modifier = Modifier.matchParentSize()
             ) {
-                val danPlates = nameplateUrls.filter { it.contains("nameplate_dan") }
-                val specialPlates = nameplateUrls.filter { it.contains("AprilFool") || it.contains("Toho") }
-                val basePlates = nameplateUrls.filterNot { it.contains("nameplate_dan") || it.contains("AprilFool") || it.contains("Toho") }
+                val danPlates = effectiveNameplateUrls.filter { it.contains("nameplate_dan") }
+                val specialPlates = effectiveNameplateUrls.filter { it.contains("AprilFool") || it.contains("Toho") }
+                val basePlates = effectiveNameplateUrls.filterNot { it.contains("nameplate_dan") || it.contains("AprilFool") || it.contains("Toho") }
 
                 // 1. Draw baseplates
                 basePlates.forEach { url ->
@@ -146,79 +130,45 @@ fun TaikoNameplate(
                     .matchParentSize()
                     .then(textModifier)
             ) {
-                if (collapsedFraction < 0.5f) {
-                    // Expanded mode
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        if (!title.isNullOrBlank()) {
-                            AutoResizedText(
-                                text = title,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = NijiiroFontFamily,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = vTitleFontSize,
-                                    letterSpacing = 0.sp
-                                ),
-                                color = if (isDark) Color.White else Color.Black,
-                                maxLines = 1,
-                                minFontSize = 7.sp,
-                                modifier = Modifier.padding(bottom = 2.dp)
-                            )
-                        }
+                val titleLineHeight = if (isNarrow) 10.sp else vTitleFontSize
 
-                        OutlinedNameText(
-                            text = player,
-                            fontSize = vNameFontSize,
-                            strokeWidth = 30f,
-                            minFontSize = nameMinFontSize,
-                            modifier = Modifier.offset(x = vNameOffsetX, y = vNameOffsetY)
-                        )
-                    }
-                } else {
-                    // Compact mode
-                    val titleLineHeight = if (isNarrow) 10.sp else vTitleFontSize
+                Box(
+                    modifier = Modifier
+                        .weight(0.38f)
+                        .fillMaxWidth()
+                        .offset(x = vTitleOffsetX, y = vTitleOffsetY),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AutoResizedText(
+                        text = title ?: "",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = NijiiroFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = vTitleFontSize,
+                            letterSpacing = 0.sp,
+                            lineHeight = titleLineHeight
+                        ),
+                        color = Color.Black,
+                        maxLines = 1,
+                        minFontSize = 6.sp
+                    )
+                }
 
-                    Box(
-                        modifier = Modifier
-                            .weight(0.38f)
-                            .fillMaxWidth()
-                            .offset(x = vTitleOffsetX, y = vTitleOffsetY),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        AutoResizedText(
-                            text = title ?: "",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = NijiiroFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = vTitleFontSize,
-                                letterSpacing = 0.sp,
-                                lineHeight = titleLineHeight
-                            ),
-                            color = Color.Black,
-                            maxLines = 1,
-                            minFontSize = 6.sp
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(0.62f)
-                            .fillMaxWidth()
-                            .offset(x = vNameOffsetX, y = vNameOffsetY)
-                            .padding(start = danPadding),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        OutlinedNameText(
-                            text = player,
-                            fontSize = vNameFontSize,
-                            strokeWidth = 30f,
-                            minFontSize = nameMinFontSize,
-                            lineHeight = vNameFontSize
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .weight(0.62f)
+                        .fillMaxWidth()
+                        .offset(x = vNameOffsetX, y = vNameOffsetY)
+                        .padding(start = danPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    OutlinedNameText(
+                        text = player,
+                        fontSize = vNameFontSize,
+                        strokeWidth = 30f,
+                        minFontSize = nameMinFontSize,
+                        lineHeight = vNameFontSize
+                    )
                 }
             }
         }

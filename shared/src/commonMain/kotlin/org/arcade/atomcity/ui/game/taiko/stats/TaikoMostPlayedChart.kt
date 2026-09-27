@@ -670,7 +670,7 @@ fun TaikoUserLegend(entries: List<TaikoMostPlayedEntry>) {
 
     if (activeUsers.isNotEmpty()) {
         OutlinedCard(
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.outlinedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
             ),
@@ -725,9 +725,10 @@ fun TaikoMostPlayedItem(
     val displayArtist = entry.musicArtist ?: ""
     val hasDiff = entry.difficulty != null
 
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = if (hasDiff) setDifficultyColorBackground(entry.difficulty) else CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ElevatedCard(
+        shape = RoundedCornerShape(24.dp),
+        colors = if (hasDiff) setDifficultyColorBackground(entry.difficulty) else CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
             .then(

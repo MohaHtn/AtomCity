@@ -27,7 +27,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import atomcity.shared.generated.resources.*
 import coil3.compose.AsyncImage
@@ -49,12 +48,15 @@ fun TaikoScores(
 ) {
     val isLoading by taikoViewModel.isLoading.collectAsState()
     val isRefreshing by taikoViewModel.isRefreshing.collectAsState()
+    val scoresData by taikoViewModel.scoresData.collectAsState()
     val filteredScores by taikoViewModel.filteredScores.collectAsState()
     val searchQuery by taikoViewModel.searchQuery.collectAsState()
     val showOnlyFavorites by taikoViewModel.showOnlyFavorites.collectAsState()
     val dashboardData by taikoViewModel.dashboardData.collectAsState()
     val showDashboardTrigger by taikoViewModel.showDashboardTrigger.collectAsState()
     val currentPage by taikoViewModel._currentPage.collectAsState()
+
+    val isDataLoading = isLoading || isRefreshing || scoresData == null
 
     var showGamesMenu by remember { mutableStateOf(false) }
     var showActionsMenu by remember { mutableStateOf(false) }
@@ -132,20 +134,9 @@ fun TaikoScores(
 
                         LargeTopAppBar(
                             title = {
-                                val titleOffsetX = lerp(0.dp, 0.dp, collapsedFraction)
-                                val titleOffsetY = lerp(6.dp, 0.dp, collapsedFraction)
-                                val nameOffsetX = lerp(0.dp, 0.dp, collapsedFraction)
-                                val nameOffsetY = lerp(6.dp, -(2).dp, collapsedFraction)
-
                                 TaikoPlayerDetails(
                                     taikoViewModel = taikoViewModel,
-                                    collapsedFraction = collapsedFraction,
-                                    titleOffsetX = titleOffsetX,
-                                    titleOffsetY = 6.dp,
-                                    nameOffsetX = nameOffsetX,
-                                    nameOffsetY = nameOffsetY,
-                                    titleFontSize = 24.sp,
-                                    nameFontSize = 24.sp
+                                    collapsedFraction = collapsedFraction
                                 )
                             },
                             colors = TopAppBarDefaults.largeTopAppBarColors(
@@ -162,7 +153,8 @@ fun TaikoScores(
                             query = searchQuery,
                             onQueryChange = taikoViewModel::onSearchQueryChange,
                             showOnlyFavorites = showOnlyFavorites,
-                            onToggleFavorites = taikoViewModel::onToggleShowOnlyFavorites
+                            onToggleFavorites = taikoViewModel::onToggleShowOnlyFavorites,
+                            enabled = !isDataLoading
                         )
                     }
                 }
@@ -170,48 +162,76 @@ fun TaikoScores(
             bottomBar = {
                 BottomBarPill(
                     currentPage = currentPage,
-                    isLoading = isLoading,
+                    isLoading = isDataLoading,
                     hasNextPage = false,
                     showPagination = false,
                     onPageChange = { newPage ->
-                        taikoViewModel.onPageChange(newPage)
+                        if (!isDataLoading) {
+                            taikoViewModel.onPageChange(newPage)
+                        }
                     },
                     onMenuClick = {
-                        showActionsMenu = !showActionsMenu
-                        showGamesMenu = false
+                        if (!isDataLoading) {
+                            showActionsMenu = !showActionsMenu
+                            showGamesMenu = false
+                        }
                     },
                     onHomeClick = {
-                        showGamesMenu = !showGamesMenu
-                        showActionsMenu = false
+                        if (!isDataLoading) {
+                            showGamesMenu = !showGamesMenu
+                            showActionsMenu = false
+                        }
                     },
-                    onSettingsClick = onNavigateToSettings
+                    onSettingsClick = {
+                        if (!isDataLoading) {
+                            onNavigateToSettings()
+                        }
+                    }
                 )
             },
         ) { paddingValues ->
             PullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = {
-                    taikoViewModel.getScores(forceRefresh = true)
-                    taikoViewModel.fetchCommunityScores()
+                    if (!isDataLoading) {
+                        taikoViewModel.getScores(forceRefresh = true)
+                        taikoViewModel.fetchCommunityScores()
+                    }
                 },
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
             ) {
-                if (isLoading && !isRefreshing) {
+                if (isDataLoading) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+                } else if (filteredScores.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = if (searchQuery.isNotEmpty()) "Aucun score ne correspond à la recherche" else "Aucun score disponible",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 } else {
                     ScoresList(
                         scores = filteredScores,
-                        onNavigateToRoute = onNavigateToRoute,
-                        onFavoriteToggle = taikoViewModel::toggleFavorite
+                        onNavigateToRoute = { route ->
+                            if (!isDataLoading) {
+                                onNavigateToRoute(route)
+                            }
+                        },
+                        onFavoriteToggle = { songId ->
+                            if (!isDataLoading) {
+                                taikoViewModel.toggleFavorite(songId)
+                            }
+                        }
                     )
                 }
             }
         }
 
         OpenMiniMenu(
-            visible = showGamesMenu || showActionsMenu,
+            visible = (showGamesMenu || showActionsMenu) && !isDataLoading,
             onDismiss = {
                 val now = TimeSource.Monotonic.markNow()
                 if (now - lastClickMark > 300.milliseconds) {
@@ -221,9 +241,11 @@ fun TaikoScores(
                 }
             },
             onItemClick = { route ->
-                onNavigateToRoute(route)
-                showGamesMenu = false
-                showActionsMenu = false
+                if (!isDataLoading) {
+                    onNavigateToRoute(route)
+                    showGamesMenu = false
+                    showActionsMenu = false
+                }
             },
             showGames = showGamesMenu,
             extraItems = if (showActionsMenu) extraItems else emptyList(),
@@ -252,7 +274,8 @@ private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     showOnlyFavorites: Boolean,
-    onToggleFavorites: () -> Unit
+    onToggleFavorites: () -> Unit,
+    enabled: Boolean = true
 ) {
     Box(
         modifier = Modifier
@@ -261,7 +284,11 @@ private fun SearchBar(
             .height(48.dp)
             .clip(RoundedCornerShape(50))
             .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+            .border(
+                1.dp,
+                if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
+                RoundedCornerShape(50)
+            )
             .padding(horizontal = 12.dp),
         contentAlignment = Alignment.CenterStart
     ) {
@@ -269,23 +296,31 @@ private fun SearchBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            IconButton(onClick = onToggleFavorites) {
+            IconButton(
+                onClick = onToggleFavorites,
+                enabled = enabled
+            ) {
                 Icon(
                     imageVector = if (showOnlyFavorites) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = "Favoris",
-                    tint = if (showOnlyFavorites) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = if (showOnlyFavorites) {
+                        if (enabled) Color.Red else Color.Red.copy(alpha = 0.38f)
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else 0.38f)
+                    }
                 )
             }
             Icon(
                 Icons.Default.Search,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else 0.38f)
             )
             BasicTextField(
                 value = query,
                 onValueChange = onQueryChange,
+                enabled = enabled,
                 singleLine = true,
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else 0.38f)),
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 8.dp),
@@ -294,7 +329,7 @@ private fun SearchBar(
                         if (query.isEmpty()) {
                             Text(
                                 text = "Rechercher un morceau...",
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 0.6f else 0.38f)
                             )
                         }
                         innerTextField()
@@ -303,8 +338,15 @@ private fun SearchBar(
             )
 
             if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Default.Close, contentDescription = "Fermer")
+                IconButton(
+                    onClick = { onQueryChange("") },
+                    enabled = enabled
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Fermer",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else 0.38f)
+                    )
                 }
             }
         }
@@ -323,6 +365,7 @@ private fun ScoresList(
     ) {
         items(scores.size) { index ->
             TaikoScoreItem(scores[index], onNavigateToRoute, onFavoriteToggle)
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

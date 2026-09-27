@@ -24,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import kotlinx.coroutines.launch
 import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.core.WelcomeScreen
@@ -64,9 +65,11 @@ fun AppNavigation(
     apiKeyManager: ApiKeyManager,
 ) {
     val navController = rememberNavController()
+    val scope = rememberCoroutineScope()
 
     // Use null as initial to wait for DataStore
     val apiChecklistState by apiKeyManager.getApiChecklistStateFlow().collectAsState(initial = null)
+    val lastOpenedGame by apiKeyManager.getLastOpenedGameFlow().collectAsState(initial = null)
 
     LaunchedEffect(apiChecklistState) {
         apiChecklistState?.let {
@@ -74,11 +77,33 @@ fun AppNavigation(
         }
     }
 
+    DisposableEffect(navController) {
+        val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
+            val route = destination.route
+            if (route != null && route.startsWith("game/")) {
+                val gameId = route.removePrefix("game/")
+                scope.launch {
+                    apiKeyManager.saveLastOpenedGame(gameId)
+                }
+            }
+        }
+        navController.addOnDestinationChangedListener(listener)
+        onDispose {
+            navController.removeOnDestinationChangedListener(listener)
+        }
+    }
+
     // Wait until we know the API key state before rendering navigation
     val currentApiChecklist = apiChecklistState ?: return
 
-    val initialStartDestination = remember {
-        if (currentApiChecklist.isEmpty()) "welcome" else "game/${currentApiChecklist.first()}"
+    val initialStartDestination = remember(currentApiChecklist, lastOpenedGame) {
+        if (currentApiChecklist.isEmpty()) {
+            "welcome"
+        } else if (lastOpenedGame != null && currentApiChecklist.contains(lastOpenedGame)) {
+            "game/$lastOpenedGame"
+        } else {
+            "game/${currentApiChecklist.first()}"
+        }
     }
 
     val snackbarHostState = remember { SnackbarHostState() }

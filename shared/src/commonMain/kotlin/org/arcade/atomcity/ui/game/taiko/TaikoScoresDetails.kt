@@ -30,7 +30,9 @@ import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
 import org.arcade.atomcity.ui.game.taiko.details.*
+import org.arcade.atomcity.ui.game.taiko.settings.getRandomName
 import org.arcade.atomcity.ui.game.taiko.settings.getScoreRankImageUrl
+import org.arcade.atomcity.ui.game.taiko.settings.getSpeedName
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.formatPlayDate
 import org.jetbrains.compose.resources.painterResource
@@ -247,50 +249,57 @@ fun TaikoScoresDetails(
                             }
                         }
 
-                        Card(
+                        ElevatedCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 8.dp),
                             colors = setDifficultyColorBackground(score.difficulty),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(24.dp),
+                            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = user?.nickname ?: "Joueur $baid",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.Top
                                 ) {
                                     Column {
+                                        Text(
+                                            text = user?.nickname ?: "Joueur $baid",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             text = formatTaikoScore(score.score),
                                             style = MaterialTheme.typography.titleMedium,
                                             color = Color.White,
                                             fontWeight = FontWeight.Black
                                         )
+                                        Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = displayDifficultyName(score.difficulty),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = Color.White.copy(alpha = 0.8f)
                                         )
                                     }
+
                                     Column(horizontalAlignment = Alignment.End) {
+                                        TaikoPlaySettingRow(entry = score)
+
+                                        Spacer(modifier = Modifier.height(6.dp))
+
                                         if ((score.comboCount ?: 0) > 0) {
                                             Text(
-                                                text = "COMBO ${score.comboCount}",
+                                                text = "MAX COMBO ${score.comboCount}",
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = Color.White,
                                                 fontWeight = FontWeight.Bold
                                             )
                                         }
                                         Text(
-                                            text = formatPlayDate(score.playTime.toString()),
+                                            text = formatPlayDate(score.playTime.toString(), isUtc = false),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = Color.White.copy(alpha = 0.7f)
                                         )
@@ -439,9 +448,8 @@ fun TaikoScoresDetails(
                     }
                 }
 
-                items(sortedHistory) { score ->
-                    val isSelected = (selectedScore == score)
-                    Card(
+                    items(sortedHistory) { score ->
+                    ElevatedCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 12.dp)
@@ -458,13 +466,10 @@ fun TaikoScoresDetails(
                                         PlatformUtils.hapticImpact()
                                     }
                                 }
-                            }
-                            .then(
-                                if (isSelected) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
-                                else Modifier
-                            ),
+                            },
                         colors = setDifficultyColorBackground(score.difficulty),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(24.dp),
+                        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
                     ) {
                         Box(modifier = Modifier.fillMaxWidth()) {
                             Image(
@@ -478,79 +483,89 @@ fun TaikoScoresDetails(
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.Top
                                 ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.weight(1f, fill = false)
+                                    Column(
+                                        modifier = Modifier.weight(1f, fill = false),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        Text(
-                                            text = displayDifficultyName(score.difficulty),
-                                            style = MaterialTheme.typography.titleMedium,
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold
-                                        )
-
-                                        // Crown Badge
-                                        val crownUrl = getCrownImageUrl(score.crown)
-                                        val crownTitle = getCrownTitle(score.crown)
-                                        Surface(
-                                            color = Color.Black.copy(alpha = 0.35f),
-                                            shape = RoundedCornerShape(6.dp)
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                                         ) {
-                                            Row(
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                            ) {
-                                                AsyncImage(
-                                                    model = crownUrl,
-                                                    contentDescription = crownTitle,
-                                                    modifier = Modifier.height(18.dp),
-                                                    contentScale = ContentScale.Fit
-                                                )
-                                                Text(
-                                                    text = crownTitle,
-                                                    style = MaterialTheme.typography.labelSmall.copy(
-                                                        fontWeight = FontWeight.Bold,
-                                                        fontSize = 10.sp
-                                                    ),
-                                                    color = Color.White
-                                                )
-                                            }
+                                            Text(
+                                                text = displayDifficultyName(score.difficulty),
+                                                style = MaterialTheme.typography.titleMedium,
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Text(
+                                                text = "★ ${score.stars ?: 0}",
+                                                style = MaterialTheme.typography.titleMedium.copy(
+                                                    fontWeight = FontWeight.Black
+                                                ),
+                                                color = Color.White
+                                            )
                                         }
 
-                                        // Rank Badge
-                                        val rankUrl = getScoreRankImageUrl(score.scoreRank)
-                                        if (rankUrl != null) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            // Crown Badge
+                                            val crownUrl = getCrownImageUrl(score.crown)
+                                            val crownTitle = getCrownTitle(score.crown)
                                             Surface(
                                                 color = Color.Black.copy(alpha = 0.35f),
                                                 shape = RoundedCornerShape(6.dp)
                                             ) {
-                                                Box(
+                                                Row(
                                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                                    contentAlignment = Alignment.Center
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                                 ) {
                                                     AsyncImage(
-                                                        model = rankUrl,
-                                                        contentDescription = "Rank",
+                                                        model = crownUrl,
+                                                        contentDescription = crownTitle,
                                                         modifier = Modifier.height(18.dp),
                                                         contentScale = ContentScale.Fit
                                                     )
+                                                    Text(
+                                                        text = crownTitle,
+                                                        style = MaterialTheme.typography.labelSmall.copy(
+                                                            fontWeight = FontWeight.Bold,
+                                                            fontSize = 10.sp
+                                                        ),
+                                                        color = Color.White
+                                                    )
+                                                }
+                                            }
+
+                                            // Rank Badge
+                                            val rankUrl = getScoreRankImageUrl(score.scoreRank)
+                                            if (rankUrl != null) {
+                                                Surface(
+                                                    color = Color.Black.copy(alpha = 0.35f),
+                                                    shape = RoundedCornerShape(6.dp)
+                                                ) {
+                                                    Box(
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        AsyncImage(
+                                                            model = rankUrl,
+                                                            contentDescription = "Rank",
+                                                            modifier = Modifier.height(18.dp),
+                                                            contentScale = ContentScale.Fit
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
                                     }
 
-                                    // Number Difficulty rating on the right (White stars)
-                                    Text(
-                                        text = "★ ${score.stars ?: 0}",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Black
-                                        ),
-                                        color = Color.White
-                                    )
+                                    // TOP RIGHT CORNER: PlaySetting badges
+                                    TaikoPlaySettingRow(entry = score)
                                 }
 
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -580,14 +595,14 @@ fun TaikoScoresDetails(
                                     Column(horizontalAlignment = Alignment.End) {
                                         if ((score.comboCount ?: 0) > 0) {
                                             Text(
-                                                text = "COMBO ${score.comboCount}",
+                                                text = "MAX COMBO ${score.comboCount}",
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = Color.White,
                                                 fontWeight = FontWeight.Bold
                                             )
                                         }
                                         Text(
-                                            text = formatPlayDate(score.playTime.toString()),
+                                            text = formatPlayDate(score.playTime.toString(), isUtc = false),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = Color.White.copy(alpha = 0.7f)
                                         )
@@ -598,6 +613,100 @@ fun TaikoScoresDetails(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TaikoPlaySettingRow(
+    entry: TaikoServerHistoryEntry,
+    modifier: Modifier = Modifier
+) {
+    val setting = entry.playSetting ?: return
+
+    val speedVal = setting.speed ?: 0
+    val speedText = getSpeedName(speedVal)
+    val speedImgUrl = "https://taiko.farewell.dev/images/Speed/${if (speedVal in 0..14) speedVal else 0}.png"
+
+    val isVanishOn = setting.isVanishOn == true
+    val isInverseOn = setting.isInverseOn == true
+    val randomVal = setting.randomType ?: 0
+    val isRandomOn = randomVal == 1 || randomVal == 2
+
+    val hasSpeed = setting.speed != null
+
+    val activeBadges = mutableListOf<@Composable () -> Unit>()
+
+    if (hasSpeed) {
+        activeBadges.add {
+            TaikoPlaySettingMiniBadge(speedImgUrl, "Vitesse $speedText")
+        }
+    }
+    if (isVanishOn) {
+        activeBadges.add {
+            TaikoPlaySettingMiniBadge("https://taiko.farewell.dev/images/Doron.png", "Disparition")
+        }
+    }
+    if (isInverseOn) {
+        activeBadges.add {
+            TaikoPlaySettingMiniBadge("https://taiko.farewell.dev/images/Mirror.png", "Inverser")
+        }
+    }
+    if (isRandomOn) {
+        val randomImg = if (randomVal == 2) "Random_Messy.png" else "Random_Whimsical.png"
+        activeBadges.add {
+            TaikoPlaySettingMiniBadge("https://taiko.farewell.dev/images/$randomImg", getRandomName(randomVal))
+        }
+    }
+
+    if (activeBadges.isEmpty()) return
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        activeBadges.chunked(2).forEach { rowBadges ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                rowBadges.forEach { badge -> badge() }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TaikoPlaySettingMiniBadge(
+    imageUrl: String?,
+    text: String
+) {
+    Surface(
+        color = Color.Black.copy(alpha = 0.35f),
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            if (!imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = text,
+                    modifier = Modifier.height(16.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp
+                ),
+                color = Color.White
+            )
         }
     }
 }
