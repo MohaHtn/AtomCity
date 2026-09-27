@@ -22,6 +22,7 @@ import okhttp3.Request
 import org.arcade.atomcity.BuildConfig
 import org.arcade.atomcity.utils.PlatformUtils
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 class MaimaiImportWorker(
     context: Context,
@@ -110,7 +111,6 @@ class MaimaiImportWorker(
                                         )
 
                                         if ((event.page ?: 0) >= (event.totalPages ?: 0)) {
-                                            completed = true
                                             return@use true
                                         }
                                     } else if (event.type == "completed") {
@@ -122,7 +122,7 @@ class MaimaiImportWorker(
                             }
                         }
 
-                        if (sawPageEvent && !completed) {
+                        if (sawPageEvent) {
                             completed = true
                         }
 
@@ -143,7 +143,7 @@ class MaimaiImportWorker(
             }
 
             if (attempt < maxReconnectAttempts - 1) {
-                delay(5_000L)
+                delay(5_000L.milliseconds)
             }
         }
 

@@ -9,10 +9,6 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
-import org.arcade.atomcity.data.local.maimai.SongEntity
-import org.arcade.atomcity.data.local.maimai.LevelEntity
-import org.arcade.atomcity.data.local.maimai.SongDao
-
 expect fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase>
 
 fun getAppDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {

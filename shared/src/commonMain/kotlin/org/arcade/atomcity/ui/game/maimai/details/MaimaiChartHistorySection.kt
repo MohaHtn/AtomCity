@@ -21,8 +21,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.format
@@ -84,15 +86,45 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = historyEntry.rank ?: "",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Black,
-                        color = difficultyColor
-                    ),
-                    maxLines = 1,
-                    softWrap = false
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    val fcText = historyEntry.fcApText
+                    if (!fcText.isNullOrEmpty()) {
+                        val (bgColor, textColor) = when (fcText.uppercase()) {
+                            "FC" -> Color(0xFFE3F2FD) to Color(0xFF1976D2)
+                            "FC+" -> Color(0xFFFFF9C4) to Color(0xFFC99A2E)
+                            "AP", "AP+" -> Color(0xFFE0F2F1) to Color(0xFF00897B)
+                            else -> Color(0xFFE0E0E0) to Color(0xFF424242)
+                        }
+                        Surface(
+                            color = bgColor,
+                            shape = RoundedCornerShape(6.dp)
+                        ) {
+                            Text(
+                                text = fcText,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 10.sp,
+                                    color = textColor
+                                ),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = historyEntry.rank ?: "",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            color = difficultyColor
+                        ),
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
+
                 Text(
                     text = "${((historyEntry.achievement ?: 0.0) / 100.0).format(2)}%",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),

@@ -78,7 +78,7 @@ private fun androidx.compose.ui.text.AnnotatedString.Builder.parseInlineMarkdown
 ) {
     val boldPattern = "\\*\\*(.*?)\\*\\*".toRegex()
     val italicPattern = "\\*(.*?)\\*".toRegex()
-    val markdownLinkPattern = "\\[([^\\]]+)\\]\\(([^)]+)\\)".toRegex()
+    val markdownLinkPattern = "\\[([^]]+)]\\(([^)]+)\\)".toRegex()
     val bareUrlPattern = "https?://[^\\s)]+".toRegex()
 
     var lastIndex = 0

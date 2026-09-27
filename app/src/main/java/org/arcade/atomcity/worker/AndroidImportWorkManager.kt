@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.concurrent.TimeUnit
 
-class AndroidImportWorkManager(private val context: Context) : ImportWorkManager {
+class AndroidImportWorkManager(context: Context) : ImportWorkManager {
     private val workManager = WorkManager.getInstance(context)
     private val IMPORT_WORK_NAME = "maimai_import_work"
 

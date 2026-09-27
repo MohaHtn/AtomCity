@@ -43,10 +43,18 @@ fun MaimaiScoreBadgeRow(scoreEntry: ScorefetcherApiData, modifier: Modifier = Mo
         if (scoreEntry.isAllPerfect == true) {
             val maxScore = scoreEntry.theoreticalMaxScore ?: (if (scoreEntry.maxScore != null && scoreEntry.maxScore!! > 110.0) scoreEntry.maxScore else null)
             val isApPlus = when {
+                scoreEntry.fullComboLabel == "AP+" -> true
+                scoreEntry.fullComboLabel == "AP" -> false
                 scoreEntry.score != null && maxScore != null -> scoreEntry.score!! >= maxScore
-                else -> (scoreEntry.scoreDetail?.breakk?.great ?: 0) == 0 &&
-                        (scoreEntry.scoreDetail?.breakk?.good ?: 0) == 0 &&
-                        (scoreEntry.scoreDetail?.breakk?.bad ?: 0) == 0
+                else -> {
+                    val maxPct = scoreEntry.theoreticalMaxPercent
+                    val achPct = scoreEntry.achievement?.let { it.toDouble() / 100.0 }
+                    if (maxPct != null && achPct != null && achPct > 0.0) {
+                        achPct >= (maxPct - 0.005)
+                    } else {
+                        false
+                    }
+                }
             }
             
             ScoreBadge(
