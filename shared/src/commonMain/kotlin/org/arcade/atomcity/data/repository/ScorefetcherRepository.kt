@@ -12,7 +12,7 @@ import org.arcade.atomcity.data.remote.ScorefetcherClient
 import org.arcade.atomcity.data.remote.ImportService
 import org.arcade.atomcity.worker.ImportWorkManager
 import org.arcade.atomcity.utils.ApiKeyManager
-import org.arcade.atomcity.data.local.AppDatabase
+import org.arcade.atomcity.data.local.maimai.AppDatabase
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherPlaysResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.playerDetailsResponse.ScorefetcherPlayerDetailsResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.playerBest30Response.PlayerBest30Response

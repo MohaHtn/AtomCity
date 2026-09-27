@@ -5,8 +5,8 @@
  */
 package org.arcade.atomcity.data.repository
 
-import org.arcade.atomcity.data.local.AppDatabase
-import org.arcade.atomcity.data.local.LevelEntity
+import org.arcade.atomcity.data.local.maimai.AppDatabase
+import org.arcade.atomcity.data.local.maimai.LevelEntity
 import org.arcade.atomcity.domain.model.LevelInfo
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
 

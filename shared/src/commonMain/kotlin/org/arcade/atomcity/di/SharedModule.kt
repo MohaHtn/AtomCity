@@ -19,9 +19,9 @@ import org.arcade.atomcity.data.remote.ScorefetcherProfileClient
 import org.arcade.atomcity.data.remote.ImportService
 import org.arcade.atomcity.data.remote.NetworkErrorHandler
 import org.arcade.atomcity.data.remote.installErrorValidator
-import org.arcade.atomcity.data.local.AppDatabase
-import org.arcade.atomcity.data.local.getAppDatabase
-import org.arcade.atomcity.data.local.getDatabaseBuilder
+import org.arcade.atomcity.data.local.maimai.AppDatabase
+import org.arcade.atomcity.data.local.maimai.getAppDatabase
+import org.arcade.atomcity.data.local.maimai.getDatabaseBuilder
 import org.koin.dsl.module
 import org.arcade.atomcity.data.repository.ScorefetcherRepository
 import org.arcade.atomcity.domain.repository.IScorefetcherRepository
