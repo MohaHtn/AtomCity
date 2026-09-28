@@ -1,6 +1,7 @@
 package org.arcade.atomcity.data.remote.model.scorefetcher
 
 import kotlinx.serialization.Serializable
+import kotlin.math.roundToInt
 
 @Serializable
 data class PlayerRankProgression(
@@ -11,6 +12,7 @@ data class PlayerRankProgression(
     val rating: Int? = null,
     val isPublic: Boolean? = true,
     val isProgressionPublic: Boolean? = null,
+    val completionPercentage: Double? = null,
     val totalPlayed: Int? = null,
     val totalCleared: Int? = null,
     val played: Int? = null,
@@ -32,7 +34,11 @@ data class PlayerRankProgression(
     val fc: Int? = null,
     val fcp: Int? = null,
     val ap: Int? = null,
-    val app: Int? = null
+    val app: Int? = null,
+    val fcCount: Int? = null,
+    val fcPlusCount: Int? = null,
+    val apCount: Int? = null,
+    val apPlusCount: Int? = null
 ) {
     val isPublicEffective: Boolean
         get() = isProgressionPublic ?: isPublic ?: true
@@ -65,35 +71,46 @@ data class PlayerRankProgression(
                 }
                 map[key] = (map[key] ?: 0) + v
             }
-            return map
         }
 
-        sssPlus?.let { if (it > 0) map["SSS+"] = it }
-        sss?.let { if (it > 0) map["SSS"] = it }
-        ssPlus?.let { if (it > 0) map["SS+"] = it }
-        ss?.let { if (it > 0) map["SS"] = it }
-        sPlus?.let { if (it > 0) map["S+"] = it }
-        s?.let { if (it > 0) map["S"] = it }
-        aaa?.let { if (it > 0) map["AAA"] = it }
-        aa?.let { if (it > 0) map["AA"] = it }
-        a?.let { if (it > 0) map["A"] = it }
-        fc?.let { if (it > 0) map["FC"] = it }
-        fcp?.let { if (it > 0) map["FC+"] = it }
-        ap?.let { if (it > 0) map["AP"] = it }
-        app?.let { if (it > 0) map["AP+"] = it }
+        (fcCount ?: fc)?.let { if (it > 0 && !map.containsKey("FC")) map["FC"] = it }
+        (fcPlusCount ?: fcp)?.let { if (it > 0 && !map.containsKey("FC+")) map["FC+"] = it }
+        (apCount ?: ap)?.let { if (it > 0 && !map.containsKey("AP")) map["AP"] = it }
+        (apPlusCount ?: app)?.let { if (it > 0 && !map.containsKey("AP+")) map["AP+"] = it }
+
+        sssPlus?.let { if (it > 0 && !map.containsKey("SSS+")) map["SSS+"] = it }
+        sss?.let { if (it > 0 && !map.containsKey("SSS")) map["SSS"] = it }
+        ssPlus?.let { if (it > 0 && !map.containsKey("SS+")) map["SS+"] = it }
+        ss?.let { if (it > 0 && !map.containsKey("SS")) map["SS"] = it }
+        sPlus?.let { if (it > 0 && !map.containsKey("S+")) map["S+"] = it }
+        s?.let { if (it > 0 && !map.containsKey("S")) map["S"] = it }
+        aaa?.let { if (it > 0 && !map.containsKey("AAA")) map["AAA"] = it }
+        aa?.let { if (it > 0 && !map.containsKey("AA")) map["AA"] = it }
+        a?.let { if (it > 0 && !map.containsKey("A")) map["A"] = it }
         return map
     }
 
     fun getPlayedCount(): Int {
-        val calculated = getNormalizedRankCounts().values.sum()
         val p = playedSongs ?: totalPlayed ?: played
-        return if (p != null && p > 0) p else if (calculated > 0) calculated else (totalCleared ?: cleared ?: 0)
+        return if (p != null && p > 0) p else getClearedCount()
     }
 
     fun getClearedCount(): Int {
-        val calculated = getNormalizedRankCounts().values.sum()
         val c = totalCleared ?: cleared
-        return if (c != null && c > 0) c else calculated
+        if (c != null && c > 0) return c
+
+        val rankKeys = setOf("SSS+", "SSS", "SS+", "SS", "S+", "S", "AAA", "AA", "A", "Autres")
+        val sumFromRanks = getNormalizedRankCounts()
+            .filterKeys { it in rankKeys }
+            .values.sum()
+
+        if (sumFromRanks > 0) return sumFromRanks
+
+        val nonComboSum = getNormalizedRankCounts()
+            .filterKeys { it !in setOf("FC", "FC+", "AP", "AP+") }
+            .values.sum()
+
+        return if (nonComboSum > 0) nonComboSum else getNormalizedRankCounts().values.sum()
     }
 }
 
@@ -118,6 +135,26 @@ data class RankProgressionResponse(
     val player: PlayerRankProgression? = null,
     val players: List<PlayerRankProgression>? = null
 ) {
+    val effectiveTotalGameCharts: Int
+        get() {
+            if (totalGameCharts > 0) return totalGameCharts
+            val playersList = getAllPlayers()
+            val hundredPctPlayer = playersList.find { (it.completionPercentage ?: 0.0) >= 100.0 }
+            if (hundredPctPlayer != null) {
+                val count = hundredPctPlayer.getClearedCount()
+                if (count > 0) return count
+            }
+            for (p in playersList) {
+                val pct = p.completionPercentage
+                val cleared = p.getClearedCount()
+                if (pct != null && pct > 0.0 && cleared > 0) {
+                    val estimated = (cleared / (pct / 100.0)).roundToInt()
+                    if (estimated > 0) return estimated
+                }
+            }
+            return 0
+        }
+
     fun getAllPlayers(): List<PlayerRankProgression> {
         if (!players.isNullOrEmpty()) return players
         if (player != null) return listOf(player)
@@ -147,3 +184,4 @@ data class RankProgressionResponse(
         return emptyList()
     }
 }
+

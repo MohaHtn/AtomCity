@@ -466,14 +466,20 @@ class MaimaiViewModel(
         _searchQuery.value = query
     }
 
-    fun fetchMostPlayedCharts(isGlobal: Boolean, period: String, date: String? = null, groupByHashkey: Boolean = false) {
+    fun fetchMostPlayedCharts(
+        isGlobal: Boolean,
+        period: String,
+        date: String? = null,
+        groupByHashkey: Boolean = false,
+        difficulty: String? = null
+    ) {
         viewModelScope.launch {
             try {
                 _isLoadingMostPlayed.value = true
                 val flow = if (isGlobal) {
-                    analyticsUseCase.getMostPlayed(period = period, date = date, groupByHashkey = groupByHashkey)
+                    analyticsUseCase.getMostPlayed(period = period, date = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
                 } else {
-                    analyticsUseCase.getMostPlayedByHash(period = period, date = date, groupByHashkey = groupByHashkey)
+                    analyticsUseCase.getMostPlayedByHash(period = period, date = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
                 }
 
                 flow.collect { entries ->
@@ -487,11 +493,11 @@ class MaimaiViewModel(
         }
     }
 
-    fun fetchRankProgression(targetKeyHash: String? = null) {
+    fun fetchRankProgression(targetKeyHash: String? = null, difficulty: String? = null) {
         viewModelScope.launch {
             try {
                 _isLoadingRankProgression.value = true
-                analyticsUseCase.getRankProgression(targetKeyHash).collect { response ->
+                analyticsUseCase.getRankProgression(targetKeyHash, difficulty).collect { response ->
                     _rankProgression.value = response
                     _isLoadingRankProgression.value = false
                 }

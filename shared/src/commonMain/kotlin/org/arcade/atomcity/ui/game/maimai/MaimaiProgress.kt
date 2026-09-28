@@ -28,6 +28,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +36,7 @@ import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.remote.model.scorefetcher.PlayerRankProgression
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
 import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
+import org.arcade.atomcity.ui.game.common.getJacketBorderColor
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.format
@@ -123,16 +125,17 @@ fun MaimaiProgress(
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedSortOption by remember { mutableStateOf(RankSortOption.RANKS) }
+    var selectedDifficulty by remember { mutableStateOf<String?>(null) }
 
     var selectedRankTarget by remember { mutableStateOf<Pair<PlayerRankProgression, String>?>(null) }
     val rankCharts by viewModel.rankCharts.collectAsState()
     val isLoadingRankCharts by viewModel.isLoadingRankCharts.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchRankProgression()
+    LaunchedEffect(selectedDifficulty) {
+        viewModel.fetchRankProgression(difficulty = selectedDifficulty)
     }
 
-    val totalGameCharts = rankProgressionState?.totalGameCharts ?: 0
+    val totalGameCharts = rankProgressionState?.effectiveTotalGameCharts ?: 0
     val allPlayers = remember(rankProgressionState) {
         rankProgressionState?.getAllPlayers() ?: emptyList()
     }
@@ -183,7 +186,7 @@ fun MaimaiProgress(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.fetchRankProgression() }) {
+                    IconButton(onClick = { viewModel.fetchRankProgression(difficulty = selectedDifficulty) }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Rafraîchir"
@@ -200,6 +203,110 @@ fun MaimaiProgress(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
+            // Difficulty Selector Chips in 2 Rows
+            val diffsRow1 = listOf(
+                null to "Toutes",
+                "Easy" to "Easy",
+                "Basic" to "Basic",
+                "Advanced" to "Advanced"
+            )
+            val diffsRow2 = listOf(
+                "Expert" to "Expert",
+                "Master" to "Master",
+                "Re:Master" to "Re:Master"
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    diffsRow1.forEach { (key, label) ->
+                        val isSelected = selectedDifficulty == key
+                        val diffColor = key?.let { getJacketBorderColor(it) } ?: MaterialTheme.colorScheme.primary
+
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = {
+                                selectedDifficulty = key
+                                PlatformUtils.hapticImpact()
+                            },
+                            label = {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = diffColor.copy(alpha = 0.25f),
+                                selectedLabelColor = if (key != null) diffColor else MaterialTheme.colorScheme.primary,
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true,
+                                selected = isSelected,
+                                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                selectedBorderColor = diffColor,
+                                selectedBorderWidth = 1.5.dp
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    diffsRow2.forEach { (key, label) ->
+                        val isSelected = selectedDifficulty == key
+                        val diffColor = getJacketBorderColor(key)
+
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = {
+                                selectedDifficulty = key
+                                PlatformUtils.hapticImpact()
+                            },
+                            label = {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = diffColor.copy(alpha = 0.25f),
+                                selectedLabelColor = diffColor,
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true,
+                                selected = isSelected,
+                                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                selectedBorderColor = diffColor,
+                                selectedBorderWidth = 1.5.dp
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+
             // Sort Option Chips
             /*Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -688,13 +795,19 @@ fun PlayerProgressionCard(
     val effTotalSongs = player.totalSongs ?: totalSongs
     val effPlayedSongs = player.playedSongs ?: playedSongs
 
-    val progressFraction = if (effTotalSongs > 0 && effPlayedSongs > 0) {
+    val progressFraction = if (player.completionPercentage != null) {
+        (player.completionPercentage / 100.0).toFloat().coerceIn(0f, 1f)
+    } else if (effTotalSongs > 0 && effPlayedSongs > 0) {
         (effPlayedSongs.toFloat() / effTotalSongs.toFloat()).coerceIn(0f, 1f)
     } else if (totalGameCharts > 0) {
         (clearedCount.toFloat() / totalGameCharts.toFloat()).coerceIn(0f, 1f)
     } else 0f
 
-    val percentage = (progressFraction * 100).toInt()
+    val percentageDisplay = if (player.completionPercentage != null) {
+        "${player.completionPercentage.format(2)}%"
+    } else {
+        "${(progressFraction * 100).toInt()}%"
+    }
 
     Card(
         modifier = modifier
@@ -775,7 +888,7 @@ fun PlayerProgressionCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "$percentage%",
+                    text = percentageDisplay,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary
@@ -858,10 +971,10 @@ fun PlayerProgressionCard(
                             "AAA" -> player.aaa ?: 0
                             "AA" -> player.aa ?: 0
                             "A" -> player.a ?: 0
-                            "FC" -> player.fc ?: 0
-                            "FC+" -> player.fcp ?: 0
-                            "AP" -> player.ap ?: 0
-                            "AP+" -> player.app ?: 0
+                            "FC" -> player.fcCount ?: player.fc ?: 0
+                            "FC+" -> player.fcPlusCount ?: player.fcp ?: 0
+                            "AP" -> player.apCount ?: player.ap ?: 0
+                            "AP+" -> player.apPlusCount ?: player.app ?: 0
                             else -> 0
                         }
                         if (count > 0) rankKey to count else null

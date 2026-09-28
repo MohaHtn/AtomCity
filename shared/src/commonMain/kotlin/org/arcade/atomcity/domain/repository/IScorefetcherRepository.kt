@@ -167,7 +167,7 @@ interface IScorefetcherRepository {
      * @param groupByHashkey Whether to group the results by hash key.
      * @return A [Flow] emitting a list of [MaimaiMostPlayedEntry].
      */
-    fun getMostPlayed(limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false): Flow<List<MaimaiMostPlayedEntry>>
+    fun getMostPlayed(limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false, difficulty: String? = null): Flow<List<MaimaiMostPlayedEntry>>
 
     /**
      * Retrieves the most played charts for a specific player.
@@ -179,7 +179,7 @@ interface IScorefetcherRepository {
      * @param groupByHashkey Whether to group the results by hash key.
      * @return A [Flow] emitting a list of [MaimaiMostPlayedEntry].
      */
-    fun getMostPlayedByHash(keyHash: String? = null, limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false): Flow<List<MaimaiMostPlayedEntry>>
+    fun getMostPlayedByHash(keyHash: String? = null, limit: Int? = 30, period: String? = "month", date: String? = null, groupByHashkey: Boolean = false, difficulty: String? = null): Flow<List<MaimaiMostPlayedEntry>>
 
     /**
      * Retrieves the rank progression data.
@@ -187,7 +187,7 @@ interface IScorefetcherRepository {
      * @param targetKeyHash The specific player's hash key.
      * @return A [Flow] emitting the [RankProgressionResponse].
      */
-    fun getRankProgression(targetKeyHash: String? = null): Flow<RankProgressionResponse>
+    fun getRankProgression(targetKeyHash: String? = null, difficulty: String? = null): Flow<RankProgressionResponse>
 
     /**
      * Updates the public visibility of the player's progression.

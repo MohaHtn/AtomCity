@@ -55,8 +55,9 @@ class GetScorefetcherAnalyticsUseCase(private val repository: IScorefetcherRepos
         limit: Int? = 30,
         period: String? = "month",
         date: String? = null,
-        groupByHashkey: Boolean = false
-    ): Flow<List<MaimaiMostPlayedEntry>> = repository.getMostPlayed(limit, period, date, groupByHashkey)
+        groupByHashkey: Boolean = false,
+        difficulty: String? = null
+    ): Flow<List<MaimaiMostPlayedEntry>> = repository.getMostPlayed(limit, period, date, groupByHashkey, difficulty)
 
     /**
      * Retrieves the most played charts specific to a given user.
@@ -73,8 +74,9 @@ class GetScorefetcherAnalyticsUseCase(private val repository: IScorefetcherRepos
         limit: Int? = 30,
         period: String? = "month",
         date: String? = null,
-        groupByHashkey: Boolean = false
-    ): Flow<List<MaimaiMostPlayedEntry>> = repository.getMostPlayedByHash(keyHash, limit, period, date, groupByHashkey)
+        groupByHashkey: Boolean = false,
+        difficulty: String? = null
+    ): Flow<List<MaimaiMostPlayedEntry>> = repository.getMostPlayedByHash(keyHash, limit, period, date, groupByHashkey, difficulty)
 
     /**
      * Retrieves the progression history of a player's rank over time.
@@ -82,7 +84,7 @@ class GetScorefetcherAnalyticsUseCase(private val repository: IScorefetcherRepos
      * @param targetKeyHash The hash key identifying the user.
      * @return A [Flow] emitting the [RankProgressionResponse].
      */
-    fun getRankProgression(targetKeyHash: String? = null): Flow<RankProgressionResponse> = repository.getRankProgression(targetKeyHash)
+    fun getRankProgression(targetKeyHash: String? = null, difficulty: String? = null): Flow<RankProgressionResponse> = repository.getRankProgression(targetKeyHash, difficulty)
 
     /**
      * Updates the public visibility status of the player's progression data.

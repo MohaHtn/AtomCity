@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -42,11 +43,11 @@ fun MaimaiMostPlayedChart(
 
     var isGlobal by remember { mutableStateOf(true) }
     var selectedPeriod by remember { mutableStateOf("month") }
-    
+
     val todayLocal = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
     var currentDate by remember { mutableStateOf(todayLocal) }
     var showDatePicker by remember { mutableStateOf(false) }
-    
+
     val apiDate = remember(currentDate, selectedPeriod) {
         when (selectedPeriod) {
             "day" -> currentDate.toString() // yyyy-mm-dd

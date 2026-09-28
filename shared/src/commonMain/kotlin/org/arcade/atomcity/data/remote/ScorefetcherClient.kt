@@ -245,7 +245,8 @@ class ScorefetcherClient(
         week: String? = null,
         month: String? = null,
         alltime: String? = null,
-        groupByHashkey: Boolean = false
+        groupByHashkey: Boolean = false,
+        difficulty: String? = null
     ): List<MaimaiMostPlayedEntry> {
         val response: HttpResponse = client.get("${baseUrl}scores/most-played") {
             addApiKey()
@@ -257,6 +258,7 @@ class ScorefetcherClient(
             parameter("month", month)
             parameter("alltime", alltime)
             parameter("groupByHashkey", groupByHashkey)
+            if (!difficulty.isNullOrBlank()) parameter("difficulty", difficulty)
         }
         return if (response.status == HttpStatusCode.NotFound) {
             emptyList()
@@ -277,7 +279,8 @@ class ScorefetcherClient(
         week: String? = null,
         month: String? = null,
         alltime: String? = null,
-        groupByHashkey: Boolean = false
+        groupByHashkey: Boolean = false,
+        difficulty: String? = null
     ): List<MaimaiMostPlayedEntry> {
         val response: HttpResponse = client.get("${baseUrl}scores/most-played/by-keyhash") {
             addApiKey()
@@ -290,6 +293,7 @@ class ScorefetcherClient(
             parameter("month", month)
             parameter("alltime", alltime)
             parameter("groupByHashkey", groupByHashkey)
+            if (!difficulty.isNullOrBlank()) parameter("difficulty", difficulty)
         }
         return if (response.status == HttpStatusCode.NotFound) {
             emptyList()
@@ -306,10 +310,11 @@ class ScorefetcherClient(
         coerceInputValues = true
     }
 
-    suspend fun getRankProgression(): RankProgressionResponse {
+    suspend fun getRankProgression(difficulty: String? = null): RankProgressionResponse {
         val response: HttpResponse = client.get("${baseUrl}scores/progression/rank") {
             addApiKey()
             header("Accept", "application/json")
+            if (!difficulty.isNullOrBlank()) parameter("difficulty", difficulty)
         }
         if (response.status == HttpStatusCode.NotFound) {
             return RankProgressionResponse()

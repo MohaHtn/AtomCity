@@ -263,15 +263,16 @@ class ScorefetcherRepository(
         limit: Int?,
         period: String?,
         date: String?,
-        groupByHashkey: Boolean
+        groupByHashkey: Boolean,
+        difficulty: String?
     ): Flow<List<MaimaiMostPlayedEntry>> = flow {
         try {
             val response = when (period?.lowercase()) {
-                "day" -> scorefetcherClient.getMostPlayed(limit = limit, day = date, groupByHashkey = groupByHashkey)
-                "week" -> scorefetcherClient.getMostPlayed(limit = limit, week = date, groupByHashkey = groupByHashkey)
-                "month" -> scorefetcherClient.getMostPlayed(limit = limit, month = date, groupByHashkey = groupByHashkey)
-                "alltime" -> scorefetcherClient.getMostPlayed(limit = limit, alltime = "true", groupByHashkey = groupByHashkey)
-                else -> scorefetcherClient.getMostPlayed(limit = limit, period = period, date = date, groupByHashkey = groupByHashkey)
+                "day" -> scorefetcherClient.getMostPlayed(limit = limit, day = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
+                "week" -> scorefetcherClient.getMostPlayed(limit = limit, week = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
+                "month" -> scorefetcherClient.getMostPlayed(limit = limit, month = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
+                "alltime" -> scorefetcherClient.getMostPlayed(limit = limit, alltime = "true", groupByHashkey = groupByHashkey, difficulty = difficulty)
+                else -> scorefetcherClient.getMostPlayed(limit = limit, period = period, date = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
             }
             response.forEach { entry ->
                 entry.jacketImageUrl = entry.songNameJp?.let { findJacketUrlBySongName(it) }
@@ -303,7 +304,8 @@ class ScorefetcherRepository(
         limit: Int?,
         period: String?,
         date: String?,
-        groupByHashkey: Boolean
+        groupByHashkey: Boolean,
+        difficulty: String?
     ): Flow<List<MaimaiMostPlayedEntry>> = flow {
         try {
             val key = keyHash ?: PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")
@@ -312,11 +314,11 @@ class ScorefetcherRepository(
                 return@flow
             }
             val response = when (period?.lowercase()) {
-                "day" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, day = date, groupByHashkey = groupByHashkey)
-                "week" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, week = date, groupByHashkey = groupByHashkey)
-                "month" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, month = date, groupByHashkey = groupByHashkey)
-                "alltime" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, alltime = "true", groupByHashkey = groupByHashkey)
-                else -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, period = period, date = date, groupByHashkey = groupByHashkey)
+                "day" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, day = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
+                "week" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, week = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
+                "month" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, month = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
+                "alltime" -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, alltime = "true", groupByHashkey = groupByHashkey, difficulty = difficulty)
+                else -> scorefetcherClient.getMostPlayedByHash(keyHash = key, limit = limit, period = period, date = date, groupByHashkey = groupByHashkey, difficulty = difficulty)
             }
             response.forEach { entry ->
                 entry.jacketImageUrl = entry.songNameJp?.let { findJacketUrlBySongName(it) }
@@ -343,9 +345,9 @@ class ScorefetcherRepository(
         }
     }
 
-    override fun getRankProgression(targetKeyHash: String?): Flow<RankProgressionResponse> = flow {
+    override fun getRankProgression(targetKeyHash: String?, difficulty: String?): Flow<RankProgressionResponse> = flow {
         try {
-            val response = scorefetcherClient.getRankProgression()
+            val response = scorefetcherClient.getRankProgression(difficulty = difficulty)
             emit(response)
         } catch (e: Exception) {
             PlatformUtils.log("ScorefetcherRepository", "Error fetching rank progression: ${e.message}", true)
