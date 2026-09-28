@@ -40,6 +40,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.game.taiko.TaikoScoreItem
 import org.arcade.atomcity.utils.PlatformUtils
 import org.arcade.atomcity.utils.rememberPlatformContext
@@ -126,6 +127,8 @@ fun TaikoBestScores(
     var isSaveAction by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    val isNightMode = isAppInDarkTheme()
+
     LaunchedEffect(Unit) {
         taikoViewModel.fetchBestScores()
     }
@@ -137,12 +140,12 @@ fun TaikoBestScores(
                 title = {
                     Column {
                         Text(
-                            "Top 30 Scores",
+                            "30 Meilleurs Scores",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "Mes meilleurs scores absolus",
+                            "Vos 30 meilleurs scores",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -314,7 +317,8 @@ fun TaikoBestScores(
                                             onNavigateToRoute = navController::navigate,
                                             onFavoriteToggle = {
                                                 entry.songId?.let { taikoViewModel.toggleFavorite(it) }
-                                            }
+                                            },
+                                            isNightMode = isNightMode
                                         )
                                     }
                                 }

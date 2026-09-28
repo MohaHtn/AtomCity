@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.game.maimai.details
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.utils.format
 import org.arcade.atomcity.utils.formatPlayDate
 
@@ -34,35 +36,35 @@ import org.arcade.atomcity.utils.formatPlayDate
 fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {}) {
     val difficultyColor = getJacketBorderColor(historyEntry.difficultyLevelJson?.value?.lowercase())
     val label = historyEntry.difficultyLevelJson?.label
-    
+
     ElevatedCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
         ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
     ) {
         Row(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Surface(
                     color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
                 ) {
                     Text(
                         text = formatPlayDate(historyEntry.playDate),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         ),
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
@@ -70,7 +72,7 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
                     Box(
                         modifier = Modifier
                             .size(12.dp)
-                            .background(difficultyColor, CircleShape)
+                            .background(difficultyColor, CircleShape),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     val diffJson = historyEntry.difficultyLevelJson
@@ -80,7 +82,7 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
                         } else {
                             "${diffJson?.label ?: ""} ${historyEntry.difficultyLevel}"
                         },
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                     )
                 }
             }
@@ -88,28 +90,49 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
             Column(horizontalAlignment = Alignment.End) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     val fcText = historyEntry.fcApText
                     if (!fcText.isNullOrEmpty()) {
+                        val isNightMode = isAppInDarkTheme()
                         val (bgColor, textColor) = when (fcText.uppercase()) {
-                            "FC" -> Color(0xFFE3F2FD) to Color(0xFF1976D2)
-                            "FC+" -> Color(0xFFFFF9C4) to Color(0xFFC99A2E)
-                            "AP", "AP+" -> Color(0xFFE0F2F1) to Color(0xFF00897B)
-                            else -> Color(0xFFE0E0E0) to Color(0xFF424242)
+                            "FC" -> if (isNightMode) {
+                                Color(0xFF1565C0).copy(alpha = 0.45f) to Color(0xFF90CAF9)
+                            } else {
+                                Color(0xFFE3F2FD) to Color(0xFF1976D2)
+                            }
+                            "FC+" -> if (isNightMode) {
+                                Color(0xFF332A00) to Color(0xFFFFD54F)
+                            } else {
+                                Color(0xFFFFF9C4) to Color(0xFFC99A2E)
+                            }
+                            "AP", "AP+" -> if (isNightMode) {
+                                Color(0xFF00897B).copy(alpha = 0.45f) to Color(0xFF80CBC4)
+                            } else {
+                                Color(0xFFE0F2F1) to Color(0xFF00897B)
+                            }
+                            else -> if (isNightMode) {
+                                Color(0xFF424242).copy(alpha = 0.45f) to Color(0xFFE0E0E0)
+                            } else {
+                                Color(0xFFE0E0E0) to Color(0xFF424242)
+                            }
                         }
                         Surface(
                             color = bgColor,
-                            shape = RoundedCornerShape(6.dp)
+                            shape = RoundedCornerShape(6.dp),
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = if (isNightMode) textColor.copy(alpha = 0.4f) else textColor.copy(alpha = 0.2f),
+                            ),
                         ) {
                             Text(
                                 text = fcText,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Black,
                                     fontSize = 10.sp,
-                                    color = textColor
+                                    color = textColor,
                                 ),
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             )
                         }
                     }
@@ -118,10 +141,10 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
                         text = historyEntry.rank ?: "",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Black,
-                            color = difficultyColor
+                            color = difficultyColor,
                         ),
                         maxLines = 1,
-                        softWrap = false
+                        softWrap = false,
                     )
                 }
 
@@ -129,7 +152,7 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
                     text = "${((historyEntry.achievement ?: 0.0) / 100.0).format(2)}%",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
                     maxLines = 1,
-                    softWrap = false
+                    softWrap = false,
                 )
             }
         }

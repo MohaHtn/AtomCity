@@ -50,6 +50,7 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.game.taiko.getDifficultyDrawable
 import org.arcade.atomcity.ui.game.taiko.setDifficultyColorBackground
 import org.arcade.atomcity.ui.theme.NijiiroFontFamily
@@ -144,7 +145,7 @@ fun TaikoProgress(
     }
 
     val subtitleText = if (isPersonnel) {
-        "Mes statistiques"
+        "Votre progression au sein du jeu"
     } else if (selectedUser != null) {
         "Statistiques de ${selectedUser.nickname ?: "Joueur #${selectedUser.baid}"}"
     } else {
@@ -693,7 +694,8 @@ private fun TotalStatBadge(label: String, targetCount: Int, targetTotal: Int, co
 @Composable
 fun ProgressCard(
     stat: TaikoProgressStats,
-    onShareClick: ((TaikoProgressStats) -> Unit)? = null
+    onShareClick: ((TaikoProgressStats) -> Unit)? = null,
+    isNightMode: Boolean = isAppInDarkTheme()
 ) {
     val (difficultyName, difficultySubLabel) = when (stat.difficulty) {
         1 -> "Kantan" to "Facile"
@@ -711,11 +713,16 @@ fun ProgressCard(
     val animatedClearCount by animateIntAsState(stat.clearCount, tween(500), label = "cardClearCount")
     val animatedTotalSongs by animateIntAsState(stat.totalSongs, tween(500), label = "cardTotalSongs")
 
+    val textColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+    val subTextColor = if (isNightMode) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val surfaceBadgeBg = if (isNightMode) Color.White.copy(alpha = 0.22f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+    val iconTint = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
-        colors = setDifficultyColorBackground(stat.difficulty)
+        colors = setDifficultyColorBackground(stat.difficulty, isNightMode)
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -758,7 +765,7 @@ fun ProgressCard(
                                 text = difficultyName,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = textColor,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -767,7 +774,7 @@ fun ProgressCard(
                                     text = difficultySubLabel,
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color.White.copy(alpha = 0.85f),
+                                    color = subTextColor,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -781,13 +788,13 @@ fun ProgressCard(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(10.dp),
-                            color = Color.White.copy(alpha = 0.22f)
+                            color = surfaceBadgeBg
                         ) {
                             Text(
                                 text = "$rateFormatted%",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = textColor,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                             )
                         }
@@ -800,7 +807,7 @@ fun ProgressCard(
                                 Icon(
                                     imageVector = Icons.Default.Share,
                                     contentDescription = "Partager la carte de rang",
-                                    tint = Color.White,
+                                    tint = iconTint,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -811,14 +818,32 @@ fun ProgressCard(
                 Text(
                     text = "$animatedClearCount / $animatedTotalSongs chansons réussies",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.85f)
+                    color = subTextColor
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))
 
-                ProgressRow("Clear", stat.clearCount, stat.totalSongs, barColor = Color(0xFFE0E0E0))
-                ProgressRow("Full Combo", stat.fullComboCount, stat.totalSongs, barColor = Color(0xFFFFD700))
-                ProgressRow("Donderful Combo", stat.donderfulComboCount, stat.totalSongs, barColor = Color(0xFFFF80AB))
+                ProgressRow(
+                    label = "Clear",
+                    targetCount = stat.clearCount,
+                    targetTotal = stat.totalSongs,
+                    barColor = if (isNightMode) Color(0xFFE0E0E0) else Color(0xFF616161),
+                    isNightMode = isNightMode
+                )
+                ProgressRow(
+                    label = "Full Combo",
+                    targetCount = stat.fullComboCount,
+                    targetTotal = stat.totalSongs,
+                    barColor = if (isNightMode) Color(0xFFFFD700) else Color(0xFFD4A000),
+                    isNightMode = isNightMode
+                )
+                ProgressRow(
+                    label = "Donderful Combo",
+                    targetCount = stat.donderfulComboCount,
+                    targetTotal = stat.totalSongs,
+                    barColor = if (isNightMode) Color(0xFFFF80AB) else Color(0xFFE91E63),
+                    isNightMode = isNightMode
+                )
             }
         }
     }
@@ -829,7 +854,8 @@ fun ProgressRow(
     label: String,
     targetCount: Int,
     targetTotal: Int,
-    barColor: Color = Color.White
+    barColor: Color = Color.White,
+    isNightMode: Boolean = isAppInDarkTheme()
 ) {
     val count by animateIntAsState(targetCount, tween(500), label = "rowCount")
     val total by animateIntAsState(targetTotal, tween(500), label = "rowTotal")
@@ -838,6 +864,10 @@ fun ProgressRow(
     val animatedProgress by animateFloatAsState(targetProgress, tween(500), label = "rowProgress")
     
     val percentStr = if (total > 0) "${((count.toDouble() / total.toDouble()) * 100.0).format(1)}%" else "0.0%"
+
+    val textColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+    val labelColor = if (isNightMode) Color.White.copy(alpha = 0.9f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val trackColor = if (isNightMode) Color.White.copy(alpha = 0.25f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -848,7 +878,7 @@ fun ProgressRow(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = Color.White.copy(alpha = 0.9f),
+                color = labelColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -856,7 +886,7 @@ fun ProgressRow(
                 text = "$count ($percentStr)",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = textColor
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
@@ -867,7 +897,7 @@ fun ProgressRow(
                 .height(6.dp)
                 .clip(RoundedCornerShape(3.dp)),
             color = barColor,
-            trackColor = Color.White.copy(alpha = 0.25f),
+            trackColor = trackColor,
         )
     }
 }

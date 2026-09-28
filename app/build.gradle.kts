@@ -27,7 +27,7 @@ extensions.configure<ApplicationExtension> {
         applicationId = "org.arcade.atomcity"
         minSdk = 24
         targetSdk = 36
-        versionCode = 24
+        versionCode = 25
         versionName = "1.2"
 
         testInstrumentationRunner =
@@ -51,7 +51,7 @@ extensions.configure<ApplicationExtension> {
             "\"$scorefetcherApiKey\""
         )
 
-        versionNameSuffix = "pre-alpha-24"
+        versionNameSuffix = "pre-alpha-25"
     }
 
     buildTypes {

@@ -69,23 +69,26 @@ fun TaikoUserSettings(
                     taikoViewModel.userSettingsData.value?.myDonName?.let {
                         Column {
                             Text(
-                                text = "Profil du joueur",
+                                text = "Profil de $it",
                                 maxLines = 1,
+                                style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.titleMedium,
-                            )
+                                )
                             Text(
-                                text = it,
+                                text = "Changer les paramètres de votre profil",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.labelMedium,
                             )
                         }
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    FilledTonalIconButton(
+                        onClick = onBackClick,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
                     }
                 }

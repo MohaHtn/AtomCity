@@ -33,6 +33,8 @@ fun AtomCityTheme(
         ThemeMode.DARK -> true
     }
 
+    PlatformThemeSetup(darkTheme = darkTheme)
+
     val targetColorScheme = rememberColorScheme(
         darkTheme = darkTheme,
         dynamicColor = true,
@@ -150,3 +152,7 @@ expect fun rememberColorScheme(
     customColor: Color,
     isAmoledMode: Boolean
 ): ColorScheme
+
+@Composable
+expect fun PlatformThemeSetup(darkTheme: Boolean)
+

@@ -7,6 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 @Composable
+actual fun PlatformThemeSetup(darkTheme: Boolean) {
+    // Platform-specific theme setup for iOS
+}
+
+@Composable
 actual fun rememberColorScheme(
     darkTheme: Boolean,
     dynamicColor: Boolean,

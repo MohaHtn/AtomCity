@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.game.taiko
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +31,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import kotlinx.coroutines.launch
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.game.taiko.details.*
 import org.arcade.atomcity.ui.game.taiko.settings.getRandomName
 import org.arcade.atomcity.ui.game.taiko.settings.getScoreRankImageUrl
@@ -119,6 +122,8 @@ fun TaikoScoresDetails(
         }
     }
 
+    val isNightMode = isAppInDarkTheme()
+
     val songInfo = selectedScore ?: filteredScores.firstOrNull() ?: scoresData?.songHistoryData?.firstOrNull { it.songId == songId }
     val targetDifficulty = targetDifficultyArg ?: songInfo?.difficulty
 
@@ -179,6 +184,7 @@ fun TaikoScoresDetails(
                     if (getTaikoGenreInfo(songGenre) != null) {
                         TaikoGenreBadge(
                             genre = songGenre,
+                            isNightMode = isNightMode,
                             modifier = Modifier.padding(end = 4.dp)
                         )
                     }
@@ -219,7 +225,8 @@ fun TaikoScoresDetails(
                         TaikoScoreCard(
                             entry = score,
                             isBestScore = (score.score == bestScoreEntry?.score && score.playTime == bestScoreEntry?.playTime),
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            isNightMode = isNightMode
                         )
                     }
                 }
@@ -242,6 +249,9 @@ fun TaikoScoresDetails(
 
                     items(communityBestScores) { (baid, score) ->
                         val user = taikoUsers.find { it.baid == baid }
+                        val diffColor = getDifficultyColor(score.difficulty)
+                        val cardTextColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+                        val cardTextSecondary = if (isNightMode) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
                         
                         LaunchedEffect(baid, user?.nickname) {
                             if (user?.nickname == null) {
@@ -252,8 +262,13 @@ fun TaikoScoresDetails(
                         ElevatedCard(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 8.dp),
-                            colors = setDifficultyColorBackground(score.difficulty),
+                                .padding(bottom = 8.dp)
+                                .border(
+                                    1.dp,
+                                    if (isNightMode) diffColor.copy(alpha = 0.35f) else diffColor.copy(alpha = 0.25f),
+                                    RoundedCornerShape(24.dp)
+                                ),
+                            colors = setDifficultyColorBackground(score.difficulty, isNightMode),
                             shape = RoundedCornerShape(24.dp),
                             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
                         ) {
@@ -267,26 +282,27 @@ fun TaikoScoresDetails(
                                         Text(
                                             text = user?.nickname ?: "Joueur $baid",
                                             style = MaterialTheme.typography.titleSmall,
-                                            color = Color.White,
+                                            color = cardTextColor,
                                             fontWeight = FontWeight.Bold
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             text = formatTaikoScore(score.score),
                                             style = MaterialTheme.typography.titleMedium,
-                                            color = Color.White,
+                                            color = cardTextColor,
                                             fontWeight = FontWeight.Black
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = displayDifficultyName(score.difficulty),
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = Color.White.copy(alpha = 0.8f)
+                                            color = diffColor,
+                                            fontWeight = FontWeight.Bold
                                         )
                                     }
 
                                     Column(horizontalAlignment = Alignment.End) {
-                                        TaikoPlaySettingRow(entry = score)
+                                        TaikoPlaySettingRow(entry = score, isNightMode = isNightMode)
 
                                         Spacer(modifier = Modifier.height(6.dp))
 
@@ -294,14 +310,14 @@ fun TaikoScoresDetails(
                                             Text(
                                                 text = "MAX COMBO ${score.comboCount}",
                                                 style = MaterialTheme.typography.labelSmall,
-                                                color = Color.White,
+                                                color = cardTextColor,
                                                 fontWeight = FontWeight.Bold
                                             )
                                         }
                                         Text(
                                             text = formatPlayDate(score.playTime.toString(), isUtc = false),
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = Color.White.copy(alpha = 0.7f)
+                                            color = cardTextSecondary
                                         )
                                     }
                                 }
@@ -449,169 +465,185 @@ fun TaikoScoresDetails(
                 }
 
                     items(sortedHistory) { score ->
-                    ElevatedCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp)
-                            .clickable {
-                                if (score == selectedScore) {
-                                    coroutineScope.launch {
-                                        listState.animateScrollToItem(0)
-                                    }
-                                    PlatformUtils.hapticImpact()
-                                } else {
-                                    val route = buildTaikoScoreRoute(score)
-                                    if (route != null) {
-                                        onNavigateToRoute(route)
-                                        PlatformUtils.hapticImpact()
-                                    }
-                                }
-                            },
-                        colors = setDifficultyColorBackground(score.difficulty),
-                        shape = RoundedCornerShape(24.dp),
-                        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            Image(
-                                painter = painterResource(getDifficultyDrawable(score.difficulty)),
-                                contentDescription = null,
-                                modifier = Modifier.align(Alignment.BottomEnd).size(80.dp),
-                                contentScale = ContentScale.Fit,
-                                alpha = 0.2f
-                            )
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.Top
-                                ) {
-                                    Column(
-                                        modifier = Modifier.weight(1f, fill = false),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                        ) {
-                                            Text(
-                                                text = displayDifficultyName(score.difficulty),
-                                                style = MaterialTheme.typography.titleMedium,
-                                                color = Color.White,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(
-                                                text = "★ ${score.stars ?: 0}",
-                                                style = MaterialTheme.typography.titleMedium.copy(
-                                                    fontWeight = FontWeight.Black
-                                                ),
-                                                color = Color.White
-                                            )
-                                        }
+                        val diffColor = getDifficultyColor(score.difficulty)
+                        val cardTextColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+                        val cardTextSecondary = if (isNightMode) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
 
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ElevatedCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                                .border(
+                                    1.dp,
+                                    if (isNightMode) diffColor.copy(alpha = 0.35f) else diffColor.copy(alpha = 0.25f),
+                                    RoundedCornerShape(24.dp)
+                                )
+                                .clickable {
+                                    if (score == selectedScore) {
+                                        coroutineScope.launch {
+                                            listState.animateScrollToItem(0)
+                                        }
+                                        PlatformUtils.hapticImpact()
+                                    } else {
+                                        val route = buildTaikoScoreRoute(score)
+                                        if (route != null) {
+                                            onNavigateToRoute(route)
+                                            PlatformUtils.hapticImpact()
+                                        }
+                                    }
+                                },
+                            colors = setDifficultyColorBackground(score.difficulty, isNightMode),
+                            shape = RoundedCornerShape(24.dp),
+                            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+                        ) {
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                Image(
+                                    painter = painterResource(getDifficultyDrawable(score.difficulty)),
+                                    contentDescription = null,
+                                    modifier = Modifier.align(Alignment.BottomEnd).size(80.dp),
+                                    contentScale = ContentScale.Fit,
+                                    alpha = if (isNightMode) 0.18f else 0.15f
+                                )
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.weight(1f, fill = false),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
-                                            // Crown Badge
-                                            val crownUrl = getCrownImageUrl(score.crown)
-                                            val crownTitle = getCrownTitle(score.crown)
-                                            Surface(
-                                                color = Color.Black.copy(alpha = 0.35f),
-                                                shape = RoundedCornerShape(6.dp)
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                                             ) {
-                                                Row(
-                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                                ) {
-                                                    AsyncImage(
-                                                        model = crownUrl,
-                                                        contentDescription = crownTitle,
-                                                        modifier = Modifier.height(18.dp),
-                                                        contentScale = ContentScale.Fit
-                                                    )
-                                                    Text(
-                                                        text = crownTitle,
-                                                        style = MaterialTheme.typography.labelSmall.copy(
-                                                            fontWeight = FontWeight.Bold,
-                                                            fontSize = 10.sp
-                                                        ),
-                                                        color = Color.White
-                                                    )
-                                                }
+                                                Text(
+                                                    text = displayDifficultyName(score.difficulty),
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    color = diffColor,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = "★ ${score.stars ?: 0}",
+                                                    style = MaterialTheme.typography.titleMedium.copy(
+                                                        fontWeight = FontWeight.Black
+                                                    ),
+                                                    color = cardTextColor
+                                                )
                                             }
 
-                                            // Rank Badge
-                                            val rankUrl = getScoreRankImageUrl(score.scoreRank)
-                                            if (rankUrl != null) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                // Crown Badge
+                                                val crownUrl = getCrownImageUrl(score.crown)
+                                                val crownTitle = getCrownTitle(score.crown)
+                                                val crownInfo = getCrownBadgeInfo(score.crown, isNightMode)
+                                                val isFailedCrown = score.crown == 0 || score.crown == null
+
                                                 Surface(
-                                                    color = Color.Black.copy(alpha = 0.35f),
-                                                    shape = RoundedCornerShape(6.dp)
+                                                    color = crownInfo.containerColor,
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    border = BorderStroke(1.dp, crownInfo.borderColor)
                                                 ) {
-                                                    Box(
+                                                    Row(
                                                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                                        contentAlignment = Alignment.Center
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                                                     ) {
                                                         AsyncImage(
-                                                            model = rankUrl,
-                                                            contentDescription = "Rank",
+                                                            model = crownUrl,
+                                                            contentDescription = crownTitle,
                                                             modifier = Modifier.height(18.dp),
-                                                            contentScale = ContentScale.Fit
+                                                            contentScale = ContentScale.Fit,
+                                                            colorFilter = if (isFailedCrown) ColorFilter.tint(if (isNightMode) Color.White else Color.Black) else null
                                                         )
+                                                        Text(
+                                                            text = crownTitle,
+                                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                                fontWeight = FontWeight.Bold,
+                                                                fontSize = 10.sp
+                                                            ),
+                                                            color = crownInfo.contentColor
+                                                        )
+                                                    }
+                                                }
+
+                                                // Rank Badge
+                                                val rankUrl = getScoreRankImageUrl(score.scoreRank)
+                                                val rankInfo = getScoreRankBadgeInfo(score.scoreRank, isNightMode)
+                                                if (rankUrl != null && rankInfo != null) {
+                                                    Surface(
+                                                        color = rankInfo.containerColor,
+                                                        shape = RoundedCornerShape(6.dp),
+                                                        border = BorderStroke(1.dp, rankInfo.contentColor.copy(alpha = if (isNightMode) 0.4f else 0.3f))
+                                                    ) {
+                                                        Box(
+                                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            AsyncImage(
+                                                                model = rankUrl,
+                                                                contentDescription = "Rank",
+                                                                modifier = Modifier.height(18.dp),
+                                                                contentScale = ContentScale.Fit
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
+
+                                        // TOP RIGHT CORNER: PlaySetting badges
+                                        TaikoPlaySettingRow(entry = score, isNightMode = isNightMode)
                                     }
 
-                                    // TOP RIGHT CORNER: PlaySetting badges
-                                    TaikoPlaySettingRow(entry = score)
-                                }
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = formatTaikoScore(score.score),
-                                            style = MaterialTheme.typography.headlineSmall,
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Black
-                                        )
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                            modifier = Modifier.padding(top = 4.dp)
-                                        ) {
-                                            MiniScoreBadge("G", score.goodCount, Color(0xFFFFD700))
-                                            MiniScoreBadge("O", score.okCount, Color(0xFFC0C0C0))
-                                            MiniScoreBadge("M", score.missCount, Color(0xFFE57373))
-                                        }
-                                    }
-                                    
-                                    Column(horizontalAlignment = Alignment.End) {
-                                        if ((score.comboCount ?: 0) > 0) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column {
                                             Text(
-                                                text = "MAX COMBO ${score.comboCount}",
+                                                text = formatTaikoScore(score.score),
+                                                style = MaterialTheme.typography.headlineSmall,
+                                                color = cardTextColor,
+                                                fontWeight = FontWeight.Black
+                                            )
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                                modifier = Modifier.padding(top = 4.dp)
+                                            ) {
+                                                MiniScoreBadge("G", score.goodCount, Color(0xFFFFD700), isNightMode)
+                                                MiniScoreBadge("O", score.okCount, Color(0xFFC0C0C0), isNightMode)
+                                                MiniScoreBadge("M", score.missCount, Color(0xFFE57373), isNightMode)
+                                            }
+                                        }
+                                        
+                                        Column(horizontalAlignment = Alignment.End) {
+                                            if ((score.comboCount ?: 0) > 0) {
+                                                Text(
+                                                    text = "MAX COMBO ${score.comboCount}",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = cardTextColor,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            Text(
+                                                text = formatPlayDate(score.playTime.toString(), isUtc = false),
                                                 style = MaterialTheme.typography.labelSmall,
-                                                color = Color.White,
-                                                fontWeight = FontWeight.Bold
+                                                color = cardTextSecondary
                                             )
                                         }
-                                        Text(
-                                            text = formatPlayDate(score.playTime.toString(), isUtc = false),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = Color.White.copy(alpha = 0.7f)
-                                        )
                                     }
                                 }
                             }
                         }
                     }
-                }
             }
         }
     }
@@ -620,7 +652,8 @@ fun TaikoScoresDetails(
 @Composable
 private fun TaikoPlaySettingRow(
     entry: TaikoServerHistoryEntry,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isNightMode: Boolean = isAppInDarkTheme()
 ) {
     val setting = entry.playSetting ?: return
 
@@ -639,23 +672,55 @@ private fun TaikoPlaySettingRow(
 
     if (hasSpeed) {
         activeBadges.add {
-            TaikoPlaySettingMiniBadge(speedImgUrl, "Vitesse $speedText")
+            val container = if (isNightMode) Color(0xFF512DA8).copy(alpha = 0.45f) else null
+            val content = if (isNightMode) Color(0xFFD1C4E9) else null
+            TaikoPlaySettingMiniBadge(
+                imageUrl = speedImgUrl,
+                text = "Vitesse $speedText",
+                isNightMode = isNightMode,
+                containerColor = container,
+                contentColor = content
+            )
         }
     }
     if (isVanishOn) {
         activeBadges.add {
-            TaikoPlaySettingMiniBadge("https://taiko.farewell.dev/images/Doron.png", "Disparition")
+            val container = if (isNightMode) Color(0xFF00838F).copy(alpha = 0.45f) else null
+            val content = if (isNightMode) Color(0xFFB2EBF2) else null
+            TaikoPlaySettingMiniBadge(
+                imageUrl = "https://taiko.farewell.dev/images/Doron.png",
+                text = "Disparition",
+                isNightMode = isNightMode,
+                containerColor = container,
+                contentColor = content
+            )
         }
     }
     if (isInverseOn) {
         activeBadges.add {
-            TaikoPlaySettingMiniBadge("https://taiko.farewell.dev/images/Mirror.png", "Inverser")
+            val container = if (isNightMode) Color(0xFFC2185B).copy(alpha = 0.45f) else null
+            val content = if (isNightMode) Color(0xFFF8BBD0) else null
+            TaikoPlaySettingMiniBadge(
+                imageUrl = "https://taiko.farewell.dev/images/Mirror.png",
+                text = "Inverser",
+                isNightMode = isNightMode,
+                containerColor = container,
+                contentColor = content
+            )
         }
     }
     if (isRandomOn) {
         val randomImg = if (randomVal == 2) "Random_Messy.png" else "Random_Whimsical.png"
+        val container = if (isNightMode) Color(0xFFE65100).copy(alpha = 0.45f) else null
+        val content = if (isNightMode) Color(0xFFFFCC80) else null
         activeBadges.add {
-            TaikoPlaySettingMiniBadge("https://taiko.farewell.dev/images/$randomImg", getRandomName(randomVal))
+            TaikoPlaySettingMiniBadge(
+                imageUrl = "https://taiko.farewell.dev/images/$randomImg",
+                text = getRandomName(randomVal),
+                isNightMode = isNightMode,
+                containerColor = container,
+                contentColor = content
+            )
         }
     }
 
@@ -680,11 +745,19 @@ private fun TaikoPlaySettingRow(
 @Composable
 private fun TaikoPlaySettingMiniBadge(
     imageUrl: String?,
-    text: String
+    text: String,
+    isNightMode: Boolean = isAppInDarkTheme(),
+    containerColor: Color? = null,
+    contentColor: Color? = null
 ) {
+    val bg = containerColor ?: if (isNightMode) Color.Black.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.08f)
+    val textAndBorderColor = contentColor ?: if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+    val border = BorderStroke(1.dp, textAndBorderColor.copy(alpha = if (isNightMode) 0.35f else 0.12f))
+
     Surface(
-        color = Color.Black.copy(alpha = 0.35f),
-        shape = RoundedCornerShape(6.dp)
+        color = bg,
+        shape = RoundedCornerShape(6.dp),
+        border = border
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
@@ -705,7 +778,7 @@ private fun TaikoPlaySettingMiniBadge(
                     fontWeight = FontWeight.Bold,
                     fontSize = 10.sp
                 ),
-                color = Color.White
+                color = textAndBorderColor
             )
         }
     }

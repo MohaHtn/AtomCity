@@ -132,7 +132,7 @@ fun TaikoPlayerDetailsContent(
                         .height(lerp(48.dp, 36.dp, collapsedFraction))
                         .padding(horizontal = 4.dp),
                     thickness = 2.dp,
-                    color = Color.Black
+                    color = textColor
                 )
             }
 

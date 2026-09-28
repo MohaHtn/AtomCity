@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.game.maimai
 
+import MaimaiScoreItem
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade

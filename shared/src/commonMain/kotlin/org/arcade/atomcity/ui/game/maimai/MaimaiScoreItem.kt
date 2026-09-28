@@ -1,6 +1,3 @@
-package org.arcade.atomcity.ui.game.maimai
-
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -24,6 +21,7 @@ import org.arcade.atomcity.domain.model.LevelInfo
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.*
 import org.arcade.atomcity.ui.game.common.getDifficultyColorBackground
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
+import org.arcade.atomcity.ui.game.maimai.MaimaiDifficultyBadge
 import org.arcade.atomcity.utils.formatPlayDate
 import org.koin.compose.koinInject
 
@@ -132,30 +130,6 @@ fun MaimaiScoreItem(
                                 .border(2.dp, difficultyColor, CircleShape),
                             contentScale = ContentScale.Crop
                         )
-                    }
-
-                    // Best score chip
-                    if (play.isHighScore == true) {
-                        Surface(
-                            color = if (isNightMode) Color(0xFF332A00) else Color(0xFFFFF9C4),
-                            shape = RoundedCornerShape(6.dp),
-                            border = if (isNightMode) BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f)) else null,
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .offset(y = if (isNarrow) (-14).dp else (-18).dp),
-                            shadowElevation = 1.dp
-                        ) {
-                            Text(
-                                text = "Meilleur score",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = if (isNarrow) 7.sp else 8.6.sp,
-                                    letterSpacing = 0.5.sp,
-                                    color = if (isNightMode) Color(0xFFFFD700) else Color(0xFFFBC02D)
-                                ),
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                            )
-                        }
                     }
                 }
 

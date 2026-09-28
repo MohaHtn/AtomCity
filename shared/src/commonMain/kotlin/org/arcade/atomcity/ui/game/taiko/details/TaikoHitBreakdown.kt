@@ -11,18 +11,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
+
 @Composable
-fun MiniScoreBadge(label: String, count: Int?, color: Color) {
+fun MiniScoreBadge(
+    label: String,
+    count: Int?,
+    color: Color,
+    isNightMode: Boolean = isAppInDarkTheme()
+) {
+    val countColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = "$label:",
-            style = MaterialTheme.typography.labelSmall,
-            color = color.copy(alpha = 0.8f)
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+            color = color
         )
         Text(
             text = count?.toString() ?: "0",
             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-            color = Color.White,
+            color = countColor,
             modifier = Modifier.padding(start = 2.dp)
         )
     }

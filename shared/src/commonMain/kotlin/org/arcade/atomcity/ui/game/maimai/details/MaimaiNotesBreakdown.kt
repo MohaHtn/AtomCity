@@ -18,26 +18,46 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 
 @Composable
-fun MaimaiScoreBadgeRow(scoreEntry: ScorefetcherApiData, modifier: Modifier = Modifier) {
+fun MaimaiScoreBadgeRow(
+    scoreEntry: ScorefetcherApiData,
+    modifier: Modifier = Modifier,
+    isNightMode: Boolean = isAppInDarkTheme()
+) {
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         horizontalAlignment = Alignment.Start,
         modifier = modifier
     ) {
         if (scoreEntry.isHighScore == true) {
+            val container = if (isNightMode) Color(0xFF332A00) else Color(0xFFFFF9C4)
+            val content = if (isNightMode) Color(0xFFFFD700) else Color(0xFFFBC02D)
             ScoreBadge(
                 text = "MEILLEUR SCORE",
-                containerColor = Color(0xFFFFF9C4),
-                contentColor = Color(0xFFFBC02D)
+                containerColor = container,
+                contentColor = content,
+                isNightMode = isNightMode
             )
         }
         if (scoreEntry.fullCombo != 0 && scoreEntry.isAllPerfect != true) {
+            val isFc1 = scoreEntry.fullCombo == 1
+            val container = if (isNightMode) {
+                if (isFc1) Color(0xFF1565C0).copy(alpha = 0.45f) else Color(0xFF332A00)
+            } else {
+                if (isFc1) Color(0xFFE3F2FD) else Color(0xFFFFF9C4)
+            }
+            val content = if (isNightMode) {
+                if (isFc1) Color(0xFF90CAF9) else Color(0xFFFFD54F)
+            } else {
+                if (isFc1) Color(0xFF1976D2) else Color(0xFFC99A2E)
+            }
             ScoreBadge(
-                text = if (scoreEntry.fullCombo == 1) "FULL COMBO" else "FULL COMBO +",
-                containerColor = if (scoreEntry.fullCombo == 1) Color(0xFFE3F2FD) else Color(0xFFFFF9C4),
-                contentColor = if (scoreEntry.fullCombo == 1) Color(0xFF1976D2) else Color(0xFFC99A2E)
+                text = if (isFc1) "FULL COMBO" else "FULL COMBO +",
+                containerColor = container,
+                contentColor = content,
+                isNightMode = isNightMode
             )
         }
         if (scoreEntry.isAllPerfect == true) {
@@ -56,29 +76,41 @@ fun MaimaiScoreBadgeRow(scoreEntry: ScorefetcherApiData, modifier: Modifier = Mo
                     }
                 }
             }
+            val container = if (isNightMode) Color(0xFF00897B).copy(alpha = 0.45f) else Color(0xFFE0F2F1)
+            val content = if (isNightMode) Color(0xFF80CBC4) else Color(0xFF00897B)
             
             ScoreBadge(
                 text = if (isApPlus) "ALL PERFECT +" else "ALL PERFECT",
-                containerColor = Color(0xFFE0F2F1),
-                contentColor = Color(0xFF00897B)
+                containerColor = container,
+                contentColor = content,
+                isNightMode = isNightMode
             )
         }
         if (scoreEntry.isTrackSkip == true) {
+            val container = if (isNightMode) Color(0xFFE53935).copy(alpha = 0.45f) else Color(0xFFFFEBEE)
+            val content = if (isNightMode) Color(0xFFEF9A9A) else Color(0xFFE53935)
             ScoreBadge(
                 text = "TRACK SKIP",
-                containerColor = Color(0xFFFFEBEE),
-                contentColor = Color(0xFFE53935)
+                containerColor = container,
+                contentColor = content,
+                isNightMode = isNightMode
             )
         }
     }
 }
 
 @Composable
-fun ScoreBadge(text: String, containerColor: Color, contentColor: Color) {
+fun ScoreBadge(
+    text: String,
+    containerColor: Color,
+    contentColor: Color,
+    isNightMode: Boolean = isAppInDarkTheme()
+) {
     Surface(
         color = containerColor,
         shape = RoundedCornerShape(8.dp),
-        shadowElevation = 2.dp
+        shadowElevation = if (isNightMode) 0.dp else 2.dp,
+        border = BorderStroke(1.dp, if (isNightMode) contentColor.copy(alpha = 0.4f) else contentColor.copy(alpha = 0.2f))
     ) {
         Text(
             text = text,

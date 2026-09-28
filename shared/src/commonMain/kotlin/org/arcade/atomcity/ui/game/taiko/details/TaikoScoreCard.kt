@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +33,7 @@ import org.arcade.atomcity.ui.game.taiko.displayDifficultyName
 import org.arcade.atomcity.ui.game.taiko.getDifficultyColor
 import org.arcade.atomcity.ui.game.taiko.getDifficultyDrawable
 import org.arcade.atomcity.ui.game.taiko.getTaikoGenreInfo
+import org.arcade.atomcity.ui.game.taiko.setDifficultyColorBackground
 import org.arcade.atomcity.ui.game.taiko.settings.getRandomName
 import org.arcade.atomcity.ui.game.taiko.settings.getScoreRankImageUrl
 import org.arcade.atomcity.ui.game.taiko.settings.getSpeedName
@@ -48,8 +49,20 @@ data class ScoreRankBadgeInfo(
     val contentColor: Color
 )
 
-fun getScoreRankBadgeInfo(scoreRank: Int?): ScoreRankBadgeInfo? {
+fun getScoreRankBadgeInfo(scoreRank: Int?, isNightMode: Boolean = false): ScoreRankBadgeInfo? {
     val imageUrl = getScoreRankImageUrl(scoreRank) ?: return null
+    if (isNightMode) {
+        return when (scoreRank) {
+            8 -> ScoreRankBadgeInfo("KIWAMI (極)", imageUrl, Color(0xFF512DA8).copy(alpha = 0.45f), Color(0xFFD1C4E9))
+            7 -> ScoreRankBadgeInfo("MIYABI PURPLE (雅 紫)", imageUrl, Color(0xFF7B1FA2).copy(alpha = 0.45f), Color(0xFFE1BEE7))
+            6 -> ScoreRankBadgeInfo("MIYABI PINK (雅 桃)", imageUrl, Color(0xFFC2185B).copy(alpha = 0.45f), Color(0xFFF8BBD0))
+            5 -> ScoreRankBadgeInfo("MIYABI GOLD (雅 金)", imageUrl, Color(0xFFF57F17).copy(alpha = 0.45f), Color(0xFFFFECB3))
+            4 -> ScoreRankBadgeInfo("IKI BLUE (粋 青)", imageUrl, Color(0xFF0288D1).copy(alpha = 0.45f), Color(0xFFB3E5FC))
+            3 -> ScoreRankBadgeInfo("IKI BRONZE (粋 銅)", imageUrl, Color(0xFF5D4037).copy(alpha = 0.45f), Color(0xD7CCC8))
+            1, 2 -> ScoreRankBadgeInfo("IKI WHITE (粋 白)", imageUrl, Color(0xFF616161).copy(alpha = 0.45f), Color(0xFFE0E0E0))
+            else -> null
+        }
+    }
     return when (scoreRank) {
         8 -> ScoreRankBadgeInfo("KIWAMI (極)", imageUrl, Color(0xFFEDE7F6), Color(0xFF512DA8))
         7 -> ScoreRankBadgeInfo("MIYABI PURPLE (雅 紫)", imageUrl, Color(0xFFF3E5F5), Color(0xFF7B1FA2))
@@ -66,34 +79,71 @@ data class CrownBadgeInfo(
     val title: String,
     val imageUrl: String,
     val containerColor: Color,
-    val contentColor: Color
+    val contentColor: Color,
+    val borderColor: Color = contentColor.copy(alpha = 0.4f)
 )
 
-fun getCrownBadgeInfo(crown: Int?): CrownBadgeInfo {
+fun getCrownBadgeInfo(crown: Int?, isNightMode: Boolean = false): CrownBadgeInfo {
+    if (isNightMode) {
+        return when (crown) {
+            3 -> CrownBadgeInfo(
+                title = "DONDERFUL COMBO",
+                imageUrl = "https://taiko.farewell.dev/images/crown_Dondaful.webp",
+                containerColor = Color(0xFF1B5E20).copy(alpha = 0.45f),
+                contentColor = Color(0xFFA5D6A7),
+                borderColor = Color(0xFFA5D6A7).copy(alpha = 0.4f)
+            )
+            2 -> CrownBadgeInfo(
+                title = "FULL COMBO",
+                imageUrl = "https://taiko.farewell.dev/images/crown_Gold.webp",
+                containerColor = Color(0xFFF57F17).copy(alpha = 0.45f),
+                contentColor = Color(0xFFFFD54F),
+                borderColor = Color(0xFFFFD54F).copy(alpha = 0.4f)
+            )
+            1 -> CrownBadgeInfo(
+                title = "CLEAR",
+                imageUrl = "https://taiko.farewell.dev/images/crown_Clear.webp",
+                containerColor = Color(0xFF1565C0).copy(alpha = 0.45f),
+                contentColor = Color(0xFF90CAF9),
+                borderColor = Color(0xFF90CAF9).copy(alpha = 0.4f)
+            )
+            else -> CrownBadgeInfo(
+                title = "FAILED",
+                imageUrl = "https://taiko.farewell.dev/images/crown_None.webp",
+                containerColor = Color(0xFFC62828).copy(alpha = 0.45f),
+                contentColor = Color(0xFFEF9A9A),
+                borderColor = Color(0xFFEF9A9A).copy(alpha = 0.4f)
+            )
+        }
+    }
     return when (crown) {
         3 -> CrownBadgeInfo(
             title = "DONDERFUL COMBO",
             imageUrl = "https://taiko.farewell.dev/images/crown_Dondaful.webp",
             containerColor = Color(0xFFE8F5E9),
-            contentColor = Color(0xFF2E7D32)
+            contentColor = Color(0xFF2E7D32),
+            borderColor = Color(0xFF2E7D32).copy(alpha = 0.3f)
         )
         2 -> CrownBadgeInfo(
             title = "FULL COMBO",
             imageUrl = "https://taiko.farewell.dev/images/crown_Gold.webp",
             containerColor = Color(0xFFFFF8E1),
-            contentColor = Color(0xFFF57F17)
+            contentColor = Color(0xFFF57F17),
+            borderColor = Color(0xFFF57F17).copy(alpha = 0.3f)
         )
         1 -> CrownBadgeInfo(
             title = "CLEAR",
             imageUrl = "https://taiko.farewell.dev/images/crown_Clear.webp",
             containerColor = Color(0xFFE3F2FD),
-            contentColor = Color(0xFF1565C0)
+            contentColor = Color(0xFF1565C0),
+            borderColor = Color(0xFF1565C0).copy(alpha = 0.3f)
         )
         else -> CrownBadgeInfo(
             title = "FAILED",
             imageUrl = "https://taiko.farewell.dev/images/crown_None.webp",
             containerColor = Color(0xFFFFEBEE),
-            contentColor = Color(0xFFC62828)
+            contentColor = Color(0xFFC62828),
+            borderColor = Color(0xFFC62828).copy(alpha = 0.3f)
         )
     }
 }
@@ -130,13 +180,20 @@ fun TaikoBadgeWithImage(
     text: String,
     containerColor: Color,
     contentColor: Color,
-    onInfoClick: (() -> Unit)? = null
+    onInfoClick: (() -> Unit)? = null,
+    isNightMode: Boolean = isAppInDarkTheme(),
+    borderColor: Color? = null,
+    colorFilter: ColorFilter? = null
 ) {
+    val border = BorderStroke(
+        1.dp,
+        borderColor ?: if (isNightMode) contentColor.copy(alpha = 0.35f) else contentColor.copy(alpha = 0.2f)
+    )
     Surface(
         color = containerColor,
         shape = RoundedCornerShape(8.dp),
-        shadowElevation = 2.dp,
-        border = BorderStroke(1.dp, contentColor.copy(alpha = 0.2f))
+        shadowElevation = if (isNightMode) 0.dp else 2.dp,
+        border = border
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -148,7 +205,8 @@ fun TaikoBadgeWithImage(
                     model = imageUrl,
                     contentDescription = text,
                     modifier = Modifier.height(20.dp),
-                    contentScale = ContentScale.Fit
+                    contentScale = ContentScale.Fit,
+                    colorFilter = colorFilter
                 )
             }
             Text(
@@ -183,11 +241,10 @@ fun TaikoBadgeWithImage(
 fun TaikoScoreBadgeRow(
     entry: TaikoServerHistoryEntry,
     isBestScore: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isNightMode: Boolean = isAppInDarkTheme()
 ) {
-    val difficultyColor = getDifficultyColor(entry.difficulty)
-    val isLightBackground = difficultyColor.luminance() > 0.5f
-    val topContentColor = if (isLightBackground) Color.Black else Color.White
+    val topContentColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
 
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -217,20 +274,26 @@ fun TaikoScoreBadgeRow(
             setting.speed?.let { speedVal ->
                 val speedStr = getSpeedName(speedVal)
                 val speedImgUrl = "https://taiko.farewell.dev/images/Speed/${if (speedVal in 0..14) speedVal else 0}.png"
+                val container = if (isNightMode) Color(0xFF512DA8).copy(alpha = 0.45f) else Color(0xFFEDE7F6)
+                val content = if (isNightMode) Color(0xFFD1C4E9) else Color(0xFF512DA8)
                 TaikoBadgeWithImage(
                     imageUrl = speedImgUrl,
                     text = "VITESSE $speedStr",
-                    containerColor = Color(0xFFEDE7F6),
-                    contentColor = Color(0xFF512DA8)
+                    containerColor = container,
+                    contentColor = content,
+                    isNightMode = isNightMode
                 )
             }
 
             if (setting.isInverseOn == true) {
+                val container = if (isNightMode) Color(0xFFC2185B).copy(alpha = 0.45f) else Color(0xFFFCE4EC)
+                val content = if (isNightMode) Color(0xFFF8BBD0) else Color(0xFFC2185B)
                 TaikoBadgeWithImage(
                     imageUrl = "https://taiko.farewell.dev/images/Mirror.png",
                     text = "INVERSER",
-                    containerColor = Color(0xFFFCE4EC),
-                    contentColor = Color(0xFFC2185B)
+                    containerColor = container,
+                    contentColor = content,
+                    isNightMode = isNightMode
                 )
             }
         }
@@ -400,19 +463,25 @@ private fun MetricCard(label: String, value: String, color: Color, modifier: Mod
 fun TaikoScoreCard(
     entry: TaikoServerHistoryEntry,
     isBestScore: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isNightMode: Boolean = isAppInDarkTheme()
 ) {
     var showScoreThresholdsSheet by remember { mutableStateOf(false) }
 
     val difficultyColor = getDifficultyColor(entry.difficulty)
-    val isLightBackground = difficultyColor.luminance() > 0.5f
-    val topContentColor = if (isLightBackground) Color.Black else Color.White
+    val topContentColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
 
     ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = difficultyColor),
+        colors = setDifficultyColorBackground(entry.difficulty, isNightMode),
         modifier = modifier
             .fillMaxWidth()
-            .border(1.dp, difficultyColor.copy(alpha = 0.5f), RoundedCornerShape(32.dp)),
+            .then(
+                if (isNightMode) Modifier.border(
+                    1.dp,
+                    difficultyColor.copy(alpha = 0.40f),
+                    RoundedCornerShape(32.dp)
+                ) else Modifier
+            ),
         shape = RoundedCornerShape(32.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
     ) {
@@ -431,6 +500,7 @@ fun TaikoScoreCard(
                     TaikoScoreBadgeRow(
                         entry = entry,
                         isBestScore = isBestScore,
+                        isNightMode = isNightMode,
                         modifier = Modifier.weight(1f, fill = false)
                     )
 
@@ -458,24 +528,36 @@ fun TaikoScoreCard(
                         // Right Play Setting Badges (Vanish & Random if active) under the date
                         entry.playSetting?.let { setting ->
                             if (setting.isVanishOn == true) {
+                                val container = if (isNightMode) Color(0xFF00838F).copy(alpha = 0.45f) else Color(0xFFE0F7FA)
+                                val content = if (isNightMode) Color(0xFFB2EBF2) else Color(0xFF00838F)
                                 TaikoBadgeWithImage(
                                     imageUrl = "https://taiko.farewell.dev/images/Doron.png",
                                     text = "DISPARITION",
-                                    containerColor = Color(0xFFE0F7FA),
-                                    contentColor = Color(0xFF00838F)
+                                    containerColor = container,
+                                    contentColor = content,
+                                    isNightMode = isNightMode
                                 )
                             }
 
                             val randomVal = setting.randomType ?: 0
                             if (randomVal == 1 || randomVal == 2) {
                                 val randomImg = if (randomVal == 2) "Random_Messy.png" else "Random_Whimsical.png"
-                                val container = if (randomVal == 1) Color(0xFFFFF3E0) else Color(0xFFFFE0B2)
-                                val content = if (randomVal == 1) Color(0xFFE65100) else Color(0xFFBF360C)
+                                val container = if (isNightMode) {
+                                    if (randomVal == 1) Color(0xFFE65100).copy(alpha = 0.45f) else Color(0xFFBF360C).copy(alpha = 0.45f)
+                                } else {
+                                    if (randomVal == 1) Color(0xFFFFF3E0) else Color(0xFFFFE0B2)
+                                }
+                                val content = if (isNightMode) {
+                                    if (randomVal == 1) Color(0xFFFFCC80) else Color(0xFFFFAB91)
+                                } else {
+                                    if (randomVal == 1) Color(0xFFE65100) else Color(0xFFBF360C)
+                                }
                                 TaikoBadgeWithImage(
                                     imageUrl = "https://taiko.farewell.dev/images/$randomImg",
                                     text = getRandomName(randomVal).uppercase(),
                                     containerColor = container,
-                                    contentColor = content
+                                    contentColor = content,
+                                    isNightMode = isNightMode
                                 )
                             }
                         }
@@ -535,7 +617,7 @@ fun TaikoScoreCard(
                             Text(
                                 text = "★ ${entry.stars ?: 0}",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                                color = Color.White
+                                color = topContentColor
                             )
                         }
                     }
@@ -612,8 +694,9 @@ fun TaikoScoreCard(
                         )
                     )
 
-                    val crownInfo = getCrownBadgeInfo(entry.crown)
-                    val rankInfo = getScoreRankBadgeInfo(entry.scoreRank)
+                    val crownInfo = getCrownBadgeInfo(entry.crown, isNightMode)
+                    val rankInfo = getScoreRankBadgeInfo(entry.scoreRank, isNightMode)
+                    val isFailedCrown = entry.crown == 0 || entry.crown == null
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -627,7 +710,10 @@ fun TaikoScoreCard(
                             text = crownInfo.title,
                             containerColor = crownInfo.containerColor,
                             contentColor = crownInfo.contentColor,
-                            onInfoClick = if (rankInfo == null) { { showScoreThresholdsSheet = true } } else null
+                            borderColor = crownInfo.borderColor,
+                            colorFilter = if (isFailedCrown) ColorFilter.tint(if (isNightMode) Color.White else Color.Black) else null,
+                            onInfoClick = if (rankInfo == null) { { showScoreThresholdsSheet = true } } else null,
+                            isNightMode = isNightMode
                         )
 
                         // Rank Badge (if present)
@@ -637,7 +723,8 @@ fun TaikoScoreCard(
                                 text = rankInfo.title,
                                 containerColor = rankInfo.containerColor,
                                 contentColor = rankInfo.contentColor,
-                                onInfoClick = { showScoreThresholdsSheet = true }
+                                onInfoClick = { showScoreThresholdsSheet = true },
+                                isNightMode = isNightMode
                             )
                         }
                     }

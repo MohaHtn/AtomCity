@@ -399,7 +399,9 @@ fun MaimaiMostPlayedChart(
                         modifier = Modifier.fillMaxWidth().padding(16.dp)
                     ) {
                         Column(
-                            modifier = Modifier.padding(32.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(

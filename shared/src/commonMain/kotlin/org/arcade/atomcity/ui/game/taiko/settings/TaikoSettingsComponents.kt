@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -255,20 +254,18 @@ fun ProfileHeader(
     imagesData: TaikoImagesData?,
     nameplateUrls: List<String>,
     taikoViewModel: TaikoViewModel,
+    modifier: Modifier = Modifier,
     titleFontSize: TextUnit? = null,
     nameFontSize: TextUnit? = null
 ) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-        shape = RoundedCornerShape(32.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier.fillMaxWidth().height(260.dp),
-                contentAlignment = Alignment.Center
-            ) {
+        Box(
+            modifier = Modifier.fillMaxWidth().height(260.dp),
+            contentAlignment = Alignment.Center
+        ) {
                 Surface(
                     modifier = Modifier.size(240.dp),
                     shape = CircleShape,
@@ -393,7 +390,6 @@ fun ProfileHeader(
                 titleFontSize = titleFontSize,
                 nameFontSize = nameFontSize
             )
-        }
     }
 }
 

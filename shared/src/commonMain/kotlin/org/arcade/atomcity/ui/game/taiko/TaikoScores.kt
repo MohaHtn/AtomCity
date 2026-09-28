@@ -35,6 +35,7 @@ import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.MarkdownText
 import org.arcade.atomcity.ui.core.OpenMiniMenu
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
@@ -68,10 +69,10 @@ fun TaikoScores(
     val collapsedFraction = scrollBehavior.state.collapsedFraction
 
     val extraItems = listOf(
-        Triple("taikoMostPlayed", "Les plus joués", "Statistiques de jeu"),
-        Triple("taikoBestScores", "Top 30", "Meilleurs scores"),
-        Triple("taikoProgress", "Complétion", "Progression par difficulté"),
-        Triple("taikoDan", "Dan Dojo", "Épreuves de qualification"),
+        Triple("taikoMostPlayed", "Les plus joués", "Les morceaux les plus joués"),
+        Triple("taikoBestScores", "30 Meilleurs scores", "Vos 30 Meilleurs scores"),
+        Triple("taikoProgress", "Complétion", "Consulter la progression de tous les joueurs"),
+        Triple("taikoDan", "Dan Dojo", "Vos essais au Dan Dojo"),
         Triple("taikoUserSettings", "Paramètres", "Modifier votre profil de jeu"),
         Triple("taikoUsers", "Utilisateurs", "Consulter les utilisateurs enregistrés")
     )
@@ -136,7 +137,8 @@ fun TaikoScores(
                             title = {
                                 TaikoPlayerDetails(
                                     taikoViewModel = taikoViewModel,
-                                    collapsedFraction = collapsedFraction
+                                    collapsedFraction = collapsedFraction,
+                                    titleOffsetY = 4.dp
                                 )
                             },
                             colors = TopAppBarDefaults.largeTopAppBarColors(
@@ -364,7 +366,11 @@ private fun ScoresList(
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
         items(scores.size) { index ->
-            TaikoScoreItem(scores[index], onNavigateToRoute, onFavoriteToggle)
+            TaikoScoreItem(
+                score = scores[index],
+                onNavigateToRoute = onNavigateToRoute,
+                onFavoriteToggle = onFavoriteToggle
+            )
             Spacer(modifier = Modifier.height(8.dp))
         }
     }

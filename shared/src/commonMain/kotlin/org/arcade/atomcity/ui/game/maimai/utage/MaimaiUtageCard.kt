@@ -1,5 +1,6 @@
 package org.arcade.atomcity.ui.game.maimai.utage
 
+import MaimaiScoreItem
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -56,7 +57,6 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import org.arcade.atomcity.data.remote.model.maimai.UtageData
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
-import org.arcade.atomcity.ui.game.maimai.MaimaiScoreItem
 import org.arcade.atomcity.utils.format
 
 @Composable

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import kotlinx.datetime.*
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.game.taiko.getDifficultyColor
 import org.arcade.atomcity.ui.game.taiko.getDifficultyDrawable
 import org.arcade.atomcity.ui.game.taiko.setDifficultyColorBackground
@@ -402,7 +403,9 @@ fun TaikoMostPlayedChart(
                         modifier = Modifier.fillMaxWidth().padding(16.dp)
                     ) {
                         Column(
-                            modifier = Modifier.padding(32.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
@@ -719,15 +722,64 @@ fun TaikoUserLegend(entries: List<TaikoMostPlayedEntry>) {
 fun TaikoMostPlayedItem(
     entry: TaikoMostPlayedEntry,
     isGlobal: Boolean,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    isNightMode: Boolean = isAppInDarkTheme()
 ) {
     val displayName = if (entry.musicName.isNullOrBlank()) "Morceau #${entry.songId}" else entry.musicName
     val displayArtist = entry.musicArtist ?: ""
     val hasDiff = entry.difficulty != null
 
+    val titleColor = if (hasDiff) {
+        if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+    } else MaterialTheme.colorScheme.onSurface
+
+    val subTitleColor = if (hasDiff) {
+        if (isNightMode) Color.White.copy(alpha = 0.9f) else MaterialTheme.colorScheme.primary
+    } else MaterialTheme.colorScheme.primary
+
+    val artistColor = if (hasDiff) {
+        if (isNightMode) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
+    } else MaterialTheme.colorScheme.onSurfaceVariant
+
+    val artistEnColor = if (hasDiff) {
+        if (isNightMode) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+    } else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+
+    val starsBadgeBg = if (hasDiff) {
+        if (isNightMode) Color.Black.copy(alpha = 0.35f) else MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.8f)
+    } else Color.Black.copy(alpha = 0.35f)
+
+    val starsTextColor = if (hasDiff) {
+        if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+    } else Color.White
+
+    val userBadgeBg = if (hasDiff) {
+        if (isNightMode) Color.Black.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceContainerHigh
+    } else MaterialTheme.colorScheme.surfaceContainerHigh
+
+    val userBadgeTextColor = if (hasDiff) {
+        if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+    } else MaterialTheme.colorScheme.onSurface
+
+    val progressBarBg = if (hasDiff) {
+        if (isNightMode) Color.Black.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant
+    } else MaterialTheme.colorScheme.surfaceVariant
+
+    val progressSingleColor = if (hasDiff) {
+        if (isNightMode) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.primary
+    } else MaterialTheme.colorScheme.primary
+
+    val playCountPillBg = if (hasDiff) {
+        if (isNightMode) Color.White.copy(alpha = 0.22f) else MaterialTheme.colorScheme.primaryContainer
+    } else MaterialTheme.colorScheme.primaryContainer
+
+    val playCountPillTextColor = if (hasDiff) {
+        if (isNightMode) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
+    } else MaterialTheme.colorScheme.onPrimaryContainer
+
     ElevatedCard(
         shape = RoundedCornerShape(24.dp),
-        colors = if (hasDiff) setDifficultyColorBackground(entry.difficulty) else CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        colors = if (hasDiff) setDifficultyColorBackground(entry.difficulty, isNightMode) else CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -773,7 +825,7 @@ fun TaikoMostPlayedItem(
                         if (entry.stars != null && entry.stars > 0) {
                             Surface(
                                 shape = CircleShape,
-                                color = Color.Black.copy(alpha = 0.35f),
+                                color = starsBadgeBg,
                                 modifier = Modifier.padding(top = 4.dp)
                             ) {
                                 Row(
@@ -783,7 +835,7 @@ fun TaikoMostPlayedItem(
                                     Text(
                                         text = "★",
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = Color(0xFFFFFFFF),
+                                        color = Color(0xFFFFB300),
                                         fontSize = 11.sp
                                     )
                                     Spacer(modifier = Modifier.width(2.dp))
@@ -791,7 +843,7 @@ fun TaikoMostPlayedItem(
                                         text = "${entry.stars}",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.ExtraBold,
-                                        color = Color.White,
+                                        color = starsTextColor,
                                         fontSize = 11.sp
                                     )
                                 }
@@ -808,7 +860,7 @@ fun TaikoMostPlayedItem(
                         text = displayName,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = if (hasDiff) Color.White else MaterialTheme.colorScheme.onSurface,
+                        color = titleColor,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -818,7 +870,7 @@ fun TaikoMostPlayedItem(
                             text = entry.musicNameEN,
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Medium,
-                            color = if (hasDiff) Color.White.copy(alpha = 0.9f) else MaterialTheme.colorScheme.primary,
+                            color = subTitleColor,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -832,7 +884,7 @@ fun TaikoMostPlayedItem(
                         Text(
                             text = displayArtist,
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (hasDiff) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = artistColor,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -842,7 +894,7 @@ fun TaikoMostPlayedItem(
                         Text(
                             text = entry.musicArtistEN,
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (hasDiff) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            color = artistEnColor,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -859,7 +911,7 @@ fun TaikoMostPlayedItem(
                             entry.userPlayCounts.toList().sortedByDescending { it.second }.forEach { (user, count) ->
                                 Surface(
                                     shape = CircleShape,
-                                    color = if (hasDiff) Color.Black.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceContainerHigh
+                                    color = userBadgeBg
                                 ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -876,7 +928,7 @@ fun TaikoMostPlayedItem(
                                             text = "$user ($count)",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color.White,
+                                            color = userBadgeTextColor,
                                             fontSize = 9.sp
                                         )
                                     }
@@ -892,10 +944,7 @@ fun TaikoMostPlayedItem(
                             .fillMaxWidth()
                             .height(8.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .background(
-                                if (hasDiff) Color.Black.copy(alpha = 0.3f)
-                                else MaterialTheme.colorScheme.surfaceVariant
-                            )
+                            .background(progressBarBg)
                     ) {
                         val distribution = entry.userPlayCounts
                         if (!distribution.isNullOrEmpty()) {
@@ -913,10 +962,7 @@ fun TaikoMostPlayedItem(
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(
-                                        if (hasDiff) Color.White.copy(alpha = 0.85f)
-                                        else MaterialTheme.colorScheme.primary
-                                    )
+                                    .background(progressSingleColor)
                             )
                         }
                     }
@@ -926,14 +972,14 @@ fun TaikoMostPlayedItem(
 
                 Surface(
                     shape = CircleShape,
-                    color = if (hasDiff) Color.White.copy(alpha = 0.22f) else MaterialTheme.colorScheme.primaryContainer,
+                    color = playCountPillBg,
                     modifier = Modifier.align(Alignment.CenterVertically)
                 ) {
                     Text(
                         text = "${entry.playCount} essai(s)",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.ExtraBold,
-                        color = if (hasDiff) Color.White else MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = playCountPillTextColor,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }

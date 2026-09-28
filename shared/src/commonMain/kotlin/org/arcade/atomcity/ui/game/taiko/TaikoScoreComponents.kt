@@ -2,6 +2,7 @@ package org.arcade.atomcity.ui.game.taiko
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -23,21 +25,47 @@ import coil3.compose.AsyncImage
 import org.arcade.atomcity.data.remote.model.taikoserver.songHistory.TaikoServerHistoryEntry
 import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.game.taiko.details.formatTaikoScore
+import org.arcade.atomcity.ui.game.taiko.details.getCrownBadgeInfo
+import org.arcade.atomcity.ui.game.taiko.details.getScoreRankBadgeInfo
 import org.arcade.atomcity.ui.game.taiko.settings.getScoreRankImageUrl
 import org.arcade.atomcity.utils.formatPlayDate
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun TaikoScoreItem(
+fun TaikoScoreItemNight(
     score: TaikoServerHistoryEntry,
     onNavigateToRoute: (String) -> Unit,
     onFavoriteToggle: (Int) -> Unit
 ) {
+    TaikoScoreItem(
+        score = score,
+        onNavigateToRoute = onNavigateToRoute,
+        onFavoriteToggle = onFavoriteToggle,
+        isNightMode = true
+    )
+}
+
+@Composable
+fun TaikoScoreItem(
+    score: TaikoServerHistoryEntry,
+    onNavigateToRoute: (String) -> Unit,
+    onFavoriteToggle: (Int) -> Unit,
+    isNightMode: Boolean = isAppInDarkTheme()
+) {
+    val difficultyColor = getDifficultyColor(score.difficulty)
+    val textColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+    val textSecondaryColor = if (isNightMode) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+
     ElevatedCard(
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = 4.dp)
             .fillMaxWidth()
+            .border(
+                1.dp,
+                if (isNightMode) difficultyColor.copy(alpha = 0.40f) else difficultyColor.copy(alpha = 0.30f),
+                RoundedCornerShape(20.dp)
+            )
             .clickable {
                 score.songId?.let { id ->
                     val diff = score.difficulty
@@ -60,7 +88,7 @@ fun TaikoScoreItem(
                     onNavigateToRoute(route)
                 }
             },
-        colors = setDifficultyColorBackground(score.difficulty),
+        colors = setDifficultyColorBackground(score.difficulty, isNightMode),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
@@ -74,7 +102,7 @@ fun TaikoScoreItem(
                     .align(Alignment.BottomEnd)
                     .size(90.dp),
                 contentScale = ContentScale.Fit,
-                alpha = 0.25f
+                alpha = if (isNightMode) 0.18f else 0.15f
             )
 
             Row(
@@ -92,7 +120,7 @@ fun TaikoScoreItem(
                     Icon(
                         imageVector = if (score.isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (score.isFavorite == true) Color.Red else Color.White,
+                        tint = if (score.isFavorite == true) Color.Red else if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -115,13 +143,13 @@ fun TaikoScoreItem(
                                 ),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                color = Color.White
+                                color = textColor
                             )
                             if (!score.musicNameEN.isNullOrBlank() && score.musicNameEN != score.musicName) {
                                 Text(
                                     text = score.musicNameEN,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.White.copy(alpha = 0.85f),
+                                    color = textSecondaryColor,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -130,7 +158,7 @@ fun TaikoScoreItem(
                                 Text(
                                     text = score.musicArtist,
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.7f),
+                                    color = textSecondaryColor.copy(alpha = 0.8f),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -142,13 +170,15 @@ fun TaikoScoreItem(
                             if (genreInfo != null) {
                                 TaikoGenreBadge(
                                     genre = score.genre,
+                                    isNightMode = isNightMode,
                                     modifier = Modifier.padding(bottom = 2.dp)
                                 )
                             }
                             Text(
                                 text = displayDifficultyName(score.difficulty),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color.White.copy(alpha = 0.9f)
+                                color = difficultyColor,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -165,7 +195,7 @@ fun TaikoScoreItem(
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     fontWeight = FontWeight.Black
                                 ),
-                                color = Color.White
+                                color = textColor
                             )
 
                             // Crown and Rank Badges Row
@@ -176,10 +206,13 @@ fun TaikoScoreItem(
                             ) {
                                 val crownUrl = getCrownImageUrl(score.crown)
                                 val crownTitle = getCrownTitle(score.crown)
+                                val crownInfo = getCrownBadgeInfo(score.crown, isNightMode)
+                                val isFailedCrown = score.crown == 0 || score.crown == null
+
                                 Surface(
-                                    color = Color.Black.copy(alpha = 0.35f),
+                                    color = crownInfo.containerColor,
                                     shape = RoundedCornerShape(4.dp),
-                                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                                    border = BorderStroke(1.dp, crownInfo.borderColor)
                                 ) {
                                     Row(
                                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
@@ -190,7 +223,8 @@ fun TaikoScoreItem(
                                             model = crownUrl,
                                             contentDescription = crownTitle,
                                             modifier = Modifier.height(14.dp),
-                                            contentScale = ContentScale.Fit
+                                            contentScale = ContentScale.Fit,
+                                            colorFilter = if (isFailedCrown) ColorFilter.tint(if (isNightMode) Color.White else Color.Black) else null
                                         )
                                         Text(
                                             text = crownTitle,
@@ -198,17 +232,18 @@ fun TaikoScoreItem(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 9.sp
                                             ),
-                                            color = Color.White
+                                            color = crownInfo.contentColor
                                         )
                                     }
                                 }
 
                                 val rankUrl = getScoreRankImageUrl(score.scoreRank)
-                                if (rankUrl != null) {
+                                val rankInfo = getScoreRankBadgeInfo(score.scoreRank, isNightMode)
+                                if (rankUrl != null && rankInfo != null) {
                                     Surface(
-                                        color = Color.Black.copy(alpha = 0.35f),
+                                        color = rankInfo.containerColor,
                                         shape = RoundedCornerShape(4.dp),
-                                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                                        border = BorderStroke(1.dp, rankInfo.contentColor.copy(alpha = if (isNightMode) 0.4f else 0.3f))
                                     ) {
                                         Row(
                                             modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
@@ -228,27 +263,28 @@ fun TaikoScoreItem(
 
                         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Surface(
-                                color = Color.Black.copy(alpha = 0.35f),
-                                shape = RoundedCornerShape(50)
+                                color = difficultyColor.copy(alpha = if (isNightMode) 0.25f else 0.15f),
+                                shape = RoundedCornerShape(50),
+                                border = BorderStroke(1.dp, difficultyColor.copy(alpha = 0.4f))
                             ) {
                                 Text(
                                     text = "★ ${score.stars ?: 0}",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Black
                                     ),
-                                    color = Color.White,
+                                    color = if (isNightMode) Color.White else difficultyColor,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                 )
                             }
                             Surface(
-                                color = Color.White.copy(alpha = 0.15f),
+                                color = if (isNightMode) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 Text(
                                     text = formatPlayDate(score.playTime.toString(), isUtc = false),
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = textColor
                                     ),
                                     maxLines = 1,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -295,12 +331,42 @@ fun getDifficultyColor(difficulty: Int?): Color {
     }
 }
 
+fun getDifficultyColorBackgroundLight(difficulty: Int?): Color {
+    return when (difficulty) {
+        1 -> Color(0xFFFFEBEE) // Kantan (Facile) - Soft Light Pastel Red
+        2 -> Color(0xFFF1F8E9) // Futsuu (Normal) - Soft Light Pastel Green
+        3 -> Color(0xFFE2EBE2) // Muzukashii (Difficile) - Soft Light Pastel Forest Green
+        4 -> Color(0xFFFCE4EC) // Oni (Démoniaque) - Soft Light Pastel Magenta
+        5 -> Color(0xFFF3E5F5) // Ura Oni (Ultra) - Soft Light Pastel Purple
+        else -> Color(0xFFF5F5F5) // Soft Light Grey
+    }
+}
+
+fun getDifficultyColorBackgroundDark(difficulty: Int?): Color {
+    return when (difficulty) {
+        1 -> Color(0xFF2C1215) // Kantan (Facile) - Dark Red
+        2 -> Color(0xFF142616) // Futsuu (Normal) - Dark Green
+        3 -> Color(0xFF0F1E11) // Muzukashii (Difficile) - Dark Forest Green
+        4 -> Color(0xFF2A0E21) // Oni (Démoniaque) - Dark Magenta
+        5 -> Color(0xFF220F2D) // Ura Oni (Ultra) - Dark Purple
+        else -> Color(0xFF1B1B22) // Dark Neutral Surface
+    }
+}
+
 @Composable
-fun setDifficultyColorBackground(difficulty: Int?): CardColors {
-    val diffColor = getDifficultyColor(difficulty)
+fun setDifficultyColorBackground(
+    difficulty: Int?,
+    isNightMode: Boolean = isAppInDarkTheme()
+): CardColors {
+    val containerColor = if (isNightMode) {
+        getDifficultyColorBackgroundDark(difficulty)
+    } else {
+        getDifficultyColorBackgroundLight(difficulty)
+    }
+    val contentColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
     return CardDefaults.elevatedCardColors(
-        containerColor = diffColor,
-        contentColor = Color.White
+        containerColor = containerColor,
+        contentColor = contentColor
     )
 }
 
@@ -328,17 +394,34 @@ fun getTaikoGenreInfo(genre: Int?): TaikoGenreInfo? {
 @Composable
 fun TaikoGenreBadge(
     genre: Int?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isNightMode: Boolean = isAppInDarkTheme()
 ) {
     val genreInfo = getTaikoGenreInfo(genre) ?: return
-    val isDark = isAppInDarkTheme()
-    val textColor = genreInfo.textColor
+
+    val badgeBg = if (isNightMode) {
+        genreInfo.color.copy(alpha = 0.22f)
+    } else {
+        genreInfo.color
+    }
+
+    val textColor = if (isNightMode) {
+        genreInfo.color
+    } else {
+        genreInfo.textColor
+    }
+
+    val border = if (isNightMode) {
+        BorderStroke(1.dp, genreInfo.color.copy(alpha = 0.5f))
+    } else {
+        BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+    }
 
     Surface(
-        color = genreInfo.color,
+        color = badgeBg,
         shape = RoundedCornerShape(8.dp),
-        shadowElevation = 1.dp,
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
+        shadowElevation = if (isNightMode) 0.dp else 1.dp,
+        border = border,
         modifier = modifier
     ) {
         Text(

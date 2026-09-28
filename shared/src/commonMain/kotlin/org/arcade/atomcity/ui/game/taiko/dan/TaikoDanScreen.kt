@@ -39,12 +39,12 @@ import org.arcade.atomcity.data.remote.model.taikoserver.dan.DanOdaiSong
 import org.arcade.atomcity.data.remote.model.taikoserver.dan.TaikoDanBestCourseData
 import org.arcade.atomcity.data.remote.model.taikoserver.musicDetails.TaikoServerMusicDetails
 import org.arcade.atomcity.presentation.viewmodel.TaikoViewModel
+import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.ui.game.taiko.getDifficultyDrawable
 import org.arcade.atomcity.ui.game.taiko.setDifficultyColorBackground
 import org.arcade.atomcity.utils.PlatformUtils
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import atomcity.shared.generated.resources.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
 @Composable
@@ -74,7 +74,7 @@ fun TaikoDanScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "Épreuves de qualification",
+                            "Épreuves du Dan Dojo",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -450,6 +450,11 @@ private fun DanSongsSection(
             val mainArtist = detail?.artistName?.takeIf { it.isNotBlank() } ?: ""
             val englishArtist = detail?.artistNameEN?.takeIf { it.isNotBlank() && it != mainArtist }
 
+            val isNightMode = isAppInDarkTheme()
+            val cardTextColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
+            val cardTextSecondary = if (isNightMode) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+            val cardTextTertiary = if (isNightMode) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+
             ElevatedCard(
                 shape = RoundedCornerShape(24.dp),
                 colors = setDifficultyColorBackground(diffLevel),
@@ -464,7 +469,7 @@ private fun DanSongsSection(
                             .align(Alignment.BottomEnd)
                             .size(100.dp),
                         contentScale = ContentScale.Fit,
-                        alpha = 0.25f
+                        alpha = if (isNightMode) 0.25f else 0.18f
                     )
 
                     Row(
@@ -477,7 +482,7 @@ private fun DanSongsSection(
                             text = "${index + 1}",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Black,
-                            color = Color.White.copy(alpha = 0.9f),
+                            color = cardTextColor.copy(alpha = 0.9f),
                             modifier = Modifier.width(36.dp)
                         )
 
@@ -495,15 +500,15 @@ private fun DanSongsSection(
                                 Text(
                                     text = "★",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = Color(0xFFFFD700),
-                                    fontSize = 10.sp
+                                    color = cardTextColor,
+                                    fontSize = 16.sp
                                 )
                                 Text(
                                     text = "$starCount",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = Color.White,
-                                    fontSize = 11.sp
+                                    color = cardTextColor,
+                                    fontSize = 18.sp
                                 )
                             }
                         }
@@ -513,7 +518,7 @@ private fun DanSongsSection(
                                 text = mainTitle,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = cardTextColor,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -523,7 +528,7 @@ private fun DanSongsSection(
                                     text = englishTitle,
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color.White.copy(alpha = 0.9f),
+                                    color = cardTextSecondary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -533,7 +538,7 @@ private fun DanSongsSection(
                                 Text(
                                     text = mainArtist,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.White.copy(alpha = 0.75f),
+                                    color = cardTextTertiary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -543,7 +548,7 @@ private fun DanSongsSection(
                                 Text(
                                     text = englishArtist,
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.65f),
+                                    color = cardTextTertiary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )

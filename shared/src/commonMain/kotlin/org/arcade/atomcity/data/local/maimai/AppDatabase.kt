@@ -23,7 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun songDao(): SongDao
 }
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
+// We remove the @Suppress so that any mismatch will be caught at compile time.
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
     override fun initialize(): AppDatabase
 }
