@@ -15,16 +15,20 @@ fun doInitKoin(
     scorefetcherApiKey: String,
     networkErrorHandler: NetworkErrorHandler
 ) {
-    startKoin {
-        modules(
-            sharedModule,
-            viewModelModule,
-            iosModule,
-            module {
-                single(named("scorefetcher_api_key")) { scorefetcherApiKey }
-                single<NetworkErrorHandler> { networkErrorHandler }
-            }
-        )
+    try {
+        startKoin {
+            modules(
+                sharedModule,
+                viewModelModule,
+                iosModule,
+                module {
+                    single(named("scorefetcher_api_key")) { scorefetcherApiKey }
+                    single<NetworkErrorHandler> { networkErrorHandler }
+                }
+            )
+        }
+    } catch (e: Exception) {
+        // Ignored if Koin is already started
     }
 }
 

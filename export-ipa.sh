@@ -31,6 +31,7 @@ xcodebuild -project "$PROJECT" \
            -scheme "$SCHEME" \
            -configuration Release \
            -sdk iphoneos \
+           -derivedDataPath "build/DerivedData" \
            -archivePath "$ARCHIVE_PATH" \
            -allowProvisioningUpdates \
            clean archive || { echo "❌ Xcode archive failed"; exit 1; }

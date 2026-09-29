@@ -6,3 +6,9 @@ import platform.UIKit.UIViewController
 fun MainViewController(): UIViewController = ComposeUIViewController {
     App()
 }
+
+object MainViewControllerWrapper {
+    fun create(): UIViewController = ComposeUIViewController {
+        App()
+    }
+}
