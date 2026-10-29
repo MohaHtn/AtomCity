@@ -603,7 +603,7 @@ fun MaimaiScoresDetails(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "MEILLEURS SCORES D'ATOM CITY DE CETTE CHART",
+                    text = "CLASSEMENT DES MEILLEURS SCORES DE CETTE CHART",
                     style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 2.sp,

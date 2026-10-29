@@ -15,6 +15,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
 import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.SessionPbs
 import org.arcade.atomcity.data.remote.DeleteApiKeyResponse
 import org.arcade.atomcity.data.remote.TaikoUser
 
@@ -219,4 +220,14 @@ interface IScorefetcherRepository {
      * @return A [Flow] emitting the list of Taiko users.
      */
     fun getTaikoUsers(): Flow<List<TaikoUser>>
+
+    /**
+     * Retrieves personal best scores achieved during a specific session date.
+     *
+     * @param date Optional date filter (YYYY-MM-DD).
+     * @param keyHash Optional user key hash.
+     * @param limit Maximum number of sessions to return.
+     * @return A [Flow] emitting a list of [SessionPbs].
+     */
+    fun getPbsBySession(date: String? = null, keyHash: String? = null, limit: Int? = null): Flow<List<SessionPbs>>
 }

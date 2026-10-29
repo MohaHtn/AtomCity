@@ -27,6 +27,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.Scorefet
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
 import org.arcade.atomcity.data.remote.model.scorefetcher.PlayerRankProgression
 import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.SessionPbs
 import org.arcade.atomcity.utils.PlatformUtils
 
 @Serializable
@@ -359,6 +360,33 @@ class ScorefetcherClient(
         } catch (e: Exception) {
             PlatformUtils.log("ScorefetcherClient", "Error updating progression visibility: ${e.message}", true)
             false
+        }
+    }
+
+    suspend fun getPbsBySession(
+        date: String? = null,
+        keyHash: String? = null,
+        limit: Int? = null,
+        sessionDate: String? = null
+    ): List<SessionPbs> {
+        val targetDate = date ?: sessionDate
+        val response: HttpResponse = client.get("${baseUrl}scores/pbs/by-session") {
+            addApiKey()
+            header("Accept", "application/json")
+            if (!targetDate.isNullOrBlank()) {
+                parameter("date", targetDate)
+            }
+            if (!keyHash.isNullOrBlank()) {
+                parameter("keyHash", keyHash)
+            }
+            if (limit != null) {
+                parameter("limit", limit)
+            }
+        }
+        return if (response.status == HttpStatusCode.NotFound) {
+            emptyList()
+        } else {
+            response.body()
         }
     }
 

@@ -11,6 +11,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
 import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.SessionPbs
 
 /**
  * Use case responsible for retrieving analytics and statistical data 
@@ -93,4 +94,15 @@ class GetScorefetcherAnalyticsUseCase(private val repository: IScorefetcherRepos
      * @return True if the update was successful, false otherwise.
      */
     suspend fun updateProgressionVisibility(isPublic: Boolean): Boolean = repository.updateProgressionVisibility(isPublic)
+
+    /**
+     * Retrieves personal bests achieved during a specific session date.
+     *
+     * @param date Optional date filter (YYYY-MM-DD).
+     * @param keyHash Optional user key hash.
+     * @param limit Maximum number of sessions to return.
+     * @return A [Flow] emitting a list of [SessionPbs].
+     */
+    fun getPbsBySession(date: String? = null, keyHash: String? = null, limit: Int? = null): Flow<List<SessionPbs>> =
+        repository.getPbsBySession(date, keyHash, limit)
 }

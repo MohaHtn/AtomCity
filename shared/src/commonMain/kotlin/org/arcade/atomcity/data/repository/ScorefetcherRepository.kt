@@ -23,6 +23,7 @@ import org.arcade.atomcity.data.remote.DeleteApiKeyResponse
 import org.arcade.atomcity.data.remote.ApiKeyRequest
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
 import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.SessionPbs
 import io.ktor.http.HttpStatusCode
 import org.arcade.atomcity.data.cache.DataCache
 import org.arcade.atomcity.utils.PlatformUtils
@@ -389,6 +390,25 @@ class ScorefetcherRepository(
             emit(scorefetcherClient.getTaikoUsers())
         } catch (e: Exception) {
             PlatformUtils.log("ScorefetcherRepository", "Error fetching Taiko users: ${e.message}", true)
+            emit(emptyList())
+        }
+    }
+
+    override fun getPbsBySession(date: String?, keyHash: String?, limit: Int?): Flow<List<SessionPbs>> = flow {
+        try {
+            val key = keyHash ?: PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")
+            val response = scorefetcherClient.getPbsBySession(date = date, keyHash = key, limit = limit)
+            response.forEach { session ->
+                session.pbs.forEach { score ->
+                    val jp = score.songJson?.name?.jp ?: score.songName
+                    val en = score.songJson?.name?.en ?: score.songName
+                    score.jacketImageUrl = jp?.let { findJacketUrlBySongName(it) }
+                        ?: en?.let { findJacketUrlBySongName(it) }
+                }
+            }
+            emit(response)
+        } catch (e: Exception) {
+            PlatformUtils.log("ScorefetcherRepository", "Error fetching PBs by session: ${e.message}", true)
             emit(emptyList())
         }
     }

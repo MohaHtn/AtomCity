@@ -13,7 +13,7 @@ fun MaimaiScoreItemMasterPreview(){
         MaimaiScoreItem(
             play = ScorefetcherApiData(
                 id = 1,
-                achievement = 100,
+                achievement = 100.0,
                 achievementFormatted = "101.43",
                 track = 1,
                 song = Song(
@@ -44,7 +44,7 @@ fun MaimaiScoreItemExpertPreview(){
         MaimaiScoreItem(
             play = ScorefetcherApiData(
                 id = 1,
-                achievement = 100,
+                achievement = 100.0,
                 achievementFormatted = "101.43",
                 track = 1,
                 song = Song(
@@ -75,7 +75,7 @@ fun MaimaiScoreItemUtagePreview(){
         MaimaiScoreItem(
             play = ScorefetcherApiData(
                 id = 1,
-                achievement = 100,
+                achievement = 100.0,
                 achievementFormatted = "101.43",
                 track = 1,
                 song = Song(
@@ -106,7 +106,7 @@ fun MaimaiScoreItemEasyPreview(){
         MaimaiScoreItem(
             play = ScorefetcherApiData(
                 id = 1,
-                achievement = 100,
+                achievement = 100.0,
                 achievementFormatted = "101.43",
                 track = 1,
                 song = Song(
@@ -137,7 +137,7 @@ fun MaimaiScoreItemBasicPreview(){
         MaimaiScoreItem(
             play = ScorefetcherApiData(
                 id = 1,
-                achievement = 100,
+                achievement = 100.0,
                 achievementFormatted = "101.43",
                 track = 1,
                 song = Song(
@@ -168,7 +168,7 @@ fun MaimaiScoreItemReMasterPreview(){
         MaimaiScoreItem(
             play = ScorefetcherApiData(
                 id = 1,
-                achievement = 100,
+                achievement = 100.0,
                 achievementFormatted = "101.43",
                 track = 1,
                 song = Song(
@@ -199,7 +199,7 @@ fun MaimaiScoreItemUnknownPreview(){
         MaimaiScoreItem(
             play = ScorefetcherApiData(
                 id = 1,
-                achievement = 100,
+                achievement = 100.0,
                 achievementFormatted = "101.43",
                 track = 1,
                 song = Song(

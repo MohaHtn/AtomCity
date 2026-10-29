@@ -26,6 +26,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playerBest30Response.P
 import org.arcade.atomcity.data.remote.model.maimai.UtageData
 import atomcity.shared.generated.resources.Res
 import kotlinx.serialization.json.Json
+import kotlinx.datetime.LocalDate
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.utils.PlatformUtils
 import kotlin.time.Duration.Companion.milliseconds
@@ -34,6 +35,7 @@ import androidx.lifecycle.viewModelScope
 import org.arcade.atomcity.data.remote.model.scorefetcher.BestPerPlayerResponse
 import org.arcade.atomcity.data.remote.model.scorefetcher.MaimaiMostPlayedEntry
 import org.arcade.atomcity.data.remote.model.scorefetcher.RankProgressionResponse
+import org.arcade.atomcity.data.remote.model.scorefetcher.SessionPbs
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.concurrent.Volatile
 
@@ -105,6 +107,20 @@ class MaimaiViewModel(
     // StateFlow to hold rank progression
     private val _rankProgression = MutableStateFlow<RankProgressionResponse?>(null)
     val rankProgression: StateFlow<RankProgressionResponse?> = _rankProgression
+
+    // StateFlow to hold session PBs
+    private val _sessionPbs = MutableStateFlow<List<SessionPbs>>(emptyList())
+    val sessionPbs: StateFlow<List<SessionPbs>> = _sessionPbs
+
+    private val _isLoadingSessionPbs = MutableStateFlow(false)
+    val isLoadingSessionPbs: StateFlow<Boolean> = _isLoadingSessionPbs
+
+    private val _selectedSessionPbDate = MutableStateFlow<LocalDate?>(null)
+    val selectedSessionPbDate: StateFlow<LocalDate?> = _selectedSessionPbDate
+
+    fun setSelectedSessionPbDate(date: LocalDate) {
+        _selectedSessionPbDate.value = date
+    }
 
 
     // Expose the current page
@@ -503,6 +519,21 @@ class MaimaiViewModel(
                 }
             } catch (e: Exception) {
                 _isLoadingRankProgression.value = false
+            }
+        }
+    }
+
+    fun fetchPbsBySession(date: String? = null, keyHash: String? = null, limit: Int? = null) {
+        viewModelScope.launch {
+            try {
+                _isLoadingSessionPbs.value = true
+                _sessionPbs.value = emptyList()
+                analyticsUseCase.getPbsBySession(date, keyHash, limit).collect { response ->
+                    _sessionPbs.value = response
+                    _isLoadingSessionPbs.value = false
+                }
+            } catch (e: Exception) {
+                _isLoadingSessionPbs.value = false
             }
         }
     }

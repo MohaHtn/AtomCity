@@ -41,6 +41,7 @@ import org.arcade.atomcity.ui.game.maimai.MaimaiScores
 import org.arcade.atomcity.ui.game.taiko.TaikoScores
 import org.arcade.atomcity.utils.ApiKeyManager
 import org.arcade.atomcity.domain.repository.IDifficultyRepository
+import org.arcade.atomcity.ui.game.maimai.MaimaiPersonalBestPerSession
 import org.arcade.atomcity.ui.game.maimai.MaimaiUtageScreen
 import org.arcade.atomcity.ui.game.taiko.stats.TaikoBestScores
 import org.arcade.atomcity.ui.game.taiko.stats.TaikoMostPlayedChart
@@ -307,6 +308,14 @@ fun AppNavigation(
                     onNavigateToDetails = { scoreId ->
                         navController.navigateIfNotCurrent("maimaiScoresDetails/$scoreId")
                     }
+                )
+            }
+
+            composable("maimaiPersonalBestPerSession") {
+                MaimaiPersonalBestPerSession(
+                    onBackClick = { navController.popBackStack() },
+                    navController = navController,
+                    maimaiViewModel = maimaiViewModel
                 )
             }
 

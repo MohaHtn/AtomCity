@@ -74,6 +74,7 @@ fun MaimaiScores(
 
     val extraItems = listOf(
         Triple("maimaiBest30Scores", "30 Meilleurs scores", "Vos 30 meilleures performances"),
+        Triple("maimaiPersonalBestPerSession", "Records personnels par jour", "Consulter vos records par jour"),
         Triple("maimaiMostPlayed", "Les plus joués", "Les morceaux les plus joués"),
         Triple("maimaiProgress", "Progression des joueurs", "Consulter la progression de tous les joueurs"),
         Triple("maimaiUsers", "Utilisateurs", "Consulter les utilisateurs enregistrés"),

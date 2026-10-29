@@ -2,13 +2,40 @@ package org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import org.arcade.atomcity.utils.format
+import kotlin.math.round
+
+object FlexibleDoubleSerializer : KSerializer<Double?> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("FlexibleDouble", PrimitiveKind.DOUBLE)
+
+    override fun deserialize(decoder: Decoder): Double? {
+        val jsonDecoder = decoder as? JsonDecoder ?: return try { decoder.decodeDouble() } catch (_: Exception) { null }
+        val element = try { jsonDecoder.decodeJsonElement() } catch (_: Exception) { return null }
+        return element.jsonPrimitive.doubleOrNull ?: element.jsonPrimitive.intOrNull?.toDouble()
+    }
+
+    override fun serialize(encoder: Encoder, value: Double?) {
+        if (value != null) {
+            encoder.encodeDouble(value)
+        }
+    }
+}
 
 @Serializable
 data class ScorefetcherApiData (
   @SerialName( "id") var id: Int? = null,
-  @SerialName( "achievement") var achievement: Int? = null,
+  @Serializable(with = FlexibleDoubleSerializer::class)
+  @SerialName( "achievement") var achievement: Double? = null,
   @SerialName( "achievement_formatted") var achievementFormatted: String? = null,
   @SerialName( "track") var track: Int? = null,
   @SerialName( "score") var score: Double? = null,
@@ -34,7 +61,7 @@ data class ScorefetcherApiData (
 
     val achievementFormattedFixed: String? get() {
         return achievement?.let {
-            "${(it.toDouble() / 100.0).format(2)}%"
+            "${(it / 100.0).format(2)}%"
         } ?: achievementFormatted
     }
 
@@ -83,7 +110,7 @@ data class ScorefetcherApiData (
         val totalWithBonus = totalWithoutBonus + breakBonus
 
         val percent = (totalWithBonus / totalWithoutBonus) * 100.0 - 0.0045
-        return kotlin.math.round(percent * 100) / 100.0
+        return round(percent * 100) / 100.0
     }
 }
 
