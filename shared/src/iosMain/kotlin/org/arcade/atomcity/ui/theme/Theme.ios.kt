@@ -4,11 +4,24 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import platform.UIKit.UIApplication
+import platform.UIKit.UIStatusBarStyleDarkContent
+import platform.UIKit.UIStatusBarStyleLightContent
 
 @Composable
 actual fun PlatformThemeSetup(darkTheme: Boolean) {
-    // Platform-specific theme setup for iOS
+    val darkStatusBarIcons = StatusBarAppearance.darkIconsOverride ?: !darkTheme
+    SideEffect {
+        // The app is hosted in SwiftUI, which ignores the status bar style of nested view
+        // controllers, so it is set app-wide (requires UIViewControllerBasedStatusBarAppearance = NO).
+        @Suppress("DEPRECATION")
+        UIApplication.sharedApplication.setStatusBarStyle(
+            if (darkStatusBarIcons) UIStatusBarStyleDarkContent else UIStatusBarStyleLightContent,
+            animated = true
+        )
+    }
 }
 
 @Composable

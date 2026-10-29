@@ -19,12 +19,13 @@ import androidx.core.view.WindowCompat
 @Composable
 actual fun PlatformThemeSetup(darkTheme: Boolean) {
     val view = LocalView.current
+    val darkStatusBarIcons = StatusBarAppearance.darkIconsOverride ?: !darkTheme
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context.findActivity())?.window
             if (window != null) {
                 val insetsController = WindowCompat.getInsetsController(window, view)
-                insetsController.isAppearanceLightStatusBars = !darkTheme
+                insetsController.isAppearanceLightStatusBars = darkStatusBarIcons
                 insetsController.isAppearanceLightNavigationBars = !darkTheme
             }
         }

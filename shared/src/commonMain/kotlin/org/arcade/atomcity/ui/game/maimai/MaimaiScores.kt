@@ -33,9 +33,15 @@ import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.ui.core.BottomBarPill
 import org.arcade.atomcity.ui.core.GlobalUIState
 import org.arcade.atomcity.ui.core.OpenMiniMenu
+import org.arcade.atomcity.ui.game.maimai.details.MaimaiScoreBadgeRow
 import org.arcade.atomcity.ui.navigation.Screen
 import org.arcade.atomcity.ui.navigation.navigateIfNotCurrent
+import org.arcade.atomcity.ui.theme.StatusBarIconsEffect
 import org.arcade.atomcity.utils.PlatformUtils
+import org.arcade.atomcity.utils.lightPixelRatio
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,6 +66,11 @@ fun MaimaiScores(
     val playerDataState by maimaiViewModel.playerData.collectAsState()
     val playerData = playerDataState?.data?.firstOrNull()
     val frameUrl = playerData?.options?.frame?.png ?: playerData?.options?.frame?.webp
+    var frameLightRatio by remember(frameUrl) { mutableStateOf<Float?>(null) }
+    val scope = rememberCoroutineScope()
+
+    // The frame is drawn behind the status bar, so its icons follow the same light/dark decision.
+    frameLightRatio?.let { StatusBarIconsEffect(darkIcons = it > 0.5f) }
 
     val playerName = playerData?.name?.trim() ?: ""
     val isBirthdayUser = remember(playerName) {
@@ -93,8 +104,9 @@ fun MaimaiScores(
 
                     val collapsedFraction = scrollBehavior.state.collapsedFraction
                     val surface = MaterialTheme.colorScheme.surface
-                    val luminance = 0.299f * surface.red + 0.587f * surface.green + 0.114f * surface.blue
-                    val isFrameLight = luminance > 0.5f
+                    // Until the frame is loaded and measured, fall back to the theme surface.
+                    val isFrameLight = frameLightRatio?.let { it > 0.5f }
+                        ?: (0.299f * surface.red + 0.587f * surface.green + 0.114f * surface.blue > 0.5f)
 
                     Box(modifier = Modifier.fillMaxWidth()) {
                         if (frameUrl != null) {
@@ -105,7 +117,14 @@ fun MaimaiScores(
                                     .build(),
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.matchParentSize()
+                                modifier = Modifier.matchParentSize(),
+                                onSuccess = { state ->
+                                    scope.launch {
+                                        frameLightRatio = withContext(Dispatchers.Default) {
+                                            state.result.image.lightPixelRatio()
+                                        }
+                                    }
+                                }
                             )
 
                             val edgeShadowAlpha = 0.45f
@@ -119,6 +138,23 @@ fun MaimaiScores(
                                     .background(
                                         brush = Brush.verticalGradient(
                                             colors = listOf(Color.Transparent, edgeColor)
+                                        )
+                                    )
+                            )
+
+                            // Once collapsed, the status bar icons sit over a thin slice of the frame:
+                            // a soft shade behind them, opposite to their color, keeps them readable.
+                            val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                            val statusBarShade = if (isFrameLight) Color.White else Color.Black
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(statusBarHeight + 16.dp)
+                                    .align(Alignment.TopStart)
+                                    .graphicsLayer { alpha = collapsedFraction }
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(statusBarShade.copy(alpha = 0.45f), Color.Transparent)
                                         )
                                     )
                             )
@@ -228,7 +264,14 @@ fun MaimaiScores(
                         items(data?.data ?: emptyList()) { play ->
                             MaimaiScoreItem(
                                 play = play,
-                                onClick = { navController.navigateIfNotCurrent("maimaiScoresDetails/${play.id}") }
+                                onClick = { navController.navigateIfNotCurrent("maimaiScoresDetails/${play.id}") },
+                                footer = {
+                                    MaimaiScoreBadgeRow(
+                                        scoreEntry = play,
+                                        compact = true,
+                                        modifier = Modifier.padding(bottom = 4.dp)
+                                    )
+                                }
                             )
                         }
                     }

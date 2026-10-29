@@ -20,18 +20,22 @@ import androidx.compose.ui.unit.dp
 import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.ScorefetcherApiData
 import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 
+/**
+ * Badges of a score. [compact] shows only short FC / FC+ / AP / AP+ chips, for score lists.
+ */
 @Composable
 fun MaimaiScoreBadgeRow(
     scoreEntry: ScorefetcherApiData,
     modifier: Modifier = Modifier,
-    isNightMode: Boolean = isAppInDarkTheme()
+    isNightMode: Boolean = isAppInDarkTheme(),
+    compact: Boolean = false
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         horizontalAlignment = Alignment.Start,
         modifier = modifier
     ) {
-        if (scoreEntry.isHighScore == true) {
+        if (!compact && scoreEntry.isHighScore == true) {
             val container = if (isNightMode) Color(0xFF332A00) else Color(0xFFFFF9C4)
             val content = if (isNightMode) Color(0xFFFFD700) else Color(0xFFFBC02D)
             ScoreBadge(
@@ -41,7 +45,7 @@ fun MaimaiScoreBadgeRow(
                 isNightMode = isNightMode
             )
         }
-        if (scoreEntry.fullCombo != 0 && scoreEntry.isAllPerfect != true) {
+        if ((scoreEntry.fullCombo ?: 0) != 0 && scoreEntry.isAllPerfect != true) {
             val isFc1 = scoreEntry.fullCombo == 1
             val container = if (isNightMode) {
                 if (isFc1) Color(0xFF1565C0).copy(alpha = 0.45f) else Color(0xFF332A00)
@@ -54,7 +58,10 @@ fun MaimaiScoreBadgeRow(
                 if (isFc1) Color(0xFF1976D2) else Color(0xFFC99A2E)
             }
             ScoreBadge(
-                text = if (isFc1) "FULL COMBO" else "FULL COMBO +",
+                text = when {
+                    compact -> if (isFc1) "FC" else "FC+"
+                    else -> if (isFc1) "FULL COMBO" else "FULL COMBO +"
+                },
                 containerColor = container,
                 contentColor = content,
                 isNightMode = isNightMode
@@ -80,13 +87,16 @@ fun MaimaiScoreBadgeRow(
             val content = if (isNightMode) Color(0xFF80CBC4) else Color(0xFF00897B)
             
             ScoreBadge(
-                text = if (isApPlus) "ALL PERFECT +" else "ALL PERFECT",
+                text = when {
+                    compact -> if (isApPlus) "AP+" else "AP"
+                    else -> if (isApPlus) "ALL PERFECT +" else "ALL PERFECT"
+                },
                 containerColor = container,
                 contentColor = content,
                 isNightMode = isNightMode
             )
         }
-        if (scoreEntry.isTrackSkip == true) {
+        if (!compact && scoreEntry.isTrackSkip == true) {
             val container = if (isNightMode) Color(0xFFE53935).copy(alpha = 0.45f) else Color(0xFFFFEBEE)
             val content = if (isNightMode) Color(0xFFEF9A9A) else Color(0xFFE53935)
             ScoreBadge(
@@ -96,6 +106,47 @@ fun MaimaiScoreBadgeRow(
                 isNightMode = isNightMode
             )
         }
+    }
+}
+
+/**
+ * FC / FC+ / AP / AP+ chip, with the same colors as [MaimaiScoreBadgeRow].
+ */
+@Composable
+fun FcApBadge(
+    text: String,
+    modifier: Modifier = Modifier,
+    isNightMode: Boolean = isAppInDarkTheme()
+) {
+    val (container, content) = when (text.uppercase()) {
+        "FC" -> if (isNightMode) {
+            Color(0xFF1565C0).copy(alpha = 0.45f) to Color(0xFF90CAF9)
+        } else {
+            Color(0xFFE3F2FD) to Color(0xFF1976D2)
+        }
+        "FC+" -> if (isNightMode) {
+            Color(0xFF332A00) to Color(0xFFFFD54F)
+        } else {
+            Color(0xFFFFF9C4) to Color(0xFFC99A2E)
+        }
+        "AP", "AP+" -> if (isNightMode) {
+            Color(0xFF00897B).copy(alpha = 0.45f) to Color(0xFF80CBC4)
+        } else {
+            Color(0xFFE0F2F1) to Color(0xFF00897B)
+        }
+        else -> if (isNightMode) {
+            Color(0xFF424242).copy(alpha = 0.45f) to Color(0xFFE0E0E0)
+        } else {
+            Color(0xFFE0E0E0) to Color(0xFF424242)
+        }
+    }
+    Box(modifier = modifier) {
+        ScoreBadge(
+            text = text,
+            containerColor = container,
+            contentColor = content,
+            isNightMode = isNightMode
+        )
     }
 }
 

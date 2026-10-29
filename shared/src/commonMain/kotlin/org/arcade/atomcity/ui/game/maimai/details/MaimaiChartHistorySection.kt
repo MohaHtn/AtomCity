@@ -1,6 +1,5 @@
 package org.arcade.atomcity.ui.game.maimai.details
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.arcade.atomcity.data.remote.model.scorefetcher.ChartHistoryResponse
 import org.arcade.atomcity.ui.game.common.getJacketBorderColor
-import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 import org.arcade.atomcity.utils.format
 import org.arcade.atomcity.utils.formatPlayDate
 
@@ -88,65 +86,19 @@ fun ChartHistoryItem(historyEntry: ChartHistoryResponse, onClick: () -> Unit = {
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    val fcText = historyEntry.fcApText
-                    if (!fcText.isNullOrEmpty()) {
-                        val isNightMode = isAppInDarkTheme()
-                        val (bgColor, textColor) = when (fcText.uppercase()) {
-                            "FC" -> if (isNightMode) {
-                                Color(0xFF1565C0).copy(alpha = 0.45f) to Color(0xFF90CAF9)
-                            } else {
-                                Color(0xFFE3F2FD) to Color(0xFF1976D2)
-                            }
-                            "FC+" -> if (isNightMode) {
-                                Color(0xFF332A00) to Color(0xFFFFD54F)
-                            } else {
-                                Color(0xFFFFF9C4) to Color(0xFFC99A2E)
-                            }
-                            "AP", "AP+" -> if (isNightMode) {
-                                Color(0xFF00897B).copy(alpha = 0.45f) to Color(0xFF80CBC4)
-                            } else {
-                                Color(0xFFE0F2F1) to Color(0xFF00897B)
-                            }
-                            else -> if (isNightMode) {
-                                Color(0xFF424242).copy(alpha = 0.45f) to Color(0xFFE0E0E0)
-                            } else {
-                                Color(0xFFE0E0E0) to Color(0xFF424242)
-                            }
-                        }
-                        Surface(
-                            color = bgColor,
-                            shape = RoundedCornerShape(6.dp),
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = if (isNightMode) textColor.copy(alpha = 0.4f) else textColor.copy(alpha = 0.2f),
-                            ),
-                        ) {
-                            Text(
-                                text = fcText,
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 10.sp,
-                                    color = textColor,
-                                ),
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = historyEntry.rank ?: "",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Black,
-                            color = difficultyColor,
-                        ),
-                        maxLines = 1,
-                        softWrap = false,
-                    )
+                historyEntry.fcApText?.takeIf { it.isNotEmpty() }?.let { fcText ->
+                    FcApBadge(text = fcText, modifier = Modifier.padding(bottom = 4.dp))
                 }
+
+                Text(
+                    text = historyEntry.rank ?: "",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        color = difficultyColor,
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                )
 
                 Text(
                     text = "${((historyEntry.achievement ?: 0.0) / 100.0).format(2)}%",

@@ -29,6 +29,7 @@ import org.arcade.atomcity.data.remote.model.scorefetcher.playsResponse.Scorefet
 import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
 import org.arcade.atomcity.ui.core.AtomCitySearchBar
 import org.arcade.atomcity.utils.format
+import org.arcade.atomcity.ui.game.maimai.details.FcApBadge
 
 @Composable
 fun MaimaiChartSearchBar(
@@ -86,6 +87,11 @@ fun MaimaiChartSearchBar(
                                 play = play,
                                 onClick = {
                                     onNavigateToDetails(play.id ?: 0)
+                                },
+                                footer = {
+                                    result.fcApText?.takeIf { it.isNotEmpty() }?.let { fcText ->
+                                        FcApBadge(text = fcText, modifier = Modifier.padding(bottom = 4.dp))
+                                    }
                                 }
                             )
                         }

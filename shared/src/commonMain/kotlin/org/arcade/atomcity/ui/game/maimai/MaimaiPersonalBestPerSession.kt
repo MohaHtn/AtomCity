@@ -5,6 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -19,21 +22,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import kotlinx.datetime.*
 import org.arcade.atomcity.presentation.viewmodel.MaimaiViewModel
+import org.arcade.atomcity.ui.game.maimai.details.MaimaiScoreBadgeRow
 import org.arcade.atomcity.ui.navigation.navigateIfNotCurrent
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -51,6 +60,7 @@ fun MaimaiPersonalBestPerSession(
 
     val todayLocal = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
     var currentDate by remember { mutableStateOf(savedDate ?: todayLocal) }
+    var isCalendarExpanded by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(currentDate) {
         maimaiViewModel.setSelectedSessionPbDate(currentDate)
@@ -77,13 +87,17 @@ fun MaimaiPersonalBestPerSession(
                     Column {
                         Text(
                             text = "Records personnels par jour",
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = if (pbCount == 0) formatFrenchDate(currentDate) else "${formatFrenchDate(currentDate)} • $pbCount Record${if (pbCount > 1) "s" else ""}",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 13.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 },
@@ -98,93 +112,176 @@ fun MaimaiPersonalBestPerSession(
             )
         }
     ) { paddingValues ->
+        val pbs = sessionPb?.pbs ?: emptyList()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Monthly Calendar Card with integrated Today button
-            MaimaiMonthlyCalendar(
+            CalendarDropdown(
+                expanded = isCalendarExpanded,
+                onToggle = { isCalendarExpanded = !isCalendarExpanded },
                 currentDate = currentDate,
                 todayLocal = todayLocal,
                 pbDates = pbDates,
                 onDateSelected = { selectedDate ->
                     currentDate = selectedDate
+                    isCalendarExpanded = false
                 },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
-
             // Main Content Area
-            if (isLoading) {
-                Box(
+            when {
+                isLoading -> SessionPbsLoading(Modifier.fillMaxSize())
+                pbs.isEmpty() -> SessionPbsEmpty(Modifier.fillMaxSize().padding(24.dp))
+                else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Chargement ...",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    items(pbs) { score ->
+                        val play = remember(score) { score.toScorefetcherApiData() }
+                        MaimaiScoreItem(
+                            play = play,
+                            onClick = {
+                                score.playId?.let { id ->
+                                    navController.navigateIfNotCurrent("maimaiScoresDetails/$id")
+                                }
+                            },
+                            footer = {
+                                MaimaiScoreBadgeRow(
+                                    scoreEntry = play,
+                                    compact = true,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                            }
                         )
                     }
                 }
-            } else {
-                val pbs = sessionPb?.pbs ?: emptyList()
-                if (pbs.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(24.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Aucun record personnel trouvé.",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Aucun nouveau record personnel n'a été réalisé ce jour.\nPeut-être le jour suivant, qui sait... !",
-                                textAlign = TextAlign.Center,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(pbs) { score ->
-                            MaimaiScoreItem(
-                                play = score.toScorefetcherApiData(),
-                                onClick = {
-                                    score.playId?.let { id ->
-                                        navController.navigateIfNotCurrent("maimaiScoresDetails/$id")
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
             }
+        }
+    }
+}
+
+/**
+ * Fixed header showing the selected day, which expands to the monthly calendar.
+ */
+@Composable
+private fun CalendarDropdown(
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    currentDate: LocalDate,
+    todayLocal: LocalDate,
+    pbDates: Set<String>,
+    onDateSelected: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        label = "CalendarChevronRotation"
+    )
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Surface(
+            onClick = onToggle,
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shadowElevation = 1.dp,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = formatFrenchDate(currentDate),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = if (expanded) "Masquer le calendrier" else "Afficher le calendrier",
+                    modifier = Modifier.rotate(chevronRotation)
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            MaimaiMonthlyCalendar(
+                currentDate = currentDate,
+                todayLocal = todayLocal,
+                pbDates = pbDates,
+                onDateSelected = onDateSelected,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SessionPbsLoading(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator()
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Chargement ...",
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun SessionPbsEmpty(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Aucun record personnel trouvé.",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Aucun nouveau record personnel n'a été réalisé ce jour.\nPeut-être le jour suivant, qui sait... !",
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -217,7 +314,7 @@ fun MaimaiMonthlyCalendar(
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
-            // Month Header with Navigation & Integrated "Aujourd'hui" Pill Button
+            // Month Header with Navigation & Integrated "Today" Pill Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -261,8 +358,12 @@ fun MaimaiMonthlyCalendar(
                                 text = "${getMonthName(displayedMonth)} $displayedYear",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
                             )
+                            Spacer(modifier = Modifier.width(8.dp))
                             Surface(
                                 onClick = { onDateSelected(todayLocal) },
                                 shape = RoundedCornerShape(50),
@@ -274,11 +375,13 @@ fun MaimaiMonthlyCalendar(
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = "Retourner à aujourd'hui",
+                                        text = "Aujourd'hui",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp
+                                        fontSize = 10.sp,
+                                        maxLines = 1,
+                                        softWrap = false
                                     )
                                 }
                             }
