@@ -30,7 +30,7 @@ import org.arcade.atomcity.ui.game.common.isAppInDarkTheme
 @Composable
 fun MaimaiScoreItemNight(
     play: ScorefetcherApiData,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     footer: @Composable () -> Unit = {},
     overlay: @Composable BoxScope.() -> Unit = {}
 ) {
@@ -46,7 +46,7 @@ fun MaimaiScoreItemNight(
 @Composable
 fun MaimaiScoreItem(
     play: ScorefetcherApiData,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     isNightMode: Boolean = isAppInDarkTheme(),
     footer: @Composable () -> Unit = {},
     overlay: @Composable BoxScope.() -> Unit = {}
@@ -72,17 +72,14 @@ fun MaimaiScoreItem(
     val textColor = if (isNightMode) Color.White else MaterialTheme.colorScheme.onSurface
     val textSecondaryColor = if (isNightMode) Color.White.copy(alpha = 0.65f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
     
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(
-                if (isNightMode) Modifier.border(1.dp, difficultyColor.copy(alpha = 0.35f), RoundedCornerShape(24.dp))
-                else Modifier
-            ),
-        onClick = onClick,
-        colors = cardColors,
-        shape = RoundedCornerShape(24.dp)
-    ) {
+    val cardModifier = Modifier
+        .fillMaxWidth()
+        .then(
+            if (isNightMode) Modifier.border(1.dp, difficultyColor.copy(alpha = 0.35f), RoundedCornerShape(24.dp))
+            else Modifier
+        )
+    val cardShape = RoundedCornerShape(24.dp)
+    val cardContent: @Composable ColumnScope.() -> Unit = {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val isNarrow = maxWidth < 340.dp
             val isVeryNarrow = maxWidth < 300.dp
@@ -284,5 +281,12 @@ fun MaimaiScoreItem(
 
             overlay()
         }
+    }
+
+    // Without onClick, the card isn't clickable at all (no press feedback).
+    if (onClick != null) {
+        ElevatedCard(onClick = onClick, modifier = cardModifier, colors = cardColors, shape = cardShape, content = cardContent)
+    } else {
+        ElevatedCard(modifier = cardModifier, colors = cardColors, shape = cardShape, content = cardContent)
     }
 }

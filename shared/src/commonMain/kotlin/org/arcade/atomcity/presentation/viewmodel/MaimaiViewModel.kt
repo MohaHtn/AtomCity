@@ -162,6 +162,11 @@ class MaimaiViewModel(
     private val _isUpdatingVisibility = MutableStateFlow(false)
     val isUpdatingVisibility: StateFlow<Boolean> = _isUpdatingVisibility
 
+    // Progression visibility returned by the last toggle. Kept apart from the rank progression
+    // list because the server leaves private players out of it.
+    private val _progressionVisibility = MutableStateFlow<Boolean?>(null)
+    val progressionVisibility: StateFlow<Boolean?> = _progressionVisibility
+
     private val _rankCharts = MutableStateFlow<List<BestPerPlayerResponse>>(emptyList())
     val rankCharts: StateFlow<List<BestPerPlayerResponse>> = _rankCharts
 
@@ -538,12 +543,18 @@ class MaimaiViewModel(
         }
     }
 
-    fun updateProgressionVisibility(isPublic: Boolean, userKeyHash: String? = null) {
+    /**
+     * Toggles the player's progression visibility. [wasPublic] is the state shown before the
+     * toggle, used as a fallback if the server doesn't return the new state.
+     */
+    fun toggleProgressionVisibility(wasPublic: Boolean, userKeyHash: String? = null) {
         viewModelScope.launch {
             try {
                 _isUpdatingVisibility.value = true
-                val success = analyticsUseCase.updateProgressionVisibility(isPublic)
-                if (success) {
+                val result = analyticsUseCase.toggleProgressionVisibility()
+                if (result.isSuccess) {
+                    val isPublic = result.getOrNull() ?: !wasPublic
+                    _progressionVisibility.value = isPublic
                     val current = _rankProgression.value
                     if (current != null) {
                         val updatedPlayers = current.players?.map { player ->
@@ -570,7 +581,11 @@ class MaimaiViewModel(
         }
     }
 
-    fun fetchChartsForRank(keyHash: String?, rankLabel: String) {
+    /**
+     * Loads the player's top scores of [rankLabel], optionally limited to one [difficulty]
+     * as named in the progression filter (e.g. "Master", "Re:Master").
+     */
+    fun fetchChartsForRank(keyHash: String?, rankLabel: String, difficulty: String? = null) {
         viewModelScope.launch {
             try {
                 _isLoadingRankCharts.value = true
@@ -578,7 +593,9 @@ class MaimaiViewModel(
 
                 val targetKeyHash = keyHash.takeIf { !it.isNullOrBlank() }
 
-                scoresUseCase.searchCharts(query = "", keyHash = targetKeyHash, rank = rankLabel, source = "top_scores").collect { searchResults ->
+                // The search endpoint expects difficulties as "MASTER", "Re:MASTER"...
+                val searchDifficulty = difficulty?.let { if (it.startsWith("Re:", ignoreCase = true)) "Re:MASTER" else it.uppercase() }
+                scoresUseCase.searchCharts(query = "", keyHash = targetKeyHash, rank = rankLabel, source = "top_scores", difficulty = searchDifficulty).collect { searchResults ->
                     val matchingRank = filterByRank(searchResults, rankLabel)
                     val listToSort = if (matchingRank.isNotEmpty()) matchingRank else searchResults
                     val sorted = listToSort.sortedWith(

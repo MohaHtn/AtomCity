@@ -155,9 +155,10 @@ interface IScorefetcherRepository {
      * @param keyHash The hashed identifier of the player.
      * @param rank The rank filter.
      * @param source The source filter.
+     * @param difficulty Comma-separated difficulties to keep (e.g. "MASTER,Re:MASTER").
      * @return A [Flow] emitting a list of [BestPerPlayerResponse] matching the criteria.
      */
-    fun searchCharts(query: String = "", keyHash: String? = null, rank: String? = null, source: String? = null): Flow<List<BestPerPlayerResponse>>
+    fun searchCharts(query: String = "", keyHash: String? = null, rank: String? = null, source: String? = null, difficulty: String? = null): Flow<List<BestPerPlayerResponse>>
 
     /**
      * Retrieves the most played charts globally.
@@ -191,12 +192,12 @@ interface IScorefetcherRepository {
     fun getRankProgression(targetKeyHash: String? = null, difficulty: String? = null): Flow<RankProgressionResponse>
 
     /**
-     * Updates the public visibility of the player's progression.
+     * Toggles the public visibility of the player's progression (public becomes private and vice versa).
      *
-     * @param isPublic True to make it public, false to make it private.
-     * @return True if successful, false otherwise.
+     * @return [Result.success] with the new state (true = public), or null if the server didn't
+     * return it; [Result.failure] if the request failed.
      */
-    suspend fun updateProgressionVisibility(isPublic: Boolean): Boolean
+    suspend fun toggleProgressionVisibility(): Result<Boolean?>
 
     /**
      * Removes an API key from the remote server.

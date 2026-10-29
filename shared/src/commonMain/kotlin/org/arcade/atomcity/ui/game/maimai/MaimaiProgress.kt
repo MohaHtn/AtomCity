@@ -2,6 +2,21 @@ package org.arcade.atomcity.ui.game.maimai
 
 import MaimaiScoreItem
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.draw.rotate
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,7 +31,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +45,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import org.arcade.atomcity.ui.game.maimai.details.FcApBadge
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -129,6 +145,12 @@ fun MaimaiProgress(
     var selectedDifficulty by remember { mutableStateOf<String?>(null) }
 
     var selectedRankTarget by remember { mutableStateOf<Pair<PlayerRankProgression, String>?>(null) }
+
+    val apiKeyManager = koinInject<ApiKeyManager>()
+    val maimaiApiKey by apiKeyManager.getApiKeyFlow("maimai").collectAsState(initial = null)
+    val userKeyHash = remember(maimaiApiKey) {
+        maimaiApiKey?.trim()?.takeIf { it.isNotBlank() }?.let { PlatformUtils.sha256(it) }
+    }
     val rankCharts by viewModel.rankCharts.collectAsState()
     val isLoadingRankCharts by viewModel.isLoadingRankCharts.collectAsState()
 
@@ -166,17 +188,27 @@ fun MaimaiProgress(
             }
     }
 
+    val isUpdatingVisibility by viewModel.isUpdatingVisibility.collectAsState()
+    val toggledVisibility by viewModel.progressionVisibility.collectAsState()
+    val currentPlayer = remember(rankProgressionState, allPlayers, userKeyHash) {
+        rankProgressionState?.player ?: allPlayers.find { it.keyHash == userKeyHash }
+    }
+    val currentUserPosition = remember(filteredAndSortedPlayers, userKeyHash) {
+        filteredAndSortedPlayers.indexOfFirst { it.keyHash != null && it.keyHash == userKeyHash } + 1
+    }
+
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(
         topBar = {
-            TopAppBar(
+            LargeTopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            text = "Progression des Joueurs",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(
+                        text = "Progression des Joueurs",
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -193,252 +225,111 @@ fun MaimaiProgress(
                             contentDescription = "Rafraîchir"
                         )
                     }
-                }
+                },
+                scrollBehavior = scrollBehavior
             )
         },
-        modifier = modifier
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
+                .padding(innerPadding),
+            contentPadding = PaddingValues(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Difficulty Selector Chips in 2 Rows
-            val diffsRow1 = listOf(
-                null to "Toutes",
-                "Easy" to "Easy",
-                "Basic" to "Basic",
-                "Advanced" to "Advanced"
-            )
-            val diffsRow2 = listOf(
-                "Expert" to "Expert",
-                "Master" to "Master",
-                "Re:Master" to "Re:Master"
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    diffsRow1.forEach { (key, label) ->
-                        val isSelected = selectedDifficulty == key
-                        val diffColor = key?.let { getJacketBorderColor(it) } ?: MaterialTheme.colorScheme.primary
-
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = {
-                                selectedDifficulty = key
-                                PlatformUtils.hapticImpact()
-                            },
-                            label = {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                    textAlign = TextAlign.Center,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = diffColor.copy(alpha = 0.25f),
-                                selectedLabelColor = if (key != null) diffColor else MaterialTheme.colorScheme.primary,
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                            ),
-                            border = FilterChipDefaults.filterChipBorder(
-                                enabled = true,
-                                selected = isSelected,
-                                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                                selectedBorderColor = diffColor,
-                                selectedBorderWidth = 1.5.dp
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
+            item(key = "difficulties") {
+                DifficultyPillRow(
+                    selected = selectedDifficulty,
+                    onSelect = { key ->
+                        selectedDifficulty = key
+                        PlatformUtils.hapticImpact()
                     }
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    diffsRow2.forEach { (key, label) ->
-                        val isSelected = selectedDifficulty == key
-                        val diffColor = getJacketBorderColor(key)
-
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = {
-                                selectedDifficulty = key
-                                PlatformUtils.hapticImpact()
-                            },
-                            label = {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                    textAlign = TextAlign.Center,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = diffColor.copy(alpha = 0.25f),
-                                selectedLabelColor = diffColor,
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                            ),
-                            border = FilterChipDefaults.filterChipBorder(
-                                enabled = true,
-                                selected = isSelected,
-                                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                                selectedBorderColor = diffColor,
-                                selectedBorderWidth = 1.5.dp
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-
-            // Sort Option Chips
-            /*Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-            ) {
-                Text(
-                    text = "Trier par :",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(end = 8.dp)
                 )
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(RankSortOption.entries.toTypedArray()) { option ->
-                        FilterChip(
-                            selected = selectedSortOption == option,
-                            onClick = { selectedSortOption = option },
-                            label = { Text(option.label) }
-                        )
-                    }
-                }
-            }*/
-
-            // Progression Sharing Visibility Toggle Card
-            val apiKeyManager = koinInject<ApiKeyManager>()
-            val maimaiApiKey by apiKeyManager.getApiKeyFlow("maimai").collectAsState(initial = null)
-            val isUpdatingVisibility by viewModel.isUpdatingVisibility.collectAsState()
-
-            val userKeyHash = remember(maimaiApiKey) {
-                maimaiApiKey?.trim()?.takeIf { it.isNotBlank() }?.let { PlatformUtils.sha256(it) }
-            }
-            val currentPlayer = remember(rankProgressionState, allPlayers, userKeyHash) {
-                rankProgressionState?.player ?: allPlayers.find { it.keyHash == userKeyHash }
             }
 
             if (!maimaiApiKey.isNullOrBlank() || currentPlayer != null) {
-                val isPublic = currentPlayer?.isPublicEffective ?: true
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                item(key = "me") {
+                    // Private players are left out of the progression list: once it is loaded,
+                    // not finding the user there means their progression is private.
+                    val isPublic = toggledVisibility
+                        ?: currentPlayer?.isPublicEffective
+                        ?: (rankProgressionState == null)
+                    MyProgressionCard(
+                        player = currentPlayer,
+                        position = currentUserPosition,
+                        playerCount = filteredAndSortedPlayers.size,
+                        totalGameCharts = totalGameCharts,
+                        totalSongs = rankProgressionState?.totalSongs ?: 0,
+                        playedSongs = rankProgressionState?.playedSongs ?: 0,
+                        isPublic = isPublic,
+                        isUpdatingVisibility = isUpdatingVisibility,
+                        onToggleVisibility = {
+                            viewModel.toggleProgressionVisibility(wasPublic = isPublic, userKeyHash = userKeyHash)
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Partager ma progression",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = if (isPublic) "Votre progression est visible par les autres joueurs" else "Votre progression est masquée",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            if (isUpdatingVisibility) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp
-                                )
-                            }
-                            Switch(
-                                checked = isPublic,
-                                enabled = !isUpdatingVisibility,
-                                onCheckedChange = { checked ->
-                                    viewModel.updateProgressionVisibility(checked, userKeyHash)
-                                }
-                            )
-                        }
-                    }
                 }
             }
 
-            if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+            when {
+                isLoading -> item(key = "loading") {
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxWidth()
+                            .padding(vertical = 64.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            } else if (filteredAndSortedPlayers.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+
+                filteredAndSortedPlayers.isEmpty() -> item(key = "empty") {
                     Text(
                         text = if (searchQuery.isNotBlank()) "Aucun joueur trouvé pour \"$searchQuery\"" else "Aucune donnée de progression disponible",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillParentMaxWidth()
+                            .padding(vertical = 64.dp, horizontal = 24.dp)
                     )
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(filteredAndSortedPlayers, key = { player -> player.keyHash ?: player.getDisplayName() }) { player ->
-                        val isCurrentUser = remember(player.keyHash, userKeyHash) {
-                            userKeyHash == null || player.keyHash == userKeyHash
+
+                else -> {
+                    item(key = "leaderboard-header") {
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp)
+                        ) {
+                            Text(
+                                text = "Classement",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Black
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${filteredAndSortedPlayers.size} joueurs",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 3.dp)
+                            )
                         }
+                    }
+
+                    itemsIndexed(filteredAndSortedPlayers, key = { _, player -> player.keyHash ?: player.getDisplayName() }) { index, player ->
                         PlayerProgressionCard(
                             player = player,
-                            isCurrentUser = isCurrentUser,
+                            position = index + 1,
+                            isCurrentUser = player.keyHash != null && player.keyHash == userKeyHash,
                             totalGameCharts = totalGameCharts,
                             totalSongs = rankProgressionState?.totalSongs ?: 0,
                             playedSongs = rankProgressionState?.playedSongs ?: 0,
                             onRankClick = { p, rankLabel ->
-                                if (isCurrentUser) {
-                                    selectedRankTarget = p to rankLabel
-                                    viewModel.fetchChartsForRank(p.keyHash, rankLabel)
-                                }
-                            }
+                                selectedRankTarget = p to rankLabel
+                                viewModel.fetchChartsForRank(p.keyHash, rankLabel, selectedDifficulty)
+                            },
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
                 }
@@ -446,6 +337,8 @@ fun MaimaiProgress(
         }
 
         selectedRankTarget?.let { (player, rankLabel) ->
+            // Score details are only reachable for the user's own scores.
+            val isOwnScores = userKeyHash != null && player.keyHash == userKeyHash
             val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             val listState = rememberLazyListState()
             val coroutineScope = rememberCoroutineScope()
@@ -490,65 +383,85 @@ fun MaimaiProgress(
                 }
             }
 
+            val rankColor = getRankBadgeColor(rankLabel)
+
             ModalBottomSheet(
                 onDismissRequest = { selectedRankTarget = null },
-                sheetState = sheetState
+                sheetState = sheetState,
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
             ) {
+                // No end padding: the scrubber's touch area reaches the screen edge.
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(start = 16.dp)
                 ) {
+                    // Header: rank tile, title and player
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp)
+                        modifier = Modifier.padding(start = 4.dp, end = 20.dp)
                     ) {
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = rankColor,
+                            contentColor = if (rankColor.luminance() > 0.5f) Color.Black else Color.White,
+                            modifier = Modifier.size(64.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = rankLabel,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "Charts $rankLabel",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Black
                             )
                             Text(
-                                text = "${player.getDisplayName()} • ${if (isLoadingRankCharts) "Chargement..." else "${rankCharts.size} chart(s)"}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        val badgeColor = getRankBadgeColor(rankLabel)
-                        Surface(
-                            color = badgeColor.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, badgeColor.copy(alpha = 0.4f))
-                        ) {
-                            Text(
-                                text = rankLabel,
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = badgeColor,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                text = player.getDisplayName(),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
 
-                    HorizontalDivider(modifier = Modifier.padding(bottom = 12.dp))
+                    // Stat pills
+                    if (!isLoadingRankCharts && rankCharts.isNotEmpty()) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(top = 16.dp, bottom = 12.dp)
+                        ) {
+                            SheetStatPill(label = "Charts", value = "${rankCharts.size}")
+                            SheetStatPill(label = "Meilleur", value = "${maxChartPct.format(2)}%")
+                            SheetStatPill(label = "Plus bas", value = "${minChartPct.format(2)}%")
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
-                    if (isLoadingRankCharts) {
-                        Box(
+                    when {
+                        isLoadingRankCharts -> Box(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(end = 16.dp)
                                 .height(200.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator()
+                            CircularProgressIndicator(color = rankColor)
                         }
-                    } else if (rankCharts.isEmpty()) {
-                        Box(
+
+                        rankCharts.isEmpty() -> Box(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(end = 16.dp)
                                 .height(150.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -558,20 +471,19 @@ fun MaimaiProgress(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                    } else {
-                        Row(
+
+                        else -> Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(max = 480.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .heightIn(max = 520.dp)
                         ) {
                             LazyColumn(
                                 state = listState,
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
                                 contentPadding = PaddingValues(bottom = 24.dp),
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
+                                    .fillMaxWidth()
+                                    .padding(end = ACHIEVEMENT_SCRUBBER_WIDTH + 16.dp + 4.dp)
                             ) {
                                 items(rankCharts, key = { it.playId ?: it.hashCode() }) { result ->
                                     val play = ScorefetcherApiData(
@@ -586,27 +498,33 @@ fun MaimaiProgress(
                                         isHighScore = false
                                     )
 
+                                    val playId = play.id?.takeIf { it > 0 }
                                     MaimaiScoreItem(
                                         play = play,
-                                        onClick = {
-                                            if (play.id != null && play.id!! > 0 && onNavigateToDetails != null) {
+                                        onClick = if (isOwnScores && playId != null && onNavigateToDetails != null) {
+                                            {
                                                 selectedRankTarget = null
-                                                onNavigateToDetails(play.id!!)
+                                                onNavigateToDetails(playId)
+                                            }
+                                        } else null,
+                                        footer = {
+                                            result.fcApText?.takeIf { it.isNotEmpty() }?.let { fcText ->
+                                                FcApBadge(text = fcText, modifier = Modifier.padding(bottom = 4.dp))
                                             }
                                         }
                                     )
                                 }
                             }
 
-                            SideAchievementSlider(
+                            AchievementScrubber(
                                 minStep = minStep,
                                 maxStep = maxStep,
                                 currentStep = currentStep,
+                                accent = rankColor,
                                 onStepChange = { newStep -> onSliderChange(newStep) },
                                 onDraggingChange = { dragging -> isUserDraggingSlider = dragging },
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .padding(start = 6.dp)
+                                edgePadding = 16.dp,
+                                modifier = Modifier.matchParentSize()
                             )
                         }
                     }
@@ -616,17 +534,52 @@ fun MaimaiProgress(
     }
 }
 
+private val ACHIEVEMENT_SCRUBBER_WIDTH = 40.dp
+
 @Composable
-fun SideAchievementSlider(
+private fun SheetStatPill(label: String, value: String) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Black
+            )
+        }
+    }
+}
+
+/**
+ * Vertical achievement scrubber drawn over the right edge of the chart list (fill [modifier]
+ * to the list bounds). Only its right strip takes touches, extended by [edgePadding] so it
+ * reaches the screen edge; while dragging, a value bubble floats over the list next to the handle.
+ */
+@Composable
+fun AchievementScrubber(
     minStep: Int,
     maxStep: Int,
     currentStep: Int,
+    accent: Color,
     onStepChange: (Int) -> Unit,
     onDraggingChange: (Boolean) -> Unit = {},
+    edgePadding: Dp = 0.dp,
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
-    var isDragging by remember { mutableStateOf(false) }
+    val density = LocalDensity.current
+    // Pressing and dragging are tracked apart: once a drag starts, the tap detector's press is
+    // cancelled, which would otherwise hide the value bubble mid-drag.
+    var isPressed by remember { mutableStateOf(false) }
+    var isDraggingHandle by remember { mutableStateOf(false) }
+    val isDragging = isPressed || isDraggingHandle
 
     LaunchedEffect(isDragging) {
         onDraggingChange(isDragging)
@@ -635,144 +588,366 @@ fun SideAchievementSlider(
     val range = (maxStep - minStep).coerceAtLeast(1)
     val fraction = ((currentStep - minStep).toFloat() / range.toFloat()).coerceIn(0f, 1f)
 
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxHeight()
-            .width(100.dp),
-        contentAlignment = Alignment.BottomEnd
-    ) {
-        val totalHeight = maxHeight
-        val topMargin = 12.dp
-        val bottomMargin = 16.dp
-        val thumbHeight = 28.dp
+    BoxWithConstraints(modifier = modifier) {
+        val verticalMargin = 12.dp
+        val trackWidth = 12.dp
+        val trackHeight = (maxHeight - verticalMargin * 2).coerceAtLeast(0.dp)
+        // Handle center, from the top of the box
+        val handleCenterY = verticalMargin + trackHeight * (1f - fraction)
 
-        val trackHeight = (totalHeight - topMargin - bottomMargin).coerceAtLeast(0.dp)
-        val travelDistance = (trackHeight - thumbHeight).coerceAtLeast(0.dp)
-        val thumbYOffset = -(bottomMargin + travelDistance * fraction)
+        fun stepAt(y: Float): Int {
+            val top = with(density) { verticalMargin.toPx() }
+            val height = with(density) { trackHeight.toPx() }.coerceAtLeast(1f)
+            val f = 1f - ((y - top) / height).coerceIn(0f, 1f)
+            return (minStep + (f * range).roundToInt()).coerceIn(minStep, maxStep)
+        }
 
+        fun update(y: Float) {
+            val step = stepAt(y)
+            if (step != currentStep) {
+                onStepChange(step)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            }
+        }
+
+        // Touch strip, track and handle (drawn in the strip, left of edgePadding)
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .align(Alignment.CenterEnd)
+                .width(ACHIEVEMENT_SCRUBBER_WIDTH + edgePadding)
+                .fillMaxHeight()
                 .pointerInput(minStep, maxStep) {
                     detectTapGestures(
                         onPress = { pos ->
-                            isDragging = true
-                            val height = size.height.toFloat()
-                            if (height > 0) {
-                                val y = pos.y.coerceIn(0f, height)
-                                val f = 1f - (y / height)
-                                val step = (minStep + (f * range).roundToInt()).coerceIn(minStep, maxStep)
-                                if (step != currentStep) {
-                                    onStepChange(step)
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                }
-                            }
+                            isPressed = true
+                            update(pos.y)
                             tryAwaitRelease()
-                            isDragging = false
+                            isPressed = false
                         }
                     )
                 }
                 .pointerInput(minStep, maxStep) {
                     detectVerticalDragGestures(
                         onDragStart = { pos ->
-                            isDragging = true
-                            val height = size.height.toFloat()
-                            if (height > 0) {
-                                val y = pos.y.coerceIn(0f, height)
-                                val f = 1f - (y / height)
-                                val step = (minStep + (f * range).roundToInt()).coerceIn(minStep, maxStep)
-                                if (step != currentStep) {
-                                    onStepChange(step)
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                }
-                            }
+                            isDraggingHandle = true
+                            update(pos.y)
                         },
-                        onDragEnd = { isDragging = false },
-                        onDragCancel = { isDragging = false },
+                        onDragEnd = { isDraggingHandle = false },
+                        onDragCancel = { isDraggingHandle = false },
                         onVerticalDrag = { change, _ ->
                             change.consume()
-                            val height = size.height.toFloat()
-                            if (height > 0) {
-                                val y = change.position.y.coerceIn(0f, height)
-                                val f = 1f - (y / height)
-                                val step = (minStep + (f * range).roundToInt()).coerceIn(minStep, maxStep)
-                                if (step != currentStep) {
-                                    onStepChange(step)
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                }
-                            }
+                            update(change.position.y)
                         }
                     )
-                },
-            contentAlignment = Alignment.BottomEnd
+                }
         ) {
-            // Right-aligned Track Column with 12dp right padding (never cut off)
             Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 12.dp, top = topMargin, bottom = bottomMargin)
-                    .width(16.dp)
-                    .height(trackHeight),
-                contentAlignment = Alignment.BottomCenter
+                    .align(Alignment.CenterStart)
+                    .width(ACHIEVEMENT_SCRUBBER_WIDTH)
+                    .fillMaxHeight()
             ) {
-                // Track background line
-                Box(
-                    modifier = Modifier
-                        .width(4.dp)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f))
-                )
-
-                // Active track fill line
-                Box(
-                    modifier = Modifier
-                        .width(4.dp)
-                        .height(travelDistance * fraction + thumbHeight / 2)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(MaterialTheme.colorScheme.primary)
-                )
-            }
-
-            // Floating Tooltip Badge + Centered Thumb Handle Row
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
+            // Inactive track
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset(y = thumbYOffset)
-                    .padding(end = 12.dp)
+                    .align(Alignment.TopCenter)
+                    .padding(vertical = verticalMargin)
+                    .width(trackWidth)
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(accent.copy(alpha = 0.16f))
+            )
+            // Active track, filled from the bottom
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = verticalMargin)
+                    .width(trackWidth)
+                    .height(trackHeight * fraction)
+                    .clip(CircleShape)
+                    .background(accent)
+            )
+            // Handle: a bar wider than the track, with a surface-colored gap around it
+            Surface(
+                shape = CircleShape,
+                color = accent,
+                border = BorderStroke(3.dp, MaterialTheme.colorScheme.surfaceContainerLow),
+                shadowElevation = if (isDragging) 4.dp else 1.dp,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .offset(y = handleCenterY - 6.dp)
+                    .size(width = 34.dp, height = 12.dp)
+            ) {}
+            }
+        }
+
+        // Value bubble, next to the handle while dragging
+        AnimatedVisibility(
+            visible = isDragging,
+            enter = fadeIn() + scaleIn(transformOrigin = TransformOrigin(1f, 0.5f)),
+            exit = fadeOut() + scaleOut(transformOrigin = TransformOrigin(1f, 0.5f)),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = -(ACHIEVEMENT_SCRUBBER_WIDTH + edgePadding + 4.dp), y = handleCenterY - 20.dp)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.inverseSurface,
+                contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+                shadowElevation = 6.dp,
+                modifier = Modifier.height(40.dp)
             ) {
-                // Tooltip Badge on the left
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = if (isDragging) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = if (isDragging) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                    shadowElevation = if (isDragging) 6.dp else 2.dp,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
-                    modifier = Modifier.padding(end = 12.dp)
-                ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 16.dp)) {
                     Text(
                         text = "${(currentStep / 100.0).format(2)}%",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Black
                     )
                 }
+            }
+        }
+    }
+}
 
-                // Centered Thumb Handle Pill (16dp container centered over 4dp track line)
+private val DIFFICULTY_FILTERS = listOf(
+    null to "Toutes",
+    "Easy" to "Easy",
+    "Basic" to "Basic",
+    "Advanced" to "Advanced",
+    "Expert" to "Expert",
+    "Master" to "Master",
+    "Re:Master" to "Re:Master"
+)
+
+/**
+ * Single scrollable row of pill buttons; the selected one is filled with its difficulty color.
+ */
+@Composable
+private fun DifficultyPillRow(
+    selected: String?,
+    onSelect: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(DIFFICULTY_FILTERS, key = { it.second }) { (key, label) ->
+            val isSelected = selected == key
+            val accent = key?.let { getJacketBorderColor(it) } ?: MaterialTheme.colorScheme.primary
+            val containerColor by animateColorAsState(
+                if (isSelected) accent else MaterialTheme.colorScheme.surfaceContainerHigh,
+                label = "DifficultyPillContainer"
+            )
+            val contentColor by animateColorAsState(
+                when {
+                    !isSelected -> MaterialTheme.colorScheme.onSurfaceVariant
+                    accent.luminance() > 0.5f -> Color.Black
+                    else -> Color.White
+                },
+                label = "DifficultyPillContent"
+            )
+            Surface(
+                onClick = { onSelect(key) },
+                shape = CircleShape,
+                color = containerColor,
+                contentColor = contentColor,
+                modifier = Modifier.height(40.dp)
+            ) {
                 Box(
-                    modifier = Modifier.width(16.dp),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.padding(horizontal = 18.dp)
                 ) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        shadowElevation = if (isDragging) 6.dp else 2.dp,
-                        modifier = Modifier.size(width = 12.dp, height = thumbHeight)
-                    ) {}
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (isSelected) FontWeight.Black else FontWeight.SemiBold,
+                        maxLines = 1
+                    )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Completion of a player as a 0..1 fraction and its display text.
+ */
+private fun PlayerRankProgression.completion(
+    totalGameCharts: Int,
+    totalSongs: Int,
+    playedSongs: Int
+): Pair<Float, String> {
+    val effTotalSongs = this.totalSongs ?: totalSongs
+    val effPlayedSongs = this.playedSongs ?: playedSongs
+    val fraction = when {
+        completionPercentage != null -> (completionPercentage / 100.0).toFloat().coerceIn(0f, 1f)
+        effTotalSongs > 0 && effPlayedSongs > 0 -> (effPlayedSongs.toFloat() / effTotalSongs.toFloat()).coerceIn(0f, 1f)
+        totalGameCharts > 0 -> (getClearedCount().toFloat() / totalGameCharts.toFloat()).coerceIn(0f, 1f)
+        else -> 0f
+    }
+    val display = completionPercentage?.let { "${it.format(2)}%" } ?: "${(fraction * 100).toInt()}%"
+    return fraction to display
+}
+
+@Composable
+private fun ThickProgressBar(
+    progress: Float,
+    color: Color,
+    trackColor: Color,
+    modifier: Modifier = Modifier
+) {
+    LinearProgressIndicator(
+        progress = { progress },
+        modifier = modifier
+            .fillMaxWidth()
+            .height(12.dp),
+        color = color,
+        trackColor = trackColor,
+        strokeCap = StrokeCap.Round
+    )
+}
+
+/**
+ * Highlighted summary of the user's own progression, with the sharing toggle.
+ */
+@Composable
+private fun MyProgressionCard(
+    player: PlayerRankProgression?,
+    position: Int,
+    playerCount: Int,
+    totalGameCharts: Int,
+    totalSongs: Int,
+    playedSongs: Int,
+    isPublic: Boolean,
+    isUpdatingVisibility: Boolean,
+    onToggleVisibility: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val onContainer = MaterialTheme.colorScheme.onPrimaryContainer
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = onContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
+            Text(
+                text = "TA PROGRESSION",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.5.sp,
+                color = onContainer.copy(alpha = 0.7f)
+            )
+
+            if (player != null) {
+                val (fraction, display) = player.completion(totalGameCharts, totalSongs, playedSongs)
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                ) {
+                    Text(
+                        text = display,
+                        style = MaterialTheme.typography.displayMedium,
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (position > 0) {
+                        Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(bottom = 8.dp)) {
+                            Text(
+                                text = "#$position",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Black
+                            )
+                            Text(
+                                text = "sur $playerCount",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = onContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                }
+                ThickProgressBar(
+                    progress = fraction,
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = onContainer.copy(alpha = 0.12f),
+                    modifier = Modifier.padding(top = 12.dp)
+                )
+            } else {
+                Text(
+                    text = if (isPublic) "Aucune progression disponible" else "Ta progression est masquée",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
+            HorizontalDivider(
+                color = onContainer.copy(alpha = 0.12f),
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Partager ma progression",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = if (isPublic) "Visible par les autres joueurs" else "Masquée aux autres joueurs",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = onContainer.copy(alpha = 0.7f)
+                    )
+                }
+                if (isUpdatingVisibility) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = onContainer
+                    )
+                }
+                Switch(
+                    checked = isPublic,
+                    enabled = !isUpdatingVisibility,
+                    onCheckedChange = { onToggleVisibility() }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Leaderboard position, with gold / silver / bronze for the podium.
+ */
+@Composable
+private fun PositionBadge(position: Int, modifier: Modifier = Modifier) {
+    val medal = when (position) {
+        1 -> Color(0xFFFFC94D)
+        2 -> Color(0xFFC9D3DB)
+        3 -> Color(0xFFE0A774)
+        else -> null
+    }
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = medal ?: MaterialTheme.colorScheme.surfaceContainerHighest,
+        contentColor = if (medal != null) Color(0xFF2B1D00) else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier.size(44.dp)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = "$position",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black
+            )
         }
     }
 }
@@ -780,7 +955,8 @@ fun SideAchievementSlider(
 @Composable
 fun PlayerProgressionCard(
     player: PlayerRankProgression,
-    isCurrentUser: Boolean = true,
+    position: Int,
+    isCurrentUser: Boolean,
     totalGameCharts: Int,
     totalSongs: Int = 0,
     playedSongs: Int = 0,
@@ -796,120 +972,93 @@ fun PlayerProgressionCard(
     val effTotalSongs = player.totalSongs ?: totalSongs
     val effPlayedSongs = player.playedSongs ?: playedSongs
 
-    val progressFraction = if (player.completionPercentage != null) {
-        (player.completionPercentage / 100.0).toFloat().coerceIn(0f, 1f)
-    } else if (effTotalSongs > 0 && effPlayedSongs > 0) {
-        (effPlayedSongs.toFloat() / effTotalSongs.toFloat()).coerceIn(0f, 1f)
-    } else if (totalGameCharts > 0) {
-        (clearedCount.toFloat() / totalGameCharts.toFloat()).coerceIn(0f, 1f)
-    } else 0f
+    val (progressFraction, percentageDisplay) = player.completion(totalGameCharts, totalSongs, playedSongs)
 
-    val percentageDisplay = if (player.completionPercentage != null) {
-        "${player.completionPercentage.format(2)}%"
-    } else {
-        "${(progressFraction * 100).toInt()}%"
-    }
+    val chevronRotation by animateFloatAsState(if (isExpanded) 180f else 0f, label = "PlayerCardChevron")
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { isExpanded = !isExpanded },
-        shape = RoundedCornerShape(16.dp),
+        onClick = { isExpanded = !isExpanded },
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        border = if (isCurrentUser) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Player Info Header
+            // Position, name and completion
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.List,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
+                PositionBadge(position = position)
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = player.getDisplayName(),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        if (isCurrentUser) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(start = 6.dp)
+                            ) {
+                                Text(
+                                    text = "TOI",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Black,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
                     Text(
-                        text = player.getDisplayName(),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        text = if (effTotalSongs > 0 && effPlayedSongs > 0) {
+                            "$effPlayedSongs / $effTotalSongs morceaux"
+                        } else if (totalGameCharts > 0) {
+                            "$clearedCount / $totalGameCharts charts"
+                        } else {
+                            "$clearedCount charts"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
                 if (player.rating != null && player.rating > 0) {
                     MaimaiRatingBadge(
                         rating = player.rating,
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp)
                     )
                 }
-
-                IconButton(
-                    onClick = { isExpanded = !isExpanded },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = if (isExpanded) "Réduire" else "Développer"
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Overall Cleared Progress Bar
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = if (effTotalSongs > 0 && effPlayedSongs > 0) {
-                        "Morceaux joués : $effPlayedSongs / $effTotalSongs"
-                    } else if (totalGameCharts > 0) {
-                        "Progression : $clearedCount / $totalGameCharts charts"
-                    } else {
-                        "Charts jouées : $clearedCount"
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
                 Text(
                     text = percentageDisplay,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            LinearProgressIndicator(
-                progress = { progressFraction },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp)),
+            ThickProgressBar(
+                progress = progressFraction,
                 color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                modifier = Modifier.padding(top = 14.dp)
             )
 
             // Key Rank Summary Row (always visible)
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -917,120 +1066,100 @@ fun PlayerProgressionCard(
             ) {
                 val topRanks = listOf("SSS+", "SSS", "SS+", "SS", "S+", "S")
                 topRanks.forEach { rankKey ->
-                    val count = rankCounts[rankKey] ?: when (rankKey) {
-                        "SSS+" -> player.sssPlus ?: 0
-                        "SSS" -> player.sss ?: 0
-                        "SS+" -> player.ssPlus ?: 0
-                        "SS" -> player.ss ?: 0
-                        "S+" -> player.sPlus ?: 0
-                        "S" -> player.s ?: 0
-                        else -> 0
-                    }
+                    val count = player.rankCount(rankKey, rankCounts)
                     CompactRankBadge(
                         rankLabel = rankKey,
                         count = count,
-                        onClick = if (isCurrentUser) { { onRankClick(player, rankKey) } } else null,
+                        onClick = { onRankClick(player, rankKey) },
                         modifier = Modifier.weight(1f)
                     )
                 }
             }
 
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = if (isExpanded) "Réduire" else "Développer",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 4.dp)
+                    .rotate(chevronRotation)
+            )
+
             // Expanded detail section
             AnimatedVisibility(visible = isExpanded) {
+                val totalForPct = if (totalGameCharts > 0) totalGameCharts else clearedCount
+                val ranks = RANK_DETAIL_ORDER.mapNotNull { key ->
+                    player.rankCount(key, rankCounts).takeIf { it > 0 }?.let { key to it }
+                } + rankCounts.filter { (k, v) -> v > 0 && k !in RANK_DETAIL_ORDER && k !in COMBO_DETAIL_ORDER }.toList()
+                val combos = COMBO_DETAIL_ORDER.mapNotNull { key ->
+                    player.rankCount(key, rankCounts).takeIf { it > 0 }?.let { key to it }
+                }
+                val maxRankCount = ranks.maxOfOrNull { it.second } ?: 0
+                val maxComboCount = combos.maxOfOrNull { it.second } ?: 0
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
+                        .padding(top = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(bottom = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    )
-
-                    Text(
-                        text = "Détail des Rangs & Combos",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    // Complete Rank Breakdown
-                    val predefinedOrder = listOf(
-                        "SSS+", "SSS", "SS+", "SS", "S+", "S",
-                        "AAA", "AA", "A", "Autres",
-                        "FC", "FC+", "AP", "AP+"
-                    )
-                    val definedRanksList = predefinedOrder.mapNotNull { rankKey ->
-                        val count = rankCounts[rankKey] ?: when (rankKey) {
-                            "SSS+" -> player.sssPlus ?: 0
-                            "SSS" -> player.sss ?: 0
-                            "SS+" -> player.ssPlus ?: 0
-                            "SS" -> player.ss ?: 0
-                            "S+" -> player.sPlus ?: 0
-                            "S" -> player.s ?: 0
-                            "AAA" -> player.aaa ?: 0
-                            "AA" -> player.aa ?: 0
-                            "A" -> player.a ?: 0
-                            "FC" -> player.fcCount ?: player.fc ?: 0
-                            "FC+" -> player.fcPlusCount ?: player.fcp ?: 0
-                            "AP" -> player.apCount ?: player.ap ?: 0
-                            "AP+" -> player.apPlusCount ?: player.app ?: 0
-                            else -> 0
-                        }
-                        if (count > 0) rankKey to count else null
-                    }
-                    val extraRanks = rankCounts.filter { (k, v) -> v > 0 && k !in predefinedOrder }.map { (k, v) -> k to v }
-                    val allRanksList = definedRanksList + extraRanks
-
-                    val totalForPct = if (totalGameCharts > 0) totalGameCharts else clearedCount
-
-                    if (allRanksList.isNotEmpty()) {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            allRanksList.chunked(3).forEach { rowItems ->
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    rowItems.forEach { (label, count) ->
-                                        DetailedRankItem(
-                                            rankLabel = label,
-                                            count = count,
-                                            totalGameCharts = totalForPct,
-                                            onClick = if (isCurrentUser) { { onRankClick(player, label) } } else null,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                    repeat(3 - rowItems.size) {
-                                        Spacer(modifier = Modifier.weight(1f))
-                                    }
-                                }
-                            }
-                        }
-                    } else {
+                    if (ranks.isEmpty() && combos.isEmpty()) {
                         Text(
                             text = "Aucun détail de rang disponible",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    if (ranks.isNotEmpty()) {
+                        DetailSectionTitle("Rangs")
+                        ranks.forEach { (label, count) ->
+                            RankBreakdownRow(
+                                rankLabel = label,
+                                count = count,
+                                total = totalForPct,
+                                scaleMax = maxRankCount,
+                                onClick = { onRankClick(player, label) }
+                            )
+                        }
+                    }
+                    if (combos.isNotEmpty()) {
+                        DetailSectionTitle("Combos", modifier = Modifier.padding(top = 8.dp))
+                        combos.forEach { (label, count) ->
+                            RankBreakdownRow(
+                                rankLabel = label,
+                                count = count,
+                                total = totalForPct,
+                                scaleMax = maxComboCount,
+                                onClick = { onRankClick(player, label) }
+                            )
+                        }
+                    }
 
                     if (effPlayedSongs > 0 || playedCount > 0 || clearedCount > 0) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
                         ) {
-                            Text(
-                                text = "Total des charts/parties jouées :",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = (if (clearedCount > 0) clearedCount else if (effPlayedSongs > 0) effPlayedSongs else playedCount).toString(),
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                            ) {
+                                Text(
+                                    text = "Charts jouées",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = (if (clearedCount > 0) clearedCount else if (effPlayedSongs > 0) effPlayedSongs else playedCount).toString(),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
                         }
                     }
                 }
@@ -1047,73 +1176,137 @@ fun CompactRankBadge(
     modifier: Modifier = Modifier
 ) {
     val color = getRankBadgeColor(rankLabel)
+    val shape = RoundedCornerShape(14.dp)
     Surface(
-        color = color.copy(alpha = 0.12f),
-        shape = RoundedCornerShape(6.dp),
-        border = BorderStroke(1.dp, color.copy(alpha = 0.4f)),
-        modifier = if (onClick != null) modifier.clickable { onClick() } else modifier
+        color = color.copy(alpha = 0.14f),
+        shape = shape,
+        modifier = if (onClick != null) modifier.clip(shape).clickable { onClick() } else modifier
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(vertical = 4.dp, horizontal = 2.dp)
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 2.dp)
         ) {
             Text(
                 text = rankLabel,
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                fontWeight = FontWeight.Black,
                 color = color
             )
             Text(
                 text = "$count",
-                style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
-                fontWeight = FontWeight.ExtraBold,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Black,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
 }
 
+private val RANK_DETAIL_ORDER = listOf("SSS+", "SSS", "SS+", "SS", "S+", "S", "AAA", "AA", "A", "Autres")
+private val COMBO_DETAIL_ORDER = listOf("FC", "FC+", "AP", "AP+")
+
+private fun PlayerRankProgression.rankCount(key: String, rankCounts: Map<String, Int>): Int =
+    rankCounts[key] ?: when (key) {
+        "SSS+" -> sssPlus
+        "SSS" -> sss
+        "SS+" -> ssPlus
+        "SS" -> ss
+        "S+" -> sPlus
+        "S" -> s
+        "AAA" -> aaa
+        "AA" -> aa
+        "A" -> a
+        "FC" -> fcCount ?: fc
+        "FC+" -> fcPlusCount ?: fcp
+        "AP" -> apCount ?: ap
+        "AP+" -> apPlusCount ?: app
+        else -> null
+    } ?: 0
+
 @Composable
-fun DetailedRankItem(
+private fun DetailSectionTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text.uppercase(),
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Black,
+        letterSpacing = 1.5.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier.padding(start = 4.dp, bottom = 2.dp)
+    )
+}
+
+/**
+ * One rank of the detail: colored label, bar scaled to [scaleMax] (the largest count of its
+ * group, so differences stay visible), count and share of [total].
+ */
+@Composable
+fun RankBreakdownRow(
     rankLabel: String,
     count: Int,
-    totalGameCharts: Int,
+    total: Int,
+    scaleMax: Int,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val color = getRankBadgeColor(rankLabel)
-    val pct = if (totalGameCharts > 0) ((count.toFloat() / totalGameCharts.toFloat()) * 100) else 0f
+    val barFraction = if (scaleMax > 0) (count.toFloat() / scaleMax).coerceIn(0f, 1f) else 0f
+    val share = if (total > 0) count * 100.0 / total else 0.0
+    val shape = RoundedCornerShape(16.dp)
 
-    Surface(
-        color = color.copy(alpha = 0.12f),
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, color.copy(alpha = 0.35f)),
-        modifier = if (onClick != null) modifier.clickable { onClick() } else modifier
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
+            .padding(horizontal = 4.dp, vertical = 6.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = color.copy(alpha = 0.16f),
+            modifier = Modifier.width(56.dp)
         ) {
             Text(
                 text = rankLabel,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = color
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Black,
+                color = color,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                modifier = Modifier.padding(vertical = 6.dp)
             )
-            Column(horizontalAlignment = Alignment.End) {
+        }
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp)
+                .height(10.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(barFraction)
+                    .clip(CircleShape)
+                    .background(color)
+            )
+        }
+        Column(
+            horizontalAlignment = Alignment.End,
+            modifier = Modifier.widthIn(min = 56.dp)
+        ) {
+            Text(
+                text = "$count",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Black
+            )
+            if (share > 0.0) {
                 Text(
-                    text = "$count",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.ExtraBold
+                    text = if (share < 0.1) "<0.1%" else "${share.format(1)}%",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                if (pct > 0f) {
-                    Text(
-                        text = "${(pct * 10).toInt() / 10.0}%",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
     }

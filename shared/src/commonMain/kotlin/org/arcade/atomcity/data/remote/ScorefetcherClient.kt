@@ -16,6 +16,11 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import io.ktor.http.isSuccess
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -51,12 +56,6 @@ data class AddApiKeyResponse(
 @Serializable
 data class DeleteApiKeyResponse(
     val message: String,
-)
-
-@Serializable
-data class VisibilityUpdateRequest(
-    val keyHash: String? = null,
-    val isPublic: Boolean
 )
 
 @Serializable
@@ -222,7 +221,8 @@ class ScorefetcherClient(
         query: String = "",
         keyHash: String? = null,
         rank: String? = null,
-        source: String? = null
+        source: String? = null,
+        difficulty: String? = null
     ): List<BestPerPlayerResponse> {
         val response: HttpResponse = client.get("${baseUrl}scores/search") {
             addApiKey()
@@ -230,6 +230,7 @@ class ScorefetcherClient(
             if (!keyHash.isNullOrBlank()) parameter("keyHash", keyHash)
             if (!rank.isNullOrBlank()) parameter("rank", rank)
             if (!source.isNullOrBlank()) parameter("source", source)
+            if (!difficulty.isNullOrBlank()) parameter("difficulty", difficulty)
         }
         return if (response.status == HttpStatusCode.NotFound) {
             emptyList()
@@ -345,21 +346,38 @@ class ScorefetcherClient(
         }
     }
 
-    suspend fun updateProgressionVisibility(
-        keyHash: String,
-        isPublic: Boolean
-    ): Boolean {
+    /**
+     * Toggles the progression visibility of the player (public becomes private and vice versa).
+     *
+     * @return [Result.success] with the new state (true = public), or null if the response
+     * doesn't state it; [Result.failure] if the request failed.
+     */
+    suspend fun toggleProgressionVisibility(keyHash: String): Result<Boolean?> {
         return try {
             val response: HttpResponse = client.put("${baseUrl}scores/progression/public/$keyHash") {
                 addApiKey()
-                contentType(ContentType.Application.Json)
                 header("Accept", "application/json")
-                setBody(VisibilityUpdateRequest(isPublic = isPublic))
             }
-            response.status == HttpStatusCode.OK || response.status == HttpStatusCode.NoContent
+            if (!response.status.isSuccess()) {
+                return Result.failure(IllegalStateException("HTTP ${response.status.value}"))
+            }
+            Result.success(parseProgressionVisibility(response.bodyAsText()))
         } catch (e: Exception) {
-            PlatformUtils.log("ScorefetcherClient", "Error updating progression visibility: ${e.message}", true)
-            false
+            PlatformUtils.log("ScorefetcherClient", "Error toggling progression visibility: ${e.message}", true)
+            Result.failure(e)
+        }
+    }
+
+    private fun parseProgressionVisibility(body: String): Boolean? {
+        val element = runCatching { jsonInstance.parseToJsonElement(body) }.getOrNull() ?: return null
+        fun JsonElement.asVisibility(): Boolean? = (this as? JsonPrimitive)?.let { primitive ->
+            primitive.booleanOrNull ?: primitive.intOrNull?.let { it != 0 }
+        }
+        return when (element) {
+            is JsonPrimitive -> element.asVisibility()
+            is JsonObject -> listOf("isProgressionPublic", "is_progression_public", "isPublic", "public", "value")
+                .firstNotNullOfOrNull { key -> element[key]?.asVisibility() }
+            else -> null
         }
     }
 

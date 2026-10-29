@@ -88,12 +88,12 @@ class GetScorefetcherAnalyticsUseCase(private val repository: IScorefetcherRepos
     fun getRankProgression(targetKeyHash: String? = null, difficulty: String? = null): Flow<RankProgressionResponse> = repository.getRankProgression(targetKeyHash, difficulty)
 
     /**
-     * Updates the public visibility status of the player's progression data.
+     * Toggles the public visibility of the player's progression data.
      *
-     * @param isPublic True to allow public viewing, false to hide it.
-     * @return True if the update was successful, false otherwise.
+     * @return [Result.success] with the new state (true = public), or null if the server didn't
+     * return it; [Result.failure] if the request failed.
      */
-    suspend fun updateProgressionVisibility(isPublic: Boolean): Boolean = repository.updateProgressionVisibility(isPublic)
+    suspend fun toggleProgressionVisibility(): Result<Boolean?> = repository.toggleProgressionVisibility()
 
     /**
      * Retrieves personal bests achieved during a specific session date.

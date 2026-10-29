@@ -243,10 +243,10 @@ class ScorefetcherRepository(
         }
     }
 
-    override fun searchCharts(query: String, keyHash: String?, rank: String?, source: String?): Flow<List<BestPerPlayerResponse>> = flow {
+    override fun searchCharts(query: String, keyHash: String?, rank: String?, source: String?, difficulty: String?): Flow<List<BestPerPlayerResponse>> = flow {
         try {
             val key = keyHash ?: PlatformUtils.sha256(apiKeyManager.getApiKey("maimai")?.trim() ?: "")
-            val response = scorefetcherClient.searchCharts(query = query, keyHash = key, rank = rank, source = source)
+            val response = scorefetcherClient.searchCharts(query = query, keyHash = key, rank = rank, source = source, difficulty = difficulty)
             response.forEach { entry ->
                 entry.jacketImageUrl = findJacketUrlBySongName(entry.songJson?.name?.jp) ?: findJacketUrlBySongName(entry.songJson?.name?.en)
             }
@@ -356,11 +356,11 @@ class ScorefetcherRepository(
         }
     }
 
-    override suspend fun updateProgressionVisibility(isPublic: Boolean): Boolean {
-        val apiKey = apiKeyManager.getApiKey("maimai")?.trim() ?: return false
-        if (apiKey.isBlank()) return false
+    override suspend fun toggleProgressionVisibility(): Result<Boolean?> {
+        val apiKey = apiKeyManager.getApiKey("maimai")?.trim()
+        if (apiKey.isNullOrBlank()) return Result.failure(IllegalStateException("No maimai API key"))
         val keyHash = PlatformUtils.sha256(apiKey)
-        return scorefetcherClient.updateProgressionVisibility(keyHash, isPublic)
+        return scorefetcherClient.toggleProgressionVisibility(keyHash)
     }
 
     override suspend fun removeApiKey(apiKey: String): Flow<DeleteApiKeyResponse> = flow {

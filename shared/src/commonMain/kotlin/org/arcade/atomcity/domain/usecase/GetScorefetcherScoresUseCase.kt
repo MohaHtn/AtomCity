@@ -61,7 +61,8 @@ class GetScorefetcherScoresUseCase(private val repository: IScorefetcherReposito
      * @param keyHash The player's key hash filter.
      * @param rank The rank filter.
      * @param source The source filter.
+     * @param difficulty Comma-separated difficulties to keep (e.g. "MASTER,Re:MASTER").
      * @return A [Flow] emitting a list of matching [BestPerPlayerResponse].
      */
-    fun searchCharts(query: String = "", keyHash: String? = null, rank: String? = null, source: String? = null): Flow<List<BestPerPlayerResponse>> = repository.searchCharts(query, keyHash, rank, source)
+    fun searchCharts(query: String = "", keyHash: String? = null, rank: String? = null, source: String? = null, difficulty: String? = null): Flow<List<BestPerPlayerResponse>> = repository.searchCharts(query, keyHash, rank, source, difficulty)
 }
