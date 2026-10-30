@@ -29,7 +29,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -38,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -132,10 +130,10 @@ fun getRankBadgeColor(rank: String): Color {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaimaiProgress(
+    modifier: Modifier = Modifier,
     viewModel: MaimaiViewModel,
     onBackClick: () -> Unit,
     onNavigateToDetails: ((Int) -> Unit)? = null,
-    modifier: Modifier = Modifier
 ) {
     val rankProgressionState by viewModel.rankProgression.collectAsState()
     val isLoading by viewModel.isLoadingRankProgression.collectAsState()
@@ -255,7 +253,7 @@ fun MaimaiProgress(
                     val isPublic = toggledVisibility
                         ?: currentPlayer?.isPublicEffective
                         ?: (rankProgressionState == null)
-                    MyProgressionCard(
+                    ProgressionCard(
                         player = currentPlayer,
                         position = currentUserPosition,
                         playerCount = filteredAndSortedPlayers.size,
@@ -771,14 +769,20 @@ private fun DifficultyPillRow(
     }
 }
 
+private const val MAX_ACHIEVEMENT_PERCENT = 101.0
+
 /**
- * Completion of a player as a 0..1 fraction and its display text.
+ * Completion of a player as a 0..1 fraction and its display text: the average achievement when
+ * available, otherwise the share of charts played.
  */
 private fun PlayerRankProgression.completion(
     totalGameCharts: Int,
     totalSongs: Int,
     playedSongs: Int
 ): Pair<Float, String> {
+    averageAchievement?.let { average ->
+        return (average / MAX_ACHIEVEMENT_PERCENT).toFloat().coerceIn(0f, 1f) to "${average.format(2)}%"
+    }
     val effTotalSongs = this.totalSongs ?: totalSongs
     val effPlayedSongs = this.playedSongs ?: playedSongs
     val fraction = when {
@@ -813,7 +817,7 @@ private fun ThickProgressBar(
  * Highlighted summary of the user's own progression, with the sharing toggle.
  */
 @Composable
-private fun MyProgressionCard(
+private fun ProgressionCard(
     player: PlayerRankProgression?,
     position: Int,
     playerCount: Int,
@@ -836,7 +840,7 @@ private fun MyProgressionCard(
     ) {
         Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
             Text(
-                text = "TA PROGRESSION",
+                text = "VOTRE PROGRESSION",
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 1.5.sp,
@@ -1015,7 +1019,7 @@ fun PlayerProgressionCard(
                                 modifier = Modifier.padding(start = 6.dp)
                             ) {
                                 Text(
-                                    text = "TOI",
+                                    text = "VOUS",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Black,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)

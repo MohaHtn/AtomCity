@@ -51,7 +51,7 @@ extensions.configure<ApplicationExtension> {
             "\"$scorefetcherApiKey\""
         )
 
-        versionNameSuffix = "pre-alpha-27"
+        versionNameSuffix = "pre-alpha-28"
     }
 
     buildTypes {

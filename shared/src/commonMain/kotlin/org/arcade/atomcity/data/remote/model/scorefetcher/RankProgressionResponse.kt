@@ -13,6 +13,7 @@ data class PlayerRankProgression(
     val isPublic: Boolean? = true,
     val isProgressionPublic: Boolean? = null,
     val completionPercentage: Double? = null,
+    val averageAchievement: Double? = null,
     val totalPlayed: Int? = null,
     val totalCleared: Int? = null,
     val played: Int? = null,
