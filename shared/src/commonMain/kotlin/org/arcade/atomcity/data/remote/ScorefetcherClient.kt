@@ -312,11 +312,12 @@ class ScorefetcherClient(
         coerceInputValues = true
     }
 
-    suspend fun getRankProgression(difficulty: String? = null): RankProgressionResponse {
+    suspend fun getRankProgression(difficulty: String? = null, keyHash: String? = null): RankProgressionResponse {
         val response: HttpResponse = client.get("${baseUrl}scores/progression/rank") {
             addApiKey()
             header("Accept", "application/json")
             if (!difficulty.isNullOrBlank()) parameter("difficulty", difficulty)
+            if (!keyHash.isNullOrBlank()) parameter("keyHash", keyHash)
         }
         if (response.status == HttpStatusCode.NotFound) {
             return RankProgressionResponse()

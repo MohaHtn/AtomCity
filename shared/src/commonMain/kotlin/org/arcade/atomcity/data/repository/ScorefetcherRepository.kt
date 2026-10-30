@@ -348,7 +348,9 @@ class ScorefetcherRepository(
 
     override fun getRankProgression(targetKeyHash: String?, difficulty: String?): Flow<RankProgressionResponse> = flow {
         try {
-            val response = scorefetcherClient.getRankProgression(difficulty = difficulty)
+            // Sent so the server includes the user's own progression even when it is private
+            val keyHash = apiKeyManager.getApiKey("maimai")?.trim()?.takeIf { it.isNotBlank() }?.let { PlatformUtils.sha256(it) }
+            val response = scorefetcherClient.getRankProgression(difficulty = difficulty, keyHash = keyHash)
             emit(response)
         } catch (e: Exception) {
             PlatformUtils.log("ScorefetcherRepository", "Error fetching rank progression: ${e.message}", true)

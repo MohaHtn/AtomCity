@@ -248,11 +248,7 @@ fun MaimaiProgress(
 
             if (!maimaiApiKey.isNullOrBlank() || currentPlayer != null) {
                 item(key = "me") {
-                    // Private players are left out of the progression list: once it is loaded,
-                    // not finding the user there means their progression is private.
-                    val isPublic = toggledVisibility
-                        ?: currentPlayer?.isPublicEffective
-                        ?: (rankProgressionState == null)
+                    val isPublic = toggledVisibility ?: currentPlayer?.isPublicEffective ?: true
                     ProgressionCard(
                         player = currentPlayer,
                         position = currentUserPosition,
@@ -885,7 +881,7 @@ private fun ProgressionCard(
                 )
             } else {
                 Text(
-                    text = if (isPublic) "Aucune progression disponible" else "Ta progression est masquée",
+                    text = "Aucune progression disponible",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 4.dp)
